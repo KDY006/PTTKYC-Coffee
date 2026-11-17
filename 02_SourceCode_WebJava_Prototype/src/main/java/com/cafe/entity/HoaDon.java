@@ -49,6 +49,38 @@ public class HoaDon implements Serializable {
     @JsonManagedReference
     private List<ChiTietHoaDon> danhSachChiTiet = new ArrayList<>();
 
+
+    @Version
+    @Column(name = "phien_ban", columnDefinition = "bigint default 0")
+    private Long phienBan = 0L;
+    public Long getPhienBan() { return phienBan; }
+    public void setPhienBan(Long value) { phienBan = value; }
+
+    @Column(name = "yeu_cau_tao", length = 36, unique = true)
+    private String yeuCauTao = null;
+    public String getYeuCauTao() { return yeuCauTao; }
+    public void setYeuCauTao(String value) { yeuCauTao = value; }
+
+    @Column(name = "yeu_cau_thanh_toan", length = 36, unique = true)
+    private String yeuCauThanhToan = null;
+    public String getYeuCauThanhToan() { return yeuCauThanhToan; }
+    public void setYeuCauThanhToan(String value) { yeuCauThanhToan = value; }
+
+    @Column(name = "tien_khach_dua")
+    private Double tienKhachDua = null;
+    public Double getTienKhachDua() { return tienKhachDua; }
+    public void setTienKhachDua(Double value) { tienKhachDua = value; }
+
+    @Column(name = "ma_tham_chieu", length = 100, unique = true)
+    private String maThamChieu = null;
+    public String getMaThamChieu() { return maThamChieu; }
+    public void setMaThamChieu(String value) { maThamChieu = value; }
+
+    @Column(name = "thoi_gian_thanh_toan")
+    private LocalDateTime thoiGianThanhToan = null;
+    public LocalDateTime getThoiGianThanhToan() { return thoiGianThanhToan; }
+    public void setThoiGianThanhToan(LocalDateTime value) { thoiGianThanhToan = value; }
+
     public HoaDon() {
     }
 

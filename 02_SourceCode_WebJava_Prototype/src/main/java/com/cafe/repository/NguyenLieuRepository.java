@@ -15,4 +15,8 @@ public interface NguyenLieuRepository extends JpaRepository<NguyenLieu, Integer>
     List<NguyenLieu> findNguyenLieuSapHet();
 
     List<NguyenLieu> findAllByOrderByMaNLAsc();
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select x from NguyenLieu x where x.maNL = :id")
+    java.util.Optional<NguyenLieu> khoaNguyenLieu(@org.springframework.data.repository.query.Param("id") Integer id);
 }

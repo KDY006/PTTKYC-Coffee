@@ -17,7 +17,7 @@ public class MonNuocController {
     private OrderService orderService;
 
     @GetMapping
-    public ResponseEntity<List<MonNuoc>> layDanhSachMonNuoc() {
-        return ResponseEntity.ok(orderService.layDanhSachMonNuoc());
+    public ResponseEntity<List<MonNuoc>> layDanhSachMonNuoc(@RequestParam(required=false) String danhMuc, @RequestParam(required=false) String q) {
+        return ResponseEntity.ok(orderService.layDanhSachMonNuoc(danhMuc,q));
     }
 }

@@ -1,66 +1,35 @@
 package com.cafe.controller;
 
-import com.cafe.dto.OrderDTO;
-import com.cafe.dto.ThanhToanDTO;
+import com.cafe.dto.*;
 import com.cafe.entity.HoaDon;
 import com.cafe.service.OrderService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
+import org.springframework.web.server.ResponseStatusException;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/order")
-@CrossOrigin(origins = "*")
 public class OrderController {
-
-    @Autowired
-    private OrderService orderService;
-
-    @GetMapping("/danh-sach")
-    public ResponseEntity<List<HoaDon>> layDanhSachHoaDon() {
-        return ResponseEntity.ok(orderService.layDanhSachHoaDon());
+    @Autowired private OrderService orderService;
+    private Integer staff(HttpSession s) {
+        Object id=s.getAttribute("maNV"),role=s.getAttribute("vaiTro");
+        if(!(id instanceof Integer))throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Vui lòng đăng nhập lại");
+        if(!Set.of("STAFF","MANAGER","ADMIN").contains(String.valueOf(role)))throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Không có quyền bán hàng");
+        return (Integer)id;
     }
-
-    @GetMapping("/{maHoaDon}")
-    public ResponseEntity<?> layHoaDonTheoId(@PathVariable Integer maHoaDon) {
-        try {
-            return ResponseEntity.ok(orderService.layHoaDonTheoId(maHoaDon));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
-        }
+    @GetMapping("/danh-sach") public List<HoaDon> all(HttpSession s){staff(s);return orderService.layDanhSachHoaDon();}
+    @GetMapping("/{id}") public HoaDon get(@PathVariable Integer id,HttpSession s){staff(s);return orderService.layHoaDonTheoId(id);}
+    @GetMapping("/theo-ban/{id}") public ResponseEntity<?> table(@PathVariable Integer id,HttpSession s){staff(s);HoaDon h=orderService.layDonTheoBan(id);return h==null?ResponseEntity.noContent().build():ResponseEntity.ok(h);}
+    @GetMapping("/theo-yeu-cau/{key}") public ResponseEntity<?> byRequest(@PathVariable String key,HttpSession s){staff(s);HoaDon h=orderService.layDonTheoYeuCau(key);return h==null?ResponseEntity.noContent().build():ResponseEntity.ok(h);}
+    @PostMapping("/tao-don") public ResponseEntity<HoaDon> create(@RequestBody OrderDTO dto,HttpSession s){dto.setMaNV(staff(s));return ResponseEntity.status(201).body(orderService.taoDonHang(dto));}
+    @PutMapping("/{id}/mon") public HoaDon update(@PathVariable Integer id,@RequestBody OrderDTO dto,HttpSession s){staff(s);return orderService.capNhatDon(id,dto);}
+    @PostMapping("/{id}/thanh-toan") public HoaDon pay(@PathVariable Integer id,@RequestBody ThanhToanDTO dto,HttpSession s){
+        staff(s);
+        if(dto.getChietKhau()!=null&&dto.getChietKhau()>0&&"STAFF".equals(s.getAttribute("vaiTro")))throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Chiết khấu cần tài khoản Manager hoặc Admin");
+        return orderService.thanhToanDonHang(id,dto);
     }
-
-    @PostMapping("/tao-don")
-    public ResponseEntity<?> taoDonHang(@RequestBody OrderDTO dto) {
-        try {
-            HoaDon hoaDon = orderService.taoDonHang(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(hoaDon);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    @PostMapping("/{maHoaDon}/thanh-toan")
-    public ResponseEntity<?> thanhToanDonHang(@PathVariable Integer maHoaDon, @RequestBody ThanhToanDTO dto) {
-        try {
-            HoaDon hoaDon = orderService.thanhToanDonHang(maHoaDon, dto);
-            return ResponseEntity.ok(hoaDon);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    @PostMapping("/{maHoaDon}/huy")
-    public ResponseEntity<?> huyDonHang(@PathVariable Integer maHoaDon) {
-        try {
-            HoaDon hoaDon = orderService.huyDonHang(maHoaDon);
-            return ResponseEntity.ok(hoaDon);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
+    @PostMapping("/{id}/huy") public HoaDon cancel(@PathVariable Integer id,@RequestBody Map<String,Long> body,HttpSession s){staff(s);return orderService.huyDonHang(id,body.get("phienBan"));}
 }

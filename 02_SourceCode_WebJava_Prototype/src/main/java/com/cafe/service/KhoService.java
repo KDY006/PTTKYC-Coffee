@@ -11,6 +11,8 @@ import java.util.*;
 
 @Service
 public class KhoService {
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
 
     @Autowired
     private NguyenLieuRepository nguyenLieuRepository;
@@ -29,46 +31,37 @@ public class KhoService {
      * Tự động trừ kho ngầm theo định mức công thức khi thanh toán hóa đơn.
      * Bọc trong @Transactional(rollbackFor = Exception.class) để đảm bảo tính toàn vẹn ACID.
      */
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(propagation=org.springframework.transaction.annotation.Propagation.MANDATORY, rollbackFor=Exception.class)
     public void truKhoTuDong(HoaDon hoaDon) {
-        if (hoaDon == null || hoaDon.getDanhSachChiTiet() == null) {
-            return;
-        }
-
-        System.out.println(">>> [KHO SERVICE] Bat dau tu dong tru kho cho Hoa Don #" + hoaDon.getMaHoaDon());
-
-        for (ChiTietHoaDon chiTiet : hoaDon.getDanhSachChiTiet()) {
-            MonNuoc monNuoc = chiTiet.getMonNuoc();
-            int soLuongMon = chiTiet.getSoLuong();
-
-            List<CongThuc> danhSachCongThuc = congThucRepository.findByMonNuoc(monNuoc);
-            if (danhSachCongThuc.isEmpty()) {
-                System.out.println(">>> [CANH BAO] Mon '" + monNuoc.getTenMon() + "' chua duoc thiet lap dinh muc cong thuc!");
-                continue;
-            }
-
-            for (CongThuc congThuc : danhSachCongThuc) {
-                NguyenLieu nguyenLieu = congThuc.getNguyenLieu();
-                double dinhMuc = congThuc.getDinhMuc();
-                double luongCanTru = dinhMuc * soLuongMon;
-
-                // Kiểm tra điều kiện tồn kho (Invariant Check)
-                if (nguyenLieu.getSoLuongTon() < luongCanTru) {
-                    throw new RuntimeException("LỖI TRỪ KHO: Nguyên liệu '" + nguyenLieu.getTenNL() 
-                            + "' không đủ tồn (Cần: " + luongCanTru + " " + nguyenLieu.getDonViTinh() 
-                            + ", Hiện còn: " + nguyenLieu.getSoLuongTon() + " " + nguyenLieu.getDonViTinh() + ")");
-                }
-
-                // Thực hiện trừ lùi tồn kho
-                double tonKhoMoi = nguyenLieu.getSoLuongTon() - luongCanTru;
-                nguyenLieu.setSoLuongTon(tonKhoMoi);
-                nguyenLieuRepository.save(nguyenLieu);
-
-                System.out.println(" -> Đã trừ " + luongCanTru + " " + nguyenLieu.getDonViTinh() + " '" + nguyenLieu.getTenNL() 
-                        + "' | Tồn mới: " + tonKhoMoi + (nguyenLieu.isSapHet() ? " [CẢNH BÁO SẮP HẾT!]" : ""));
+        if(hoaDon==null||hoaDon.getDanhSachChiTiet()==null||hoaDon.getDanhSachChiTiet().isEmpty())
+            throw new IllegalArgumentException("Hóa đơn không có món để trừ kho");
+        // Gộp nhu cầu của mọi dòng, khóa nguyên liệu theo mã tăng dần để tránh mất cập nhật.
+        Map<Integer, java.math.BigDecimal> nhuCau=new TreeMap<>();
+        for(ChiTietHoaDon item:hoaDon.getDanhSachChiTiet()) {
+            if(item.getSoLuong()==null||item.getSoLuong()<=0)throw new IllegalArgumentException("Số lượng món không hợp lệ");
+            List<CongThuc> recipes=congThucRepository.findByMonNuoc(item.getMonNuoc());
+            if(recipes.isEmpty())throw new IllegalArgumentException("Món chưa có công thức: "+item.getMonNuoc().getTenMon()+". Hãy thiết lập công thức trước khi thanh toán.");
+            for(CongThuc ct:recipes) {
+                Double rate=ct.getDinhMuc();
+                if(rate==null||!Double.isFinite(rate)||rate<=0)throw new IllegalArgumentException("Định mức công thức phải lớn hơn 0");
+                nhuCau.merge(ct.getNguyenLieu().getMaNL(),java.math.BigDecimal.valueOf(rate).multiply(java.math.BigDecimal.valueOf(item.getSoLuong())),java.math.BigDecimal::add);
             }
         }
-        System.out.println(">>> [KHO SERVICE] Hoan tat tru kho thanh cong cho Hoa Don #" + hoaDon.getMaHoaDon());
+        Map<Integer,NguyenLieu> locked=new LinkedHashMap<>();
+        for(Map.Entry<Integer,java.math.BigDecimal> entry:nhuCau.entrySet()) {
+            NguyenLieu nl=nguyenLieuRepository.khoaNguyenLieu(entry.getKey()).orElseThrow(()->new IllegalArgumentException("Không tìm thấy nguyên liệu"));
+            // refresh: công thức có thể đã nạp entity vào persistence context trước lúc lấy khóa.
+            entityManager.refresh(nl,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+            Double ton=nl.getSoLuongTon();
+            if(ton==null||!Double.isFinite(ton)||java.math.BigDecimal.valueOf(ton).compareTo(entry.getValue())<0)
+                throw new IllegalArgumentException("Không đủ nguyên liệu '"+nl.getTenNL()+"': cần "+entry.getValue()+" "+nl.getDonViTinh()+", còn "+ton);
+            locked.put(entry.getKey(),nl);
+        }
+        for(Map.Entry<Integer,java.math.BigDecimal> entry:nhuCau.entrySet()) {
+            NguyenLieu nl=locked.get(entry.getKey());
+            nl.setSoLuongTon(java.math.BigDecimal.valueOf(nl.getSoLuongTon()).subtract(entry.getValue()).doubleValue());
+            nguyenLieuRepository.save(nl);
+        }
     }
 
     public List<NguyenLieu> layTatCaNguyenLieu() {
@@ -81,8 +74,9 @@ public class KhoService {
 
     @Transactional
     public NguyenLieu nhapKho(Integer maNL, Double soLuongNhap) {
-        NguyenLieu nl = nguyenLieuRepository.findById(maNL)
+        NguyenLieu nl = nguyenLieuRepository.khoaNguyenLieu(maNL)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nguyên liệu có mã: " + maNL));
+        if(soLuongNhap==null||!Double.isFinite(soLuongNhap)||soLuongNhap<=0)throw new IllegalArgumentException("Số lượng nhập phải lớn hơn 0");
         nl.setSoLuongTon(nl.getSoLuongTon() + soLuongNhap);
         return nguyenLieuRepository.save(nl);
     }

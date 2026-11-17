@@ -42,4 +42,12 @@ public class OrderDTO {
     public void setDanhSachMon(List<OrderItemDTO> danhSachMon) {
         this.danhSachMon = danhSachMon;
     }
+
+    private String yeuCauTao = null;
+    public String getYeuCauTao() { return yeuCauTao; }
+    public void setYeuCauTao(String value) { yeuCauTao = value; }
+
+    private Long phienBan = null;
+    public Long getPhienBan() { return phienBan; }
+    public void setPhienBan(Long value) { phienBan = value; }
 }

@@ -75,6 +75,7 @@ public class NhanVien implements Serializable {
         this.tenDangNhap = tenDangNhap;
     }
 
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     public String getMatKhau() {
         return matKhau;
     }
