@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập - Hệ Thống Quản Lý Quán Cà Phê</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+
+    <div class="card shadow-lg p-4" style="max-width: 420px; width: 100%; border-radius: 16px;">
+        <div class="text-center mb-4">
+            <i class="fa-solid fa-mug-hot fa-3x text-warning mb-2"></i>
+            <h3 class="fw-bold text-dark">COFFEE POS</h3>
+            <p class="text-muted small">Hệ thống quản lý bán hàng & kho nguyên liệu</p>
+        </div>
+
+        <div id="alertBox" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="loginForm">
+            <div class="mb-3">
+                <label class="form-label fw-semibold"><i class="fa-solid fa-user me-1"></i> Tên đăng nhập</label>
+                <input type="text" id="username" class="form-control form-control-lg" placeholder="admin / manager / staff" required value="admin">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold"><i class="fa-solid fa-lock me-1"></i> Mật khẩu</label>
+                <input type="password" id="password" class="form-control form-control-lg" placeholder="Nhập mật khẩu" required value="123456">
+            </div>
+
+            <button type="submit" class="btn btn-warning btn-lg w-100 fw-bold text-dark mt-2 shadow-sm">
+                <i class="fa-solid fa-right-to-bracket me-2"></i> Đăng Nhập
+            </button>
+        </form>
+
+        <div class="mt-4 p-3 bg-light rounded small border">
+            <div class="fw-bold text-secondary mb-1">Tài khoản mẫu để thử nghiệm:</div>
+            <div>• <b>admin / 123456</b> (Toàn quyền quản trị)</div>
+            <div>• <b>manager / 123456</b> (Quản lý kho & xếp ca)</div>
+            <div>• <b>staff1 / 123456</b> (Thu ngân & phục vụ)</div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const alertBox = document.getElementById('alertBox');
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tenDangNhap: username, matKhau: password })
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    
+                    // Phân quyền điều hướng
+                    if (user.vaiTro === 'STAFF') {
+                        window.location.href = 'banhang.html';
+                    } else if (user.vaiTro === 'MANAGER') {
+                        window.location.href = 'kho.html';
+                    } else {
+                        window.location.href = 'banhang.html';
+                    }
+                } else {
+                    const err = await response.json();
+                    alertBox.textContent = err.error || 'Đăng nhập không thành công!';
+                    alertBox.classList.remove('d-none');
+                }
+            } catch (error) {
+                alertBox.textContent = 'Không thể kết nối máy chủ backend (Port 8080)!';
+                alertBox.classList.remove('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

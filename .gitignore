@@ -1,0 +1,66 @@
+# ==========================================
+# Thư mục làm việc cá nhân trên máy local
+# ==========================================
+lamviec/
+puml/
+
+# ==========================================
+# Java & Maven (Spring Boot)
+# ==========================================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# ==========================================
+# Gradle (dự phòng)
+# ==========================================
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# ==========================================
+# IDE & Trình soạn thảo (VS Code, IntelliJ, NetBeans)
+# ==========================================
+.vscode/
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.classpath
+.project
+.settings/
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# ==========================================
+# Cấu hình cục bộ & File Log
+# ==========================================
+.env
+*.env
+application-local.properties
+logs/
+*.log
+
+# ==========================================
+# File rác hệ điều hành (Windows & macOS)
+# ==========================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+*.tmp
+*.bak
+*.swp
