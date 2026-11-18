@@ -75,12 +75,18 @@ CREATE TABLE `hoa_don` (
     `ma_ban` INT NULL,
     `ma_nv` INT NOT NULL,
     `thoi_gian_tao` DATETIME NOT NULL,
+    `thoi_gian_thanh_toan` DATETIME NULL,
     `loai_don` VARCHAR(20) NOT NULL DEFAULT 'TAI_BAN',
     `tong_tien_goc` DOUBLE NOT NULL DEFAULT 0,
     `chiet_khau` DOUBLE NOT NULL DEFAULT 0,
     `tong_tien_thanh_toan` DOUBLE NOT NULL DEFAULT 0,
+    `tien_khach_dua` DOUBLE NULL,
     `phuong_thuc_tt` VARCHAR(20) DEFAULT 'TIEN_MAT',
+    `ma_tham_chieu` VARCHAR(100) NULL UNIQUE,
     `trang_thai` VARCHAR(20) NOT NULL DEFAULT 'CHO_THANH_TOAN',
+    `yeu_cau_tao` VARCHAR(36) NULL UNIQUE,
+    `yeu_cau_thanh_toan` VARCHAR(36) NULL UNIQUE,
+    `phien_ban` BIGINT NOT NULL DEFAULT 0,
     CONSTRAINT `fk_hd_ban` FOREIGN KEY (`ma_ban`) REFERENCES `ban`(`ma_ban`) ON DELETE SET NULL,
     CONSTRAINT `fk_hd_nhanvien` FOREIGN KEY (`ma_nv`) REFERENCES `nhan_vien`(`ma_nv`)
 ) ENGINE=InnoDB;
@@ -137,7 +143,7 @@ INSERT INTO `ca_lam` (`ma_ca`, `ten_ca`, `gio_bat_dau`, `gio_ket_thuc`, `he_so_l
 (2, 'Ca Chiều', '12:00:00', '17:00:00', 1.0),
 (3, 'Ca Tối', '17:00:00', '22:00:00', 1.2);
 
--- 3. Nạp Danh Sách Bàn (10 Bàn: 8 Trống, 2 Có Khách)
+-- 3. Nạp Danh Sách Bàn (10 Bàn: 9 Trống, 1 Có Khách đang mở đơn tại Bàn 03)
 INSERT INTO `ban` (`ma_ban`, `ten_ban`, `vi_tri`, `trang_thai`) VALUES
 (1, 'Bàn 01', 'Tầng 1', 'TRONG'),
 (2, 'Bàn 02', 'Tầng 1', 'TRONG'),
@@ -145,7 +151,7 @@ INSERT INTO `ban` (`ma_ban`, `ten_ban`, `vi_tri`, `trang_thai`) VALUES
 (4, 'Bàn 04', 'Tầng 1', 'TRONG'),
 (5, 'Bàn 05', 'Tầng 1', 'TRONG'),
 (6, 'Bàn 06', 'Tầng 2', 'TRONG'),
-(7, 'Bàn 07', 'Tầng 2', 'CO_KHACH'),
+(7, 'Bàn 07', 'Tầng 2', 'TRONG'),
 (8, 'Bàn 08', 'Tầng 2', 'TRONG'),
 (9, 'Bàn 09', 'Ngoài trời', 'TRONG'),
 (10, 'Bàn 10', 'Ngoài trời', 'TRONG');
@@ -211,19 +217,48 @@ INSERT INTO `cong_thuc` (`ma_cong_thuc`, `ma_mon`, `ma_nl`, `dinh_muc`, `ghi_chu
 -- Matcha đá xay (ma_mon = 11): 15g bột matcha + 80ml sữa tươi + 20ml sữa đặc
 (11, 11, 8, 15, 'Bột matcha rây mịn'),
 (12, 11, 3, 80, 'Sữa tươi xay cùng đá'),
-(13, 11, 2, 20, 'Sữa đặc tạo ngọt');
+(13, 11, 2, 20, 'Sữa đặc tạo ngọt'),
+
+-- Định mức cho các món còn lại trong thực đơn (đảm bảo 20/20 món đều thanh toán & trừ kho hợp lệ)
+(14, 4, 1, 25, 'Cốt cà phê'),
+(15, 4, 10, 20, 'Kem béo muối'),
+(16, 5, 1, 35, 'Cốt Espresso nguyên chất'),
+(17, 7, 4, 15, 'Cốt trà lài'),
+(18, 7, 7, 20, 'Đường nước'),
+(19, 8, 4, 15, 'Cốt trà ô long'),
+(20, 8, 10, 25, 'Kem sữa sen vàng'),
+(21, 9, 4, 20, 'Cốt trà đen đậm'),
+(22, 9, 3, 60, 'Sữa tươi'),
+(23, 10, 4, 12, 'Cốt trà chanh'),
+(24, 10, 7, 25, 'Đường nước mía'),
+(25, 12, 1, 30, 'Cốt cà phê xay'),
+(26, 12, 3, 60, 'Sữa tươi'),
+(27, 13, 9, 25, 'Bột Chocolate'),
+(28, 13, 3, 80, 'Sữa tươi'),
+(29, 14, 9, 15, 'Bột cacao cookie'),
+(30, 14, 10, 30, 'Kem béo'),
+(31, 15, 3, 80, 'Sữa tươi thanh trùng'),
+(32, 15, 7, 20, 'Đường nước'),
+(33, 16, 7, 20, 'Đường nước pha nước ép cam'),
+(34, 17, 7, 15, 'Đường nước pha dưa hấu'),
+(35, 18, 7, 15, 'Đường nước pha táo cần tây'),
+(36, 19, 3, 50, 'Sữa tươi xay sinh tố xoài'),
+(37, 20, 3, 60, 'Sữa tươi xay sinh tố bơ');
 
 -- 7. Nạp Chấm Công Mẫu Hôm Nay
 INSERT INTO `cham_cong` (`ma_cham_cong`, `ma_nv`, `ma_ca`, `ngay_lam`, `gio_check_in`, `gio_check_out`, `trang_thai`, `ghi_chu`) VALUES
 (1, 3, 1, CURRENT_DATE(), CONCAT(CURRENT_DATE(), ' 06:55:00'), NULL, 'DUNG_GIO', 'Check-in đúng giờ'),
 (2, 4, 1, CURRENT_DATE(), CONCAT(CURRENT_DATE(), ' 07:22:00'), NULL, 'DI_TRE', 'Trễ 22 phút');
 
--- 8. Nạp Hóa Đơn Mẫu Đã Thanh Toán (Để có sẵn doanh thu trên KPI Dashboard)
-INSERT INTO `hoa_don` (`ma_hoa_don`, `ma_ban`, `ma_nv`, `thoi_gian_tao`, `loai_don`, `tong_tien_goc`, `chiet_khau`, `tong_tien_thanh_toan`, `phuong_thuc_tt`, `trang_thai`) VALUES
-(1, 1, 1, NOW(), 'TAI_BAN', 54000, 0, 54000, 'TIEN_MAT', 'DA_THANH_TOAN'),
-(2, NULL, 2, NOW(), 'MANG_DI', 76000, 5000, 71000, 'CHUYEN_KHOAN', 'DA_THANH_TOAN');
+-- 8. Nạp Hóa Đơn Mẫu (2 Đơn Đã Thanh Toán + 1 Đơn Đang Mở tại Bàn 03)
+INSERT INTO `hoa_don` (`ma_hoa_don`, `ma_ban`, `ma_nv`, `thoi_gian_tao`, `thoi_gian_thanh_toan`, `loai_don`, `tong_tien_goc`, `chiet_khau`, `tong_tien_thanh_toan`, `tien_khach_dua`, `phuong_thuc_tt`, `ma_tham_chieu`, `trang_thai`, `phien_ban`) VALUES
+(1, 1, 1, NOW(), NOW(), 'TAI_BAN', 54000, 0, 54000, 60000, 'TIEN_MAT', NULL, 'DA_THANH_TOAN', 0),
+(2, NULL, 2, NOW(), NOW(), 'MANG_DI', 76000, 5000, 71000, 71000, 'CHUYEN_KHOAN', 'VCB-DEMO-001', 'DA_THANH_TOAN', 0),
+(3, 3, 3, NOW(), NULL, 'TAI_BAN', 63000, 0, 63000, NULL, 'TIEN_MAT', NULL, 'CHO_THANH_TOAN', 0);
 
 INSERT INTO `chi_tiet_hoa_don` (`ma_cthd`, `ma_hoa_don`, `ma_mon`, `so_luong`, `don_gia_ban`, `thanh_tien`, `ghi_chu`) VALUES
 (1, 1, 1, 1, 25000, 25000, 'Ít đường'),
 (2, 1, 2, 1, 29000, 29000, 'Bình thường'),
-(3, 2, 6, 2, 38000, 76000, 'Nhiều đá mang đi');
+(3, 2, 6, 2, 38000, 76000, 'Nhiều đá mang đi'),
+(4, 3, 1, 1, 25000, 25000, 'Không đá'),
+(5, 3, 6, 1, 38000, 38000, 'Ít ngọt');
