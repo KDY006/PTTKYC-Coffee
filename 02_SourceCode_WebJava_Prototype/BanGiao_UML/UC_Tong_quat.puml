@@ -1,0 +1,81 @@
+@startuml
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam BackgroundColor white
+skinparam ArrowColor #405447
+skinparam activityBackgroundColor #F3F6F3
+skinparam activityBorderColor #47634F
+skinparam sequenceParticipantBackgroundColor #F1F5F1
+skinparam sequenceLifeLineBorderColor #829388
+skinparam sequenceActivationBackgroundColor #DAE6DD
+skinparam sequenceActivationBorderColor #52705B
+skinparam noteBackgroundColor #FFFBEF
+skinparam noteBorderColor #A4986E
+skinparam dpi 170
+skinparam wrapWidth 190
+skinparam maxMessageSize 360
+skinparam noteTextAlignment left
+left to right direction
+skinparam packageStyle rectangle
+actor "Nhân viên\nStaff" as Staff
+actor "Quản lý\nManager" as Manager
+actor "Quản trị viên\nAdmin" as Admin
+Manager --|> Staff
+Admin --|> Manager
+rectangle "HỆ THỐNG QUẢN LÝ QUÁN CÀ PHÊ\nMô hình yêu cầu toàn nhóm" {
+  package "Bán hàng" {
+    usecase "UC01 Đăng nhập" as U1
+    usecase "UC02 Xem sơ đồ bàn" as U2
+    usecase "UC03 Tạo đơn hàng" as U3
+    usecase "UC04 Cập nhật và hủy món" as U4
+    usecase "UC05 Áp dụng chiết khấu" as U5
+    usecase "UC06 Thanh toán hóa đơn\n--\nextension points\nEP01 Trước khi chốt số tiền" as U6
+  }
+  package "Kho nguyên liệu" {
+    usecase "UC07 Quản lý nguyên liệu" as U7
+    usecase "UC08 Nhập kho" as U8
+    usecase "UC09 Thiết lập công thức" as U9
+    usecase "UC10 Trừ kho tự động\n--\nextension points\nEP02 Sau khi cập nhật tồn" as U10
+    usecase "UC11 Cảnh báo tồn tối thiểu" as U11
+  }
+  package "Nhân sự và thống kê" {
+    usecase "UC12 Quản lý hồ sơ nhân viên" as U12
+    usecase "UC13 Xếp lịch ca theo tuần" as U13
+    usecase "UC14 Chấm công vào và ra ca" as U14
+    usecase "UC15 Xem báo cáo doanh thu\nvà món bán chạy" as U15
+  }
+  usecase "Kiểm tra phiên và quyền" as Auth
+}
+Staff -- U1
+Staff -- U2
+Staff -- U3
+Staff -- U4
+Staff -- U6
+Staff -- U14
+Manager -- U5
+Manager -- U7
+Manager -- U8
+Manager -- U9
+Manager -- U11
+Manager -- U12
+Manager -- U13
+Manager -- U15
+U3 ..> Auth : <<include>>
+U4 ..> Auth : <<include>>
+U6 ..> Auth : <<include>>
+U6 ..> U10 : <<include>>
+U5 ..> U6 : <<extend>>\n[chiết khấu > 0 và đủ quyền]\nEP01
+U11 ..> U10 : <<extend>>\n[tồn <= mức tối thiểu]\nEP02
+note bottom of Auth
+  Đăng nhập là tiền điều kiện của phiên.
+  Kiểm tra phiên/quyền là hành vi bắt buộc
+  khi gọi API POS, không yêu cầu nhập lại mật khẩu.
+end note
+note bottom of U13
+  Sơ đồ mô tả phạm vi mục tiêu.
+  UC07, UC12-15 cần đối chiếu mức cài đặt.
+  UC11 hiện được hiển thị khi tải/làm mới trang Kho.
+end note
+
+@enduml

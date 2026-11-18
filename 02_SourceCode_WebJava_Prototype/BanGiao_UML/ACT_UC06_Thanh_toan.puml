@@ -1,0 +1,60 @@
+@startuml
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam BackgroundColor white
+skinparam ArrowColor #405447
+skinparam activityBackgroundColor #F3F6F3
+skinparam activityBorderColor #47634F
+skinparam sequenceParticipantBackgroundColor #F1F5F1
+skinparam sequenceLifeLineBorderColor #829388
+skinparam sequenceActivationBackgroundColor #DAE6DD
+skinparam sequenceActivationBorderColor #52705B
+skinparam noteBackgroundColor #FFFBEF
+skinparam noteBorderColor #A4986E
+skinparam dpi 170
+skinparam wrapWidth 190
+skinparam maxMessageSize 360
+skinparam noteTextAlignment left
+|Thu ngân|
+start
+:Kiểm tra món đã phục vụ;
+|Pha chế|
+:Xác nhận thông tin món với thu ngân khi cần;
+|Thu ngân|
+:Mở thanh toán; nhập chiết khấu nếu có quyền;
+:Chọn tiền mặt hoặc chuyển khoản;
+if (Tiền mặt?) then (Có)
+  :Nhập tiền khách đưa;
+else (Không)
+  :Kiểm tra tiền vào tài khoản thực tế;\nnhập mã tham chiếu và xác nhận thủ công;
+endif
+:Bấm Xác nhận thanh toán;
+|Hệ thống|
+:Kiểm tra session và quyền chiết khấu;
+:Trong transaction, khóa hóa đơn;\nkiểm tra trạng thái, version, mã yêu cầu;
+if (Cùng yêu cầu đã hoàn tất?) then (Có)
+  :Trả hóa đơn cũ; không trừ kho lần hai;
+else (Không)
+  if (Tiền và dữ liệu hợp lệ?) then (Có)
+    :Gọi KhoService; gom định mức,\nkhóa nguyên liệu và kiểm tra tồn;
+    if (Đủ công thức và nguyên liệu?) then (Có)
+      :Trừ kho, ghi DA_THANH_TOAN,\nphương thức, tiền nhận và thời gian;\ntrả bàn trong cùng transaction;
+      :Commit thành công;
+    else (Không)
+      :Rollback toàn bộ; đơn vẫn chờ;\nkhông đổi tồn và trạng thái bàn;
+      |Thu ngân|
+      :Xem lỗi; xử lý nguyên liệu hoặc sửa đơn;
+      stop
+    endif
+  else (Không)
+    :Từ chối và thông báo lỗi;\nkhông chốt đơn;
+    stop
+  endif
+endif
+:Hiển thị bill đã lưu;
+|Thu ngân|
+:Trả tiền thừa; chọn in hoặc in lại sau;
+stop
+
+@enduml

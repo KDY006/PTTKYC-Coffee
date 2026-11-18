@@ -1,0 +1,82 @@
+@startuml
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam BackgroundColor white
+skinparam ArrowColor #405447
+skinparam activityBackgroundColor #F3F6F3
+skinparam activityBorderColor #47634F
+skinparam sequenceParticipantBackgroundColor #F1F5F1
+skinparam sequenceLifeLineBorderColor #829388
+skinparam sequenceActivationBackgroundColor #DAE6DD
+skinparam sequenceActivationBorderColor #52705B
+skinparam noteBackgroundColor #FFFBEF
+skinparam noteBorderColor #A4986E
+skinparam dpi 170
+skinparam wrapWidth 190
+skinparam maxMessageSize 360
+skinparam noteTextAlignment left
+hide footbox
+autonumber
+actor "Thu ngân" as A
+boundary "banhang.html\nbanhang.js" as UI
+control "OrderController" as C
+control "OrderService" as S
+entity "Repository JPA" as R
+database "MySQL/MariaDB" as DB
+A -> UI : Chọn món, ghi chú; Lưu đơn
+activate UI
+UI -> C : POST /api/order/tao-don\nOrderDTO + yeuCauTao
+activate C
+C -> C : staff(session), lấy maNV tại server
+C -> S : taoDonHang(dto)
+activate S
+note over S,DB : Bắt đầu transaction qua Spring proxy
+S -> R : findByYeuCauTao(key)
+activate R
+R -> DB : SELECT theo mã yêu cầu
+activate DB
+DB --> R : Đơn cũ hoặc không có
+ deactivate DB
+R --> S : Kết quả
+ deactivate R
+alt Mã yêu cầu đã có và đúng nhân viên
+  S --> C : Trả cùng hóa đơn
+else Yêu cầu mới
+  opt Tại bàn
+    S -> R : khoaBan(maBan), tìm đơn mở
+    activate R
+    R -> DB : SELECT bàn FOR UPDATE; SELECT đơn chờ
+    activate DB
+    DB --> R : Bàn và trạng thái đơn
+    deactivate DB
+    R --> S : Kết quả
+    deactivate R
+  end
+  S -> R : Đọc nhân viên và món đang bán
+  activate R
+  R -> DB : SELECT dữ liệu tham chiếu
+  activate DB
+  DB --> R : Dữ liệu
+  deactivate DB
+  R --> S : Nhân viên, món và giá
+  deactivate R
+  S -> S : Kiểm tra dữ liệu; tính tổng tại server
+  S -> R : save(bàn nếu có); saveAndFlush(hoaDon)
+  activate R
+  R -> DB : INSERT hóa đơn/chi tiết; UPDATE bàn
+  activate DB
+  DB --> R : Kết quả lưu
+  deactivate DB
+  R --> S : Hóa đơn + version
+  deactivate R
+  note over S,DB : Commit khi kết thúc service thành công; lỗi thì rollback
+  S --> C : Hóa đơn đã lưu
+end
+ deactivate S
+C --> UI : HTTP 201 + JSON\nhoặc 400/409 khi lỗi
+ deactivate C
+UI --> A : Mã đơn, món và tổng; cập nhật bàn
+ deactivate UI
+
+@enduml
