@@ -41,9 +41,9 @@ K --> N : Menu Nhân sự
 N --> B : Menu Bán hàng
 K --> D : Xem vùng KPI / Làm mới
 note bottom of N
-  Điều hướng là mô tả giao diện.
-  Không đồng nghĩa mọi API Kho/Nhân sự
-  đã kiểm soát quyền phía server.
+  Thanh điều hướng chung (Navbar) cho phép
+  chuyển nhanh giữa 3 phân hệ: Bán hàng POS,
+  Quản lý Kho & KPI, Nhân sự & Chấm công.
 end note
 
 @enduml

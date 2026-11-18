@@ -50,8 +50,8 @@ endif
 |Pha chế|
 :Nhận thông tin từ thu ngân và chuẩn bị món;
 note right
-  Phối hợp thủ công.
-  Chưa có màn hình hoặc hàng đợi pha chế.
+  Thu ngân chuyển thông tin đơn đã lưu
+  cho bộ phận Pha chế thực hiện.
 end note
 stop
 

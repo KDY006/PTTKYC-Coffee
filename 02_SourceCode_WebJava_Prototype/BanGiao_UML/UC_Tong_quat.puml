@@ -23,7 +23,7 @@ actor "Quản lý\nManager" as Manager
 actor "Quản trị viên\nAdmin" as Admin
 Manager --|> Staff
 Admin --|> Manager
-rectangle "HỆ THỐNG QUẢN LÝ QUÁN CÀ PHÊ\nMô hình yêu cầu toàn nhóm" {
+rectangle "HỆ THỐNG QUẢN LÝ QUÁN CÀ PHÊ\nBiểu đồ Use Case Tổng Quát" {
   package "Bán hàng" {
     usecase "UC01 Đăng nhập" as U1
     usecase "UC02 Xem sơ đồ bàn" as U2
@@ -72,10 +72,11 @@ note bottom of Auth
   Kiểm tra phiên/quyền là hành vi bắt buộc
   khi gọi API POS, không yêu cầu nhập lại mật khẩu.
 end note
-note bottom of U13
-  Sơ đồ mô tả phạm vi mục tiêu.
-  UC07, UC12-15 cần đối chiếu mức cài đặt.
-  UC11 hiện được hiển thị khi tải/làm mới trang Kho.
+note bottom of U10
+  UC10 thực thi tự động trong cùng
+  transaction khi xác nhận thanh toán (UC06).
+  Nếu tồn kho sau trừ <= mức tối thiểu,
+  hệ thống kích hoạt cảnh báo đỏ (UC11).
 end note
 
 @enduml

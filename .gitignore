@@ -64,3 +64,9 @@ $RECYCLE.BIN/
 *.tmp
 *.bak
 *.swp
+
+BAO_CAO_KIEM_THU.md
+CONTEXT_TOM_TAT.md
+node_modules/
+package.json
+package-lock.json
