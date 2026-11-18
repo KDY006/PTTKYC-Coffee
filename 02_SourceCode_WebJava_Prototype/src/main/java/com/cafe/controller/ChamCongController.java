@@ -3,43 +3,33 @@ package com.cafe.controller;
 import com.cafe.dto.CheckInDTO;
 import com.cafe.entity.ChamCong;
 import com.cafe.service.NhanSuService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import jakarta.servlet.http.HttpSession;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/cham-cong")
-@CrossOrigin(origins = "*")
 public class ChamCongController {
+    private final NhanSuService nhanSuService;
+    private final SessionAccess access;
 
-    @Autowired
-    private NhanSuService nhanSuService;
+    public ChamCongController(NhanSuService nhanSuService, SessionAccess access) { this.nhanSuService = nhanSuService; this.access = access; }
 
     @PostMapping("/check-in")
-    public ResponseEntity<?> checkIn(@RequestBody CheckInDTO dto) {
-        try {
-            ChamCong cc = nhanSuService.checkIn(dto);
-            return ResponseEntity.ok(cc);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
+    public ChamCong checkIn(@RequestBody CheckInDTO dto, HttpSession session) { return nhanSuService.checkIn(access.userId(session), dto); }
 
     @PostMapping("/check-out/{id}")
-    public ResponseEntity<?> checkOut(@PathVariable Integer id) {
-        try {
-            ChamCong cc = nhanSuService.checkOut(id);
-            return ResponseEntity.ok(cc);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ChamCong checkOut(@PathVariable Integer id, HttpSession session) {
+        Integer userId = access.userId(session);
+        boolean quanLy = "MANAGER".equals(access.role(session)) || "ADMIN".equals(access.role(session));
+        return nhanSuService.checkOut(userId, quanLy, id);
     }
 
     @GetMapping("/lich-su")
-    public ResponseEntity<List<ChamCong>> layLichSuChamCong() {
-        return ResponseEntity.ok(nhanSuService.layLichSuChamCong());
+    public List<ChamCong> layLichSuChamCong(@RequestParam(required = false) LocalDate tuNgay, @RequestParam(required = false) LocalDate denNgay, HttpSession session) {
+        Integer userId = access.userId(session);
+        boolean quanLy = "MANAGER".equals(access.role(session)) || "ADMIN".equals(access.role(session));
+        return nhanSuService.layLichSuChamCong(userId, quanLy, tuNgay, denNgay);
     }
 }

@@ -3,47 +3,45 @@ package com.cafe.controller;
 import com.cafe.entity.CaLam;
 import com.cafe.entity.NhanVien;
 import com.cafe.service.NhanSuService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpSession;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/nhan-su")
-@CrossOrigin(origins = "*")
 public class NhanSuController {
+    private final NhanSuService nhanSuService;
+    private final SessionAccess access;
 
-    @Autowired
-    private NhanSuService nhanSuService;
+    public NhanSuController(NhanSuService nhanSuService, SessionAccess access) { this.nhanSuService = nhanSuService; this.access = access; }
 
     @GetMapping("/nhan-vien")
-    public ResponseEntity<List<NhanVien>> layDanhSachNhanVien() {
-        return ResponseEntity.ok(nhanSuService.layDanhSachNhanVien());
+    public List<NhanVien> layDanhSachNhanVien(HttpSession session) {
+        access.requireManager(session);
+        return nhanSuService.layDanhSachNhanVien();
     }
 
     @PostMapping("/nhan-vien")
-    public ResponseEntity<?> themNhanVien(@RequestBody NhanVien nv) {
-        try {
-            return ResponseEntity.ok(nhanSuService.themNhanVien(nv));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<NhanVien> themNhanVien(@RequestBody NhanVien nv, HttpSession session) {
+        access.requireAdmin(session);
+        return ResponseEntity.status(201).body(nhanSuService.themNhanVien(nv));
+    }
+
+    @PutMapping("/nhan-vien/{id}")
+    public NhanVien capNhatNhanVien(@PathVariable Integer id, @RequestBody NhanVien nv, HttpSession session) {
+        access.requireAdmin(session);
+        return nhanSuService.capNhatNhanVien(id, nv);
     }
 
     @DeleteMapping("/nhan-vien/{id}")
-    public ResponseEntity<?> xoaNhanVien(@PathVariable Integer id) {
-        try {
-            nhanSuService.xoaNhanVien(id);
-            return ResponseEntity.ok(Map.of("message", "Đã xóa nhân viên thành công!"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public NhanVien ngungLamViec(@PathVariable Integer id, HttpSession session) {
+        Integer caller = access.requireAdmin(session);
+        if (caller.equals(id)) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Không thể ngừng chính tài khoản đang đăng nhập");
+        return nhanSuService.ngungLamViec(id);
     }
 
+    // Endpoint cũ để giao diện hiện có vẫn nạp được danh sách ca sau khi đã đăng nhập.
     @GetMapping("/ca-lam")
-    public ResponseEntity<List<CaLam>> layDanhSachCaLam() {
-        return ResponseEntity.ok(nhanSuService.layDanhSachCaLam());
-    }
+    public List<CaLam> layDanhSachCaLam(HttpSession session) { access.userId(session); return nhanSuService.layDanhSachCaLam(); }
 }

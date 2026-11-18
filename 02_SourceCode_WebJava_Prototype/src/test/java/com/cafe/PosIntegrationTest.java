@@ -26,7 +26,7 @@ class PosIntegrationTest {
     @Autowired OrderService service;
     MockHttpSession staff,manager;
     @BeforeEach void seed(){
-        for(String t:List.of("chi_tiet_hoa_don","hoa_don","cong_thuc","nguyen_lieu","mon_nuoc","ban","cham_cong","nhan_vien"))db.update("delete from "+t);
+        for(String t:List.of("phan_ca","chi_tiet_hoa_don","hoa_don","cong_thuc","nguyen_lieu","mon_nuoc","ban","cham_cong","nhan_vien"))db.update("delete from "+t);
         db.update("insert into nhan_vien(ma_nv,ho_ten,ten_dang_nhap,mat_khau,vai_tro,trang_thai) values(1,'Staff','staff','123456','STAFF','DANG_LAM'),(2,'Manager','manager','123456','MANAGER','DANG_LAM')");
         db.update("insert into ban(ma_ban,ten_ban,trang_thai) values(1,'Bàn 01','TRONG'),(2,'Bàn 02','TRONG')");
         db.update("insert into mon_nuoc(ma_mon,ten_mon,danh_muc,don_gia,trang_thai) values(1,'Cà phê sữa','Cà phê',29000,'DANG_BAN'),(2,'Trà đào','Trà',38000,'DANG_BAN'),(3,'Món thiếu công thức','Trà',20000,'DANG_BAN')");

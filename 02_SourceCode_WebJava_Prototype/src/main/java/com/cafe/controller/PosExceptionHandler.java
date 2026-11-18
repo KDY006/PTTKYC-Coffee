@@ -5,7 +5,7 @@ import org.springframework.http.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.ConcurrencyFailureException;
 import java.util.Map;
-@RestControllerAdvice(assignableTypes={OrderController.class,MonNuocController.class,BanController.class})
+@RestControllerAdvice
 public class PosExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<?> status(ResponseStatusException e){return ResponseEntity.status(e.getStatusCode()).body(Map.of("error",e.getReason()==null?"Không thực hiện được":e.getReason()));}

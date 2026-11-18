@@ -8,6 +8,7 @@ CREATE DATABASE IF NOT EXISTS `quanly_cafe` CHARACTER SET utf8mb4 COLLATE utf8mb
 USE `quanly_cafe`;
 
 -- 1. BẢNG NHÂN VIÊN
+DROP TABLE IF EXISTS `phan_ca`;
 DROP TABLE IF EXISTS `cham_cong`;
 DROP TABLE IF EXISTS `chi_tiet_hoa_don`;
 DROP TABLE IF EXISTS `hoa_don`;
@@ -49,6 +50,18 @@ CREATE TABLE `cham_cong` (
     `ghi_chu` VARCHAR(255),
     CONSTRAINT `fk_cc_nhanvien` FOREIGN KEY (`ma_nv`) REFERENCES `nhan_vien`(`ma_nv`) ON DELETE CASCADE,
     CONSTRAINT `fk_cc_calam` FOREIGN KEY (`ma_ca`) REFERENCES `ca_lam`(`ma_ca`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 3.1 BẢNG PHÂN CA THEO NGÀY
+CREATE TABLE `phan_ca` (
+    `ma_phan_ca` INT AUTO_INCREMENT PRIMARY KEY,
+    `ma_nv` INT NOT NULL,
+    `ma_ca` INT NOT NULL,
+    `ngay_lam` DATE NOT NULL,
+    `ghi_chu` VARCHAR(255),
+    CONSTRAINT `uk_phan_ca_nhan_vien_ngay_ca` UNIQUE (`ma_nv`, `ngay_lam`, `ma_ca`),
+    CONSTRAINT `fk_pc_nhanvien` FOREIGN KEY (`ma_nv`) REFERENCES `nhan_vien`(`ma_nv`) ON DELETE CASCADE,
+    CONSTRAINT `fk_pc_calam` FOREIGN KEY (`ma_ca`) REFERENCES `ca_lam`(`ma_ca`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- 4. BẢNG BÀN
@@ -137,6 +150,15 @@ INSERT INTO `ca_lam` (`ma_ca`, `ten_ca`, `gio_bat_dau`, `gio_ket_thuc`, `he_so_l
 (2, 'Ca Chiều', '12:00:00', '17:00:00', 1.0),
 (3, 'Ca Tối', '17:00:00', '22:00:00', 1.2);
 
+-- 2.1 Lịch phân ca mẫu trong tuần hiện tại để thao tác check-in/check-out có dữ liệu hợp lệ
+INSERT INTO `phan_ca` (`ma_nv`, `ma_ca`, `ngay_lam`, `ghi_chu`) VALUES
+(3, 1, CURRENT_DATE(), 'Thu ngân ca sáng'),
+(4, 2, CURRENT_DATE(), 'Thu ngân ca chiều'),
+(5, 3, CURRENT_DATE(), 'Pha chế ca tối'),
+(3, 2, DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY), 'Thu ngân'),
+(4, 3, DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY), 'Thu ngân'),
+(5, 1, DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY), 'Pha chế');
+
 -- 3. Nạp Danh Sách Bàn (10 Bàn: 8 Trống, 2 Có Khách)
 INSERT INTO `ban` (`ma_ban`, `ten_ban`, `vi_tri`, `trang_thai`) VALUES
 (1, 'Bàn 01', 'Tầng 1', 'TRONG'),
@@ -188,7 +210,7 @@ INSERT INTO `nguyen_lieu` (`ma_nl`, `ten_nl`, `don_vi_tinh`, `so_luong_ton`, `mu
 (9, 'Bột Chocolate nguyên chất', 'g', 1000, 200, 250),
 (10, 'Kem béo thực vật Rich', 'ml', 1800, 300, 90);
 
--- 6. Nạp Bảng Định Mức Công Thức (Recipe Mapping)
+-- 6. Nạp Bảng Định Mức Công Thức cho đủ 20 món (Recipe Mapping)
 INSERT INTO `cong_thuc` (`ma_cong_thuc`, `ma_mon`, `ma_nl`, `dinh_muc`, `ghi_chu`) VALUES
 -- Cà phê đen đá (ma_mon = 1): 30ml cốt cà phê + 15ml đường nước
 (1, 1, 1, 30, 'Cốt cà phê đậm đặc'),
@@ -211,7 +233,80 @@ INSERT INTO `cong_thuc` (`ma_cong_thuc`, `ma_mon`, `ma_nl`, `dinh_muc`, `ghi_chu
 -- Matcha đá xay (ma_mon = 11): 15g bột matcha + 80ml sữa tươi + 20ml sữa đặc
 (11, 11, 8, 15, 'Bột matcha rây mịn'),
 (12, 11, 3, 80, 'Sữa tươi xay cùng đá'),
-(13, 11, 2, 20, 'Sữa đặc tạo ngọt');
+(13, 11, 2, 20, 'Sữa đặc tạo ngọt'),
+
+-- Cà phê muối Huế (ma_mon = 4): cốt cà phê + sữa đặc + kem béo
+(14, 4, 1, 30, 'Cốt cà phê đậm'),
+(15, 4, 2, 15, 'Sữa đặc tạo vị ngọt'),
+(16, 4, 10, 30, 'Kem béo mô phỏng lớp kem muối'),
+
+-- Espresso nguyên chất (ma_mon = 5): cốt cà phê cô đặc
+(17, 5, 1, 40, 'Cốt cà phê espresso'),
+
+-- Trà vải lài (ma_mon = 7): nền trà, siro và đường
+(18, 7, 4, 15, 'Nền trà lài mẫu'),
+(19, 7, 5, 20, 'Siro tạo hương vải mẫu'),
+(20, 7, 7, 15, 'Đường nước'),
+
+-- Trà ô long sen vàng (ma_mon = 8): trà, sữa tươi và sữa đặc
+(21, 8, 4, 20, 'Nền trà ô long mẫu'),
+(22, 8, 3, 60, 'Sữa tươi'),
+(23, 8, 2, 20, 'Sữa đặc'),
+
+-- Trà sữa trân châu hoàng kim (ma_mon = 9): trà, sữa và đường
+(24, 9, 4, 20, 'Nền trà đen'),
+(25, 9, 3, 100, 'Sữa tươi'),
+(26, 9, 2, 20, 'Sữa đặc'),
+(27, 9, 7, 15, 'Đường nước, định mức mẫu cho topping'),
+
+-- Trà chanh hoa đậu biếc (ma_mon = 10): nền trà và đường
+(28, 10, 4, 15, 'Nền trà mẫu'),
+(29, 10, 7, 20, 'Đường nước'),
+
+-- Cà phê đá xay caramel (ma_mon = 12): cà phê, sữa, kem và đường
+(30, 12, 1, 30, 'Cốt cà phê'),
+(31, 12, 3, 100, 'Sữa tươi'),
+(32, 12, 2, 20, 'Sữa đặc'),
+(33, 12, 10, 30, 'Kem béo'),
+(34, 12, 7, 20, 'Nền syrup caramel mẫu'),
+
+-- Chocolate đá xay hạnh nhân (ma_mon = 13): bột chocolate, sữa và kem
+(35, 13, 9, 25, 'Bột chocolate'),
+(36, 13, 3, 120, 'Sữa tươi'),
+(37, 13, 2, 15, 'Sữa đặc'),
+(38, 13, 10, 30, 'Kem béo, mô phỏng topping hạnh nhân'),
+
+-- Cookie xay kem sữa (ma_mon = 14): nền sữa, kem và đường
+(39, 14, 3, 130, 'Sữa tươi'),
+(40, 14, 2, 20, 'Sữa đặc'),
+(41, 14, 10, 40, 'Kem béo'),
+(42, 14, 7, 20, 'Nền cookie mẫu'),
+
+-- Sữa chua việt quất đá xay (ma_mon = 15): nền sữa, kem và sữa đặc
+(43, 15, 3, 150, 'Sữa tươi, nền sữa chua mẫu'),
+(44, 15, 2, 20, 'Sữa đặc'),
+(45, 15, 10, 30, 'Kem béo, mô phỏng topping việt quất'),
+
+-- Nước ép cam nguyên chất (ma_mon = 16): định mức nền nước ép mẫu
+(46, 16, 7, 15, 'Đường nước'),
+(47, 16, 5, 10, 'Siro trái cây mẫu'),
+
+-- Nước ép dưa hấu (ma_mon = 17): định mức nền nước ép mẫu
+(48, 17, 7, 20, 'Đường nước, nền dưa hấu mẫu'),
+
+-- Nước ép táo cần tây (ma_mon = 18): định mức nền nước ép mẫu
+(49, 18, 7, 10, 'Đường nước, nền táo cần tây mẫu'),
+
+-- Sinh tố xoài cát (ma_mon = 19): sữa, sữa đặc và đường
+(50, 19, 3, 80, 'Sữa tươi, nền xoài mẫu'),
+(51, 19, 2, 15, 'Sữa đặc'),
+(52, 19, 7, 20, 'Đường nước'),
+
+-- Sinh tố bơ sáp Đắk Lắk (ma_mon = 20): sữa, sữa đặc, kem và đường
+(53, 20, 3, 100, 'Sữa tươi, nền bơ mẫu'),
+(54, 20, 2, 25, 'Sữa đặc'),
+(55, 20, 10, 30, 'Kem béo'),
+(56, 20, 7, 15, 'Đường nước');
 
 -- 7. Nạp Chấm Công Mẫu Hôm Nay
 INSERT INTO `cham_cong` (`ma_cham_cong`, `ma_nv`, `ma_ca`, `ngay_lam`, `gio_check_in`, `gio_check_out`, `trang_thai`, `ghi_chu`) VALUES
