@@ -4,9 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nhân Sự & Chấm Công - Coffee Management</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            try {
+                const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (!user) {
+                    location.href = 'index.html';
+                } else if (user.vaiTro === 'STAFF') {
+                    alert('Tài khoản nhân viên không có quyền truy cập trang Quản lý Nhân sự!');
+                    location.href = 'banhang.html';
+                }
+            } catch (e) {
+                location.href = 'index.html';
+            }
+        })();
+    </script>
 </head>
 <body>
 
@@ -22,7 +38,7 @@
                 </ul>
                 <div class="d-flex align-items-center text-white">
                     <span class="me-3 fw-semibold"><i class="fa-solid fa-user-gear me-1"></i> Quản lý nhân sự</span>
-                    <a href="index.html" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Thoát</a>
+                    <button type="button" id="logoutBtn" class="btn btn-outline-light btn-sm" onclick="thucHienDangXuat()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
                 </div>
             </div>
         </div>
@@ -286,13 +302,13 @@
 
                 if (res.ok) {
                     const data = await res.json();
-                    alert(`✅ Check-in thành công!\nTrạng thái: ${data.trangThai === 'DUNG_GIO' ? 'ĐÚNG GIỜ' : 'ĐI TRỄ'}`);
+                    showToast(`✅ Check-in thành công! Trạng thái: ${data.trangThai === 'DUNG_GIO' ? 'ĐÚNG GIỜ' : 'ĐI TRỄ'}`, true);
                     loadLichSuChamCong();
                 } else {
-                    alert("Lỗi check-in!");
+                    showToast("Lỗi check-in!", false);
                 }
             } catch (e) {
-                alert("Lỗi kết nối máy chủ backend!");
+                showToast("Lỗi kết nối máy chủ backend!", false);
             }
         }
 
@@ -300,11 +316,11 @@
             try {
                 const res = await fetch(`/api/cham-cong/check-out/${maCC}`, { method: 'POST' });
                 if (res.ok) {
-                    alert("✅ Check-out thành công!");
+                    showToast("✅ Check-out thành công!", true);
                     loadLichSuChamCong();
                 }
             } catch (e) {
-                alert("Lỗi kết nối máy chủ backend!");
+                showToast("Lỗi kết nối máy chủ backend!", false);
             }
         }
 
@@ -323,7 +339,7 @@
             const vaiTro = document.getElementById('nvVaiTro').value;
 
             if (!hoTen || !tenDangNhap) {
-                alert("Vui lòng điền đầy đủ họ tên và tên đăng nhập!");
+                showToast("Vui lòng điền đầy đủ họ tên và tên đăng nhập!", false);
                 return;
             }
 
@@ -336,13 +352,13 @@
 
                 if (res.ok) {
                     modalThemNVInstance.hide();
-                    alert("✅ Thêm nhân viên thành công!");
+                    showToast("✅ Thêm nhân viên thành công!", true);
                     loadNhanVien();
                 } else {
-                    alert("Lỗi: Tên đăng nhập có thể đã bị trùng!");
+                    showToast("Lỗi: Tên đăng nhập có thể đã bị trùng!", false);
                 }
             } catch (e) {
-                alert("Lỗi kết nối backend!");
+                showToast("Lỗi kết nối backend!", false);
             }
         }
 
@@ -351,13 +367,45 @@
             try {
                 const res = await fetch(`/api/nhan-su/nhan-vien/${id}`, { method: 'DELETE' });
                 if (res.ok) {
-                    alert("✅ Đã xóa nhân viên!");
+                    showToast("✅ Đã xóa nhân viên!", true);
                     loadNhanVien();
                 }
             } catch (e) {
-                alert("Lỗi kết nối backend!");
+                showToast("Lỗi kết nối backend!", false);
             }
         }
+
+        function showToast(msg, isSuccess = true) {
+            const toastEl = document.getElementById('liveToast');
+            const msgEl = document.getElementById('toastMessage');
+            if (!toastEl || !msgEl) {
+                console.log(msg);
+                return;
+            }
+            toastEl.className = 'toast align-items-center text-white border-0 shadow ' + (isSuccess ? 'bg-success' : 'bg-danger');
+            msgEl.textContent = msg;
+            const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            toast.show();
+        }
+
+        async function thucHienDangXuat() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+            } catch (e) {}
+            localStorage.removeItem('currentUser');
+            sessionStorage.clear();
+            location.href = 'index.html';
+        }
     </script>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        <div id="liveToast" class="toast align-items-center text-white border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fs-6" id="toastMessage"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -4,9 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Kho & KPI - Coffee Management</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <script>
+        (function() {
+            try {
+                const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                if (!user) {
+                    location.href = 'index.html';
+                } else if (user.vaiTro === 'STAFF') {
+                    alert('Tài khoản nhân viên không có quyền truy cập trang Quản lý Kho!');
+                    location.href = 'banhang.html';
+                }
+            } catch (e) {
+                location.href = 'index.html';
+            }
+        })();
+    </script>
 </head>
 <body>
 
@@ -22,7 +38,7 @@
                 </ul>
                 <div class="d-flex align-items-center text-white">
                     <span class="me-3 fw-semibold"><i class="fa-solid fa-user-tie me-1"></i> Quản lý kho</span>
-                    <a href="index.html" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Thoát</a>
+                    <button type="button" id="logoutBtn" class="btn btn-outline-light btn-sm" onclick="thucHienDangXuat()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
                 </div>
             </div>
         </div>
@@ -121,7 +137,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Số lượng nhập thêm:</label>
                         <div class="input-group">
-                            <input type="number" id="nhapKhoSoLuong" class="form-control" min="1" value="500">
+                            <input type="number" id="nhapKhoSoLuong" class="form-control" min="1" placeholder="Nhập số lượng...">
                             <span id="nhapKhoDVT" class="input-group-text">g/ml</span>
                         </div>
                     </div>
@@ -262,7 +278,7 @@
             document.getElementById('nhapKhoMaNL').value = maNL;
             document.getElementById('nhapKhoTenNL').value = tenNL;
             document.getElementById('nhapKhoDVT').textContent = dvt;
-            document.getElementById('nhapKhoSoLuong').value = 500;
+            document.getElementById('nhapKhoSoLuong').value = '';
             modalNhapKhoInstance.show();
         }
 
@@ -270,8 +286,8 @@
             const maNL = document.getElementById('nhapKhoMaNL').value;
             const sl = parseFloat(document.getElementById('nhapKhoSoLuong').value);
 
-            if (sl <= 0) {
-                alert("Số lượng nhập phải lớn hơn 0!");
+            if (!sl || sl <= 0) {
+                showToast("Số lượng nhập phải lớn hơn 0!", false);
                 return;
             }
 
@@ -284,13 +300,13 @@
 
                 if (res.ok) {
                     modalNhapKhoInstance.hide();
-                    alert("✅ Nhập thêm kho thành công!");
+                    showToast("✅ Nhập thêm kho thành công!", true);
                     loadKhoData();
                 } else {
-                    alert("Lỗi nhập kho!");
+                    showToast("Lỗi nhập kho!", false);
                 }
             } catch (e) {
-                alert("Lỗi kết nối máy chủ backend!");
+                showToast("Lỗi kết nối máy chủ backend!", false);
             }
         }
 
@@ -357,7 +373,7 @@
             const ghiChu = document.getElementById('recipeGhiChu').value.trim();
 
             if (!dinhMuc || dinhMuc <= 0) {
-                alert("Vui lòng nhập định mức tiêu hao lớn hơn 0!");
+                showToast("Vui lòng nhập định mức tiêu hao lớn hơn 0!", false);
                 return;
             }
 
@@ -369,17 +385,49 @@
                 });
 
                 if (res.ok) {
-                    alert("✅ Lưu định mức công thức thành công!");
+                    showToast("✅ Lưu định mức công thức thành công!", true);
                     document.getElementById('recipeDinhMuc').value = '';
                     document.getElementById('recipeGhiChu').value = '';
                     loadRecipeByMon();
                 } else {
-                    alert("Lỗi khi lưu công thức!");
+                    showToast("Lỗi khi lưu công thức!", false);
                 }
             } catch (e) {
-                alert("Lỗi kết nối máy chủ backend!");
+                showToast("Lỗi kết nối máy chủ backend!", false);
             }
         }
+
+        function showToast(msg, isSuccess = true) {
+            const toastEl = document.getElementById('liveToast');
+            const msgEl = document.getElementById('toastMessage');
+            if (!toastEl || !msgEl) {
+                console.log(msg);
+                return;
+            }
+            toastEl.className = 'toast align-items-center text-white border-0 shadow ' + (isSuccess ? 'bg-success' : 'bg-danger');
+            msgEl.textContent = msg;
+            const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            toast.show();
+        }
+
+        async function thucHienDangXuat() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+            } catch (e) {}
+            localStorage.removeItem('currentUser');
+            sessionStorage.clear();
+            location.href = 'index.html';
+        }
     </script>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        <div id="liveToast" class="toast align-items-center text-white border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fs-6" id="toastMessage"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
