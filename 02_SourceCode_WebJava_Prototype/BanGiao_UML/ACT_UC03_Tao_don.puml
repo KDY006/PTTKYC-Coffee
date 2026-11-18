@@ -1,0 +1,58 @@
+@startuml
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam BackgroundColor white
+skinparam ArrowColor #405447
+skinparam activityBackgroundColor #F3F6F3
+skinparam activityBorderColor #47634F
+skinparam sequenceParticipantBackgroundColor #F1F5F1
+skinparam sequenceLifeLineBorderColor #829388
+skinparam sequenceActivationBackgroundColor #DAE6DD
+skinparam sequenceActivationBorderColor #52705B
+skinparam noteBackgroundColor #FFFBEF
+skinparam noteBorderColor #A4986E
+skinparam dpi 170
+skinparam wrapWidth 190
+skinparam maxMessageSize 360
+skinparam noteTextAlignment left
+|Thu ngân|
+start
+:Đăng nhập, chọn tại bàn hoặc mang đi;
+|Hệ thống|
+if (Chọn tại bàn?) then (Có)
+  :Tải đơn đang mở của bàn;
+  if (Đã có đơn mở?) then (Có)
+    :Mở lại đơn đã lưu;
+    |Thu ngân|
+    :Tiếp tục phục vụ hoặc chuyển UC04;
+    stop
+  else (Không)
+    :Chuẩn bị giỏ mới gắn bàn;
+  endif
+else (Mang đi)
+  :Chuẩn bị giỏ mới không gắn bàn;
+endif
+|Thu ngân|
+:Chọn món, số lượng và ghi chú;
+:Bấm Lưu đơn;
+|Hệ thống|
+:Kiểm tra session, loại đơn, món, số lượng;
+if (Hợp lệ và chưa xung đột?) then (Có)
+  :Trong transaction, lưu hóa đơn và chi tiết;\nđặt bàn Có khách nếu tại bàn;
+  :Commit rồi trả mã đơn và tổng tiền;
+else (Không)
+  :Thông báo lỗi, giữ bản nháp;\nkhông tạo đơn hoặc cập nhật bàn;
+  stop
+endif
+|Thu ngân|
+:Đối chiếu đơn; chuyển yêu cầu pha chế;
+|Pha chế|
+:Nhận thông tin từ thu ngân và chuẩn bị món;
+note right
+  Phối hợp thủ công.
+  Chưa có màn hình hoặc hàng đợi pha chế.
+end note
+stop
+
+@enduml

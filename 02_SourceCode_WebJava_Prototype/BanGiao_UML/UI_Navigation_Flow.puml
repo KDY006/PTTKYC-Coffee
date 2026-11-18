@@ -1,0 +1,49 @@
+@startuml
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam BackgroundColor white
+skinparam ArrowColor #405447
+skinparam activityBackgroundColor #F3F6F3
+skinparam activityBorderColor #47634F
+skinparam sequenceParticipantBackgroundColor #F1F5F1
+skinparam sequenceLifeLineBorderColor #829388
+skinparam sequenceActivationBackgroundColor #DAE6DD
+skinparam sequenceActivationBorderColor #52705B
+skinparam noteBackgroundColor #FFFBEF
+skinparam noteBorderColor #A4986E
+skinparam dpi 170
+skinparam wrapWidth 190
+skinparam maxMessageSize 360
+skinparam noteTextAlignment left
+top to bottom direction
+skinparam rectangleBackgroundColor #F1F5F1
+rectangle "UI01 Đăng nhập\nindex.html" as L
+rectangle "UI02 Sơ đồ bàn / Mang đi\nbanhang.html" as B
+rectangle "UI03 Gọi món, giỏ hàng\nLưu và mở lại đơn" as P
+rectangle "UI04 Thanh toán\nModal trên banhang.html" as T
+rectangle "Bill đã thanh toán\nXem / In lại" as I
+rectangle "UI05 Kho và công thức\nkho.html" as K
+rectangle "UI06 Nhân sự và chấm công\nnhansu.html" as N
+rectangle "UI07 KPI\nKhu vực đầu kho.html" as D
+L --> B : Staff hoặc Admin đăng nhập
+L --> K : Manager đăng nhập
+B --> P : Chọn bàn / Mang đi
+P --> B : Đổi bàn sau khi lưu
+P --> T : Thanh toán (tự lưu thay đổi trước)
+T --> P : Quay lại / lỗi chưa chốt
+T --> I : Thanh toán thành công
+I --> B : Đóng bill; bàn được trả
+P --> I : Chọn hóa đơn PAID trong lịch sử
+B --> K : Menu Kho & KPI
+K --> B : Menu Bán hàng
+K --> N : Menu Nhân sự
+N --> B : Menu Bán hàng
+K --> D : Xem vùng KPI / Làm mới
+note bottom of N
+  Điều hướng là mô tả giao diện.
+  Không đồng nghĩa mọi API Kho/Nhân sự
+  đã kiểm soát quyền phía server.
+end note
+
+@enduml

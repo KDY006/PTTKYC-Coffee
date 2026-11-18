@@ -1,0 +1,93 @@
+@startuml
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam BackgroundColor white
+skinparam ArrowColor #405447
+skinparam activityBackgroundColor #F3F6F3
+skinparam activityBorderColor #47634F
+skinparam sequenceParticipantBackgroundColor #F1F5F1
+skinparam sequenceLifeLineBorderColor #829388
+skinparam sequenceActivationBackgroundColor #DAE6DD
+skinparam sequenceActivationBorderColor #52705B
+skinparam noteBackgroundColor #FFFBEF
+skinparam noteBorderColor #A4986E
+skinparam dpi 170
+skinparam wrapWidth 190
+skinparam maxMessageSize 360
+skinparam noteTextAlignment left
+hide footbox
+autonumber
+actor "Thu ngân" as A
+boundary "banhang.html\nbanhang.js" as UI
+control "OrderController" as C
+control "OrderService" as S
+control "KhoService" as K
+entity "Repository JPA" as R
+database "MySQL/MariaDB" as DB
+A -> UI : Nhập tiền/chiết khấu; Xác nhận
+activate UI
+UI -> C : POST /api/order/{id}/thanh-toan\nThanhToanDTO + version + UUID
+activate C
+C -> C : Kiểm tra session và quyền chiết khấu
+C -> S : thanhToanDonHang(id,dto)
+activate S
+note over S,DB : Một transaction bao trùm hóa đơn, bàn và kho
+S -> R : khoaHoaDon(id)
+activate R
+R -> DB : SELECT hóa đơn FOR UPDATE
+activate DB
+DB --> R : Hóa đơn và version
+ deactivate DB
+R --> S : Hóa đơn
+ deactivate R
+alt Đã trả với cùng mã yêu cầu
+ S --> C : Hóa đơn cũ; không gọi KhoService
+else Yêu cầu thanh toán hợp lệ
+ S -> S : Kiểm tra OPEN, version, tiền, tham chiếu
+ S -> K : truKhoTuDong(hoaDon)
+ activate K
+ note over K,DB : MANDATORY: tham gia transaction của OrderService
+ K -> R : Đọc công thức; gom lượng cần dùng;\nkhóa nguyên liệu theo mã tăng dần
+ activate R
+ R -> DB : SELECT công thức; SELECT tồn FOR UPDATE;\nrefresh tồn rồi kiểm tra
+ activate DB
+ DB --> R : Định mức và tồn hiện tại
+ deactivate DB
+ R --> K : Dữ liệu
+ deactivate R
+ alt Thiếu công thức hoặc thiếu nguyên liệu
+   K --> S : Ném exception
+   note over S,DB : Rollback mọi thay đổi; đơn còn chờ thanh toán
+   S --> C : Lỗi nghiệp vụ
+ else Đủ nguyên liệu
+   K -> R : save nguyên liệu với tồn mới
+   activate R
+   R -> DB : UPDATE nguyên liệu
+   activate DB
+   DB --> R : Kết quả
+   deactivate DB
+   R --> K : Đã ghi trong transaction
+   deactivate R
+   K --> S : Hoàn tất bước kho
+   S -> R : Ghi PAID, tiền nhận, thời gian;\ntrả bàn; saveAndFlush
+   activate R
+   R -> DB : UPDATE hóa đơn và bàn
+   activate DB
+   DB --> R : Kết quả
+   deactivate DB
+   R --> S : Hóa đơn
+   deactivate R
+   note over S,DB : Commit sau khi service hoàn tất thành công
+   S --> C : Hóa đơn đã thanh toán
+ end
+ deactivate K
+end
+ deactivate S
+C --> UI : HTTP 200 hoặc 400/409
+ deactivate C
+UI --> A : Bill hoặc lỗi; giữ mã đơn để xử lý lại
+ deactivate UI
+note over UI : Mất phản hồi: GET lại hóa đơn,\nkhông tạo đơn mới để thử thanh toán.
+
+@enduml

@@ -1,0 +1,60 @@
+@startuml
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam BackgroundColor white
+skinparam ArrowColor #405447
+skinparam activityBackgroundColor #F3F6F3
+skinparam activityBorderColor #47634F
+skinparam sequenceParticipantBackgroundColor #F1F5F1
+skinparam sequenceLifeLineBorderColor #829388
+skinparam sequenceActivationBackgroundColor #DAE6DD
+skinparam sequenceActivationBorderColor #52705B
+skinparam noteBackgroundColor #FFFBEF
+skinparam noteBorderColor #A4986E
+skinparam dpi 170
+skinparam wrapWidth 190
+skinparam maxMessageSize 360
+skinparam noteTextAlignment left
+|Thu ngân|
+start
+:Mở đơn đang chờ thanh toán;
+if (Món đã được pha?) then (Có)
+  |Pha chế|
+  :Trao đổi khả năng đổi hoặc hủy món;
+  |Thu ngân|
+  if (Đã thống nhất xử lý?) then (Có)
+  else (Không)
+    :Giữ nguyên đơn;
+    stop
+  endif
+else (Chưa)
+endif
+:Chỉnh số lượng, ghi chú hoặc xóa dòng;\nđổi món bằng xóa cũ và thêm mới;
+if (Hủy toàn bộ đơn?) then (Có)
+  :Xác nhận hủy đơn;
+  |Hệ thống|
+  :Khóa đơn; kiểm tra trạng thái và version;
+  if (Được phép?) then (Có)
+    :Ghi DA_HUY, trả bàn nếu không còn đơn mở;\ncommit; không trừ kho;
+  else (Không)
+    :Báo lỗi và giữ dữ liệu đã lưu;
+  endif
+else (Không)
+  |Thu ngân|
+  :Bấm Lưu đơn;
+  |Hệ thống|
+  :Kiểm tra session, trạng thái, version,\nsố lượng và ghi chú;
+  if (Hợp lệ và còn ít nhất 1 dòng?) then (Có)
+    :Trong transaction thay chi tiết món,\ngiữ giá món hiện có, tính tổng; commit;
+  else (Không)
+    :Báo lỗi; cần thêm món hoặc hủy đơn;\ngiữ dữ liệu CSDL trước thay đổi;
+  endif
+endif
+|Thu ngân|
+:Kiểm tra kết quả hoặc tải lại khi xung đột;
+|Pha chế|
+:Nhận điều chỉnh từ thu ngân nếu cần;
+stop
+
+@enduml

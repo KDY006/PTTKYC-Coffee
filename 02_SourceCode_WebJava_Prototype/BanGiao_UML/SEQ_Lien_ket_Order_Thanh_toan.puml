@@ -1,0 +1,83 @@
+@startuml
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam BackgroundColor white
+skinparam ArrowColor #405447
+skinparam activityBackgroundColor #F3F6F3
+skinparam activityBorderColor #47634F
+skinparam sequenceParticipantBackgroundColor #F1F5F1
+skinparam sequenceLifeLineBorderColor #829388
+skinparam sequenceActivationBackgroundColor #DAE6DD
+skinparam sequenceActivationBorderColor #52705B
+skinparam noteBackgroundColor #FFFBEF
+skinparam noteBorderColor #A4986E
+skinparam dpi 170
+skinparam wrapWidth 190
+skinparam maxMessageSize 360
+skinparam noteTextAlignment left
+hide footbox
+autonumber
+actor "Thu ngân" as A
+boundary "Web POS" as UI
+control "OrderController" as C
+control "OrderService" as S
+control "KhoService" as K
+entity "Repository JPA" as R
+database "MySQL/MariaDB" as DB
+A -> UI : Gọi món và Lưu đơn
+activate UI
+UI -> C : POST tạo đơn
+activate C
+C -> S : taoDonHang(dto)
+activate S
+S -> R : Lưu hóa đơn/chi tiết và bàn
+activate R
+R -> DB : INSERT/UPDATE trong transaction T1
+activate DB
+DB --> R : Kết quả
+ deactivate DB
+R --> S : Hóa đơn
+ deactivate R
+S --> C : Kết quả sau commit T1
+ deactivate S
+C --> UI : Mã đơn + version
+ deactivate C
+UI --> A : Bàn Có khách; chưa trừ kho
+ deactivate UI
+... Phục vụ khách, có thể cập nhật món ...
+A -> UI : Xác nhận thanh toán cùng mã đơn
+activate UI
+UI -> C : POST thanh toán
+activate C
+C -> S : thanhToanDonHang(id,dto)
+activate S
+S -> K : truKhoTuDong(hoaDon)
+activate K
+K -> R : Khóa và trừ nguyên liệu
+activate R
+R -> DB : SELECT FOR UPDATE; UPDATE tồn trong T2
+activate DB
+DB --> R : Kết quả
+ deactivate DB
+R --> K : Đủ kho
+ deactivate R
+K --> S : Thành công
+ deactivate K
+S -> R : Chốt hóa đơn, trả bàn
+activate R
+R -> DB : UPDATE trong cùng T2
+activate DB
+DB --> R : Kết quả
+ deactivate DB
+R --> S : Hóa đơn PAID
+ deactivate R
+S --> C : Kết quả sau commit T2
+ deactivate S
+C --> UI : Hóa đơn đã trả
+ deactivate C
+UI --> A : Bill, tiền thừa và bàn Trống
+ deactivate UI
+note over S,DB : T1 và T2 là hai transaction riêng.\nTrong T2, hóa đơn + kho + bàn commit/rollback cùng nhau.
+
+@enduml
