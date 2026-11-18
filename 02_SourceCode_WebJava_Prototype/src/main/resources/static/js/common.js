@@ -199,107 +199,89 @@
       nhansu: 'Nhân sự & Chấm công'
     };
 
+    // Role-based navigation: Staff only sees POS. Manager/Admin see all 3 modules.
+    var isStaff = user && String(user.vaiTro || '').toUpperCase() === 'STAFF';
     var navItems = [
-      { route: 'banhang', href: 'banhang.html', label: 'Bán hàng (POS)', icon: 'bi-bag-check' },
-      { route: 'kho', href: 'kho.html', label: 'Kho & KPI', icon: 'bi-box-seam', badge: lowStockCount },
-      { route: 'nhansu', href: 'nhansu.html', label: 'Nhân sự & Chấm công', icon: 'bi-people' }
+      { route: 'banhang', href: 'banhang.html', label: 'Bán hàng (POS)', icon: 'bi-bag-check' }
     ];
+    if (!isStaff) {
+      navItems.push(
+        { route: 'kho', href: 'kho.html', label: 'Kho & KPI', icon: 'bi-box-seam', badge: lowStockCount },
+        { route: 'nhansu', href: 'nhansu.html', label: 'Nhân sự & Chấm công', icon: 'bi-people' }
+      );
+    }
 
+    // Hide sidebar completely to keep layout clean and standard for POS screens
     var sidebarContainer = document.getElementById('app-sidebar-root');
     if (sidebarContainer) {
-      sidebarContainer.innerHTML =
-        '<aside class="app-sidebar">' +
-          '<a href="banhang.html" class="app-sidebar-brand">' +
-            '<span class="brand-badge"><i class="bi bi-cup-hot-fill"></i></span>' +
-          '</a>' +
-          '<div class="px-4 pt-4 pb-2 text-uppercase fw-semibold" style="font-size:11px;letter-spacing:0.06em;color:var(--text-muted);">Phân hệ vận hành</div>' +
-          '<nav class="flex-grow-1 px-3 py-1 d-flex flex-column gap-1">' +
-            navItems.map(function (item) {
-              var isActive = activeRoute === item.route;
-              var badgeHtml = item.badge > 0
-                ? '<span class="badge bg-danger rounded-2 px-2 py-1 tabular-nums" style="font-size:11px;">' + item.badge + '</span>'
-                : '';
-              return '<a href="' + item.href + '" class="sidebar-nav-link ' + (isActive ? 'active' : '') + '">' +
-                '<span class="d-flex align-items-center gap-2">' +
-                  '<i class="bi ' + item.icon + '"></i>' +
-                  '<span>' + item.label + '</span>' +
-                '</span>' +
-                badgeHtml +
-              '</a>';
-            }).join('') +
-          '</nav>' +
-          '<div class="p-3 m-3 moss-card" style="background-color:var(--bg-surface-hover);">' +
-            '<div class="d-flex align-items-center gap-3 mb-3">' +
-              '<div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0" style="width:38px;height:38px;background-color:var(--accent-primary);font-size:0.75rem;">' +
-                escapeHtml(getInitials(user.hoTen)) +
-              '</div>' +
-              '<div class="min-w-0">' +
-                '<div class="fw-semibold text-truncate" style="font-size:0.85rem;">' + escapeHtml(user.hoTen) + '</div>' +
-                '<div class="d-flex align-items-center gap-1" style="font-size:11px;color:var(--text-secondary);">' +
-                  '<i class="bi ' + (isPrivileged(user) ? 'bi-shield-check text-warning' : 'bi-person-check text-success') + '"></i>' +
-                  '<span>' + escapeHtml(getRoleTitle(user)) + '</span>' +
-                '</div>' +
-              '</div>' +
-            '</div>' +
-            '<div class="d-grid gap-2 pt-2 border-top" style="border-color:var(--border-subtle) !important;">' +
-              '<button type="button" id="btn-refresh-mysql" class="btn btn-sm bg-white border rounded-3 d-flex align-items-center justify-content-center gap-2 fw-medium" style="border-color:var(--border-subtle);font-size:0.75rem;">' +
-                '<i class="bi bi-arrow-clockwise text-success"></i><span>Đồng bộ từ MySQL</span>' +
-              '</button>' +
-              '<button type="button" id="btn-sidebar-logout" class="btn btn-sm btn-link text-decoration-none d-flex align-items-center justify-content-center gap-2 fw-medium" style="color:var(--text-secondary);font-size:0.75rem;">' +
-                '<i class="bi bi-box-arrow-right"></i><span>Đăng xuất / Đổi tài khoản</span>' +
-              '</button>' +
-            '</div>' +
-          '</div>' +
-        '</aside>';
+      sidebarContainer.innerHTML = '';
+      sidebarContainer.style.display = 'none';
     }
 
     var topbarContainer = document.getElementById('app-topbar-root');
     if (topbarContainer) {
       topbarContainer.innerHTML =
         '<header class="app-topbar px-3 px-sm-4 d-flex align-items-center justify-content-between gap-3">' +
-          '<div class="d-flex align-items-center gap-2 min-w-0">' +
-            '<button class="btn btn-sm d-lg-none border" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNavDrawer" aria-label="Mở menu">' +
-              '<i class="bi bi-list fs-5"></i>' +
-            '</button>' +
-            '<div class="d-flex align-items-center gap-2 text-truncate">' +
-              '<span class="d-none d-sm-inline fw-medium" style="font-size:0.75rem;color:var(--text-secondary);">' +
-                escapeHtml(getRoleShort(user)) + ' (' + escapeHtml(user.tenDangNhap) + ')' +
-              '</span>' +
-              '<span class="d-none d-sm-inline" style="color:var(--border-strong);">/</span>' +
-              '<h1 class="font-display fw-semibold mb-0 text-truncate" style="font-size:1.125rem;">' +
-                escapeHtml(routeTitles[activeRoute] || '') +
-              '</h1>' +
-            '</div>' +
+          '<div class="d-flex align-items-center gap-3">' +
+            '<a href="banhang.html" class="d-flex align-items-center gap-2 text-decoration-none">' +
+              '<span class="brand-badge"><i class="bi bi-cup-hot-fill"></i></span>' +
+              '<span class="font-display fw-bold text-dark fs-5" style="letter-spacing:-0.02em;">MỘC AN COFFEE</span>' +
+            '</a>' +
           '</div>' +
-          '<nav class="d-none d-md-flex align-items-center gap-4">' +
+
+          '<nav class="d-none d-md-flex align-items-center gap-2">' +
             navItems.map(function (item) {
-              return '<a href="' + item.href + '" class="topbar-nav-link ' + (activeRoute === item.route ? 'active' : '') + '">' + item.label + '</a>';
+              var isActive = activeRoute === item.route;
+              var badgeHtml = item.badge > 0
+                ? '<span class="badge bg-danger rounded-pill px-2 py-1 ms-1 tabular-nums" style="font-size:11px;">' + item.badge + '</span>'
+                : '';
+              return '<a href="' + item.href + '" class="topbar-nav-link ' + (isActive ? 'active' : '') + '">' +
+                '<i class="bi ' + item.icon + '"></i>' +
+                '<span>' + item.label + '</span>' +
+                badgeHtml +
+              '</a>';
             }).join('') +
           '</nav>' +
-          '<div>' +
-            '<button type="button" id="btn-topbar-logout" class="btn btn-forest btn-sm px-3 py-2 d-flex align-items-center gap-2" style="font-size:0.75rem;">' +
-              '<i class="bi bi-box-arrow-right"></i><span>Đăng xuất</span>' +
+
+          '<div class="d-flex align-items-center gap-2 gap-sm-3">' +
+            '<div class="d-none d-sm-flex align-items-center gap-2 px-3 py-1 rounded-3" style="background-color:var(--bg-surface-muted);">' +
+              '<span class="badge ' + (isPrivileged(user) ? 'bg-primary' : 'bg-success') + ' text-white text-uppercase" style="font-size:10px;letter-spacing:0.04em;">' +
+                escapeHtml(getRoleShort(user)) +
+              '</span>' +
+              '<span class="fw-semibold text-dark" style="font-size:0.82rem;">' +
+                escapeHtml(user.hoTen || user.tenDangNhap) +
+              '</span>' +
+            '</div>' +
+            '<button type="button" id="btn-refresh-mysql" class="btn btn-sm btn-outline-secondary d-none d-md-flex align-items-center gap-1" title="Đồng bộ dữ liệu từ MySQL">' +
+              '<i class="bi bi-arrow-clockwise"></i><span class="d-none d-lg-inline">Đồng bộ</span>' +
+            '</button>' +
+            '<button type="button" id="btn-topbar-logout" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" title="Đăng xuất khỏi hệ thống">' +
+              '<i class="bi bi-box-arrow-right"></i><span class="d-none d-sm-inline">Đăng xuất</span>' +
+            '</button>' +
+            '<button class="btn btn-sm d-md-none border" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNavDrawer" aria-label="Mở menu">' +
+              '<i class="bi bi-list fs-5"></i>' +
             '</button>' +
           '</div>' +
         '</header>' +
-        '<div class="collapse d-lg-none bg-white border-bottom px-3 py-3" id="mobileNavDrawer" style="border-color:var(--border-subtle) !important;">' +
+
+        '<div class="collapse d-md-none bg-white border-bottom px-3 py-3 shadow-sm" id="mobileNavDrawer" style="border-color:var(--border-subtle) !important;">' +
           '<div class="d-flex flex-column gap-1 mb-3">' +
             navItems.map(function (item) {
               var isActive = activeRoute === item.route;
-              return '<a href="' + item.href + '" class="sidebar-nav-link ' + (isActive ? 'active' : '') + '">' +
-                '<span class="d-flex align-items-center gap-2"><i class="bi ' + item.icon + '"></i><span>' + item.label + '</span></span>' +
-                (item.badge > 0 ? '<span class="badge bg-danger">' + item.badge + '</span>' : '') +
+              return '<a href="' + item.href + '" class="topbar-nav-link ' + (isActive ? 'active' : '') + '">' +
+                '<i class="bi ' + item.icon + '"></i><span>' + item.label + '</span>' +
+                (item.badge > 0 ? '<span class="badge bg-danger ms-auto">' + item.badge + '</span>' : '') +
               '</a>';
             }).join('') +
           '</div>' +
           '<div class="d-flex align-items-center justify-content-between pt-2 border-top" style="border-color:var(--border-subtle) !important;">' +
-            '<span style="font-size:0.75rem;color:var(--text-secondary);">' + escapeHtml(user.hoTen) + ' · ' + escapeHtml(getRoleShort(user)) + '</span>' +
-            '<button type="button" id="btn-mobile-logout" class="btn btn-outline-secondary btn-sm">Đăng xuất</button>' +
+            '<span style="font-size:0.78rem;color:var(--text-secondary);">' + escapeHtml(user.hoTen) + ' (' + escapeHtml(getRoleShort(user)) + ')</span>' +
+            '<button type="button" id="btn-mobile-logout" class="btn btn-outline-danger btn-sm">Đăng xuất</button>' +
           '</div>' +
         '</div>';
     }
 
-    var logoutBtns = ['btn-sidebar-logout', 'btn-topbar-logout', 'btn-mobile-logout'];
+    var logoutBtns = ['btn-topbar-logout', 'btn-mobile-logout'];
     logoutBtns.forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.addEventListener('click', logout);

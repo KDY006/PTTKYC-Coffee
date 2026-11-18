@@ -5,7 +5,7 @@ import com.cafe.dto.NhapKhoDTO;
 import com.cafe.entity.CongThuc;
 import com.cafe.entity.NguyenLieu;
 import com.cafe.service.KhoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,24 +14,31 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/kho")
-@CrossOrigin(origins = "*")
 public class KhoController {
 
-    @Autowired
-    private KhoService khoService;
+    private final KhoService khoService;
+    private final SessionAccess access;
+
+    public KhoController(KhoService khoService, SessionAccess access) {
+        this.khoService = khoService;
+        this.access = access;
+    }
 
     @GetMapping("/nguyen-lieu")
-    public ResponseEntity<List<NguyenLieu>> layDanhSachNguyenLieu() {
+    public ResponseEntity<List<NguyenLieu>> layDanhSachNguyenLieu(HttpSession session) {
+        access.userId(session);
         return ResponseEntity.ok(khoService.layTatCaNguyenLieu());
     }
 
     @GetMapping("/sap-het")
-    public ResponseEntity<List<NguyenLieu>> layDanhSachSapHet() {
+    public ResponseEntity<List<NguyenLieu>> layDanhSachSapHet(HttpSession session) {
+        access.requireManager(session);
         return ResponseEntity.ok(khoService.layDanhSachSapHet());
     }
 
     @PostMapping("/nhap-kho")
-    public ResponseEntity<?> nhapKho(@RequestBody NhapKhoDTO dto) {
+    public ResponseEntity<?> nhapKho(@RequestBody NhapKhoDTO dto, HttpSession session) {
+        access.requireManager(session);
         try {
             NguyenLieu nl = khoService.nhapKho(dto.getMaNL(), dto.getSoLuongNhap());
             return ResponseEntity.ok(nl);
@@ -41,7 +48,8 @@ public class KhoController {
     }
 
     @PostMapping("/cong-thuc")
-    public ResponseEntity<?> thietLapCongThuc(@RequestBody CongThucDTO dto) {
+    public ResponseEntity<?> thietLapCongThuc(@RequestBody CongThucDTO dto, HttpSession session) {
+        access.requireManager(session);
         try {
             CongThuc ct = khoService.thietLapCongThuc(dto);
             return ResponseEntity.ok(ct);
@@ -51,12 +59,14 @@ public class KhoController {
     }
 
     @GetMapping("/cong-thuc/{maMon}")
-    public ResponseEntity<List<CongThuc>> layCongThucTheoMon(@PathVariable Integer maMon) {
+    public ResponseEntity<List<CongThuc>> layCongThucTheoMon(@PathVariable Integer maMon, HttpSession session) {
+        access.userId(session);
         return ResponseEntity.ok(khoService.layCongThucTheoMon(maMon));
     }
 
     @GetMapping("/dashboard")
-    public ResponseEntity<Map<String, Object>> getDashboardKPI() {
+    public ResponseEntity<Map<String, Object>> getDashboardKPI(HttpSession session) {
+        access.requireManager(session);
         return ResponseEntity.ok(khoService.getDashboardKPI());
     }
 }

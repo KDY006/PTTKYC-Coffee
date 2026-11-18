@@ -167,72 +167,27 @@ body {
   box-shadow: 0 24px 60px rgba(17, 30, 23, 0.18);
 }
 
-/* App Shell Sidebar + Header */
+/* App Shell - Modern Top Navigation (Unified POS Header) */
 .app-layout {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
+  width: 100%;
 }
 
 .app-sidebar {
-  width: 260px;
-  flex-shrink: 0;
-  background-color: var(--bg-sidebar);
-  border-right: 1px solid var(--border-subtle);
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  display: none;
-  flex-direction: column;
-}
-
-@media (min-width: 992px) {
-  .app-sidebar {
-    display: flex;
-  }
-}
-
-.app-sidebar-brand {
-  height: 72px;
-  padding: 0 22px;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid var(--border-subtle);
-  text-decoration: none;
-  color: var(--text-primary);
-}
-
-.sidebar-nav-link {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  text-decoration: none;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.sidebar-nav-link:hover {
-  background-color: var(--bg-surface-hover);
-  color: var(--text-primary);
-}
-
-.sidebar-nav-link.active {
-  background-color: var(--accent-soft);
-  color: var(--accent-soft-text);
-  font-weight: 600;
+  display: none !important;
 }
 
 .app-topbar {
-  height: 72px;
+  height: 68px;
   background-color: var(--bg-header);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border-subtle);
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 1020;
+  box-shadow: 0 2px 8px rgba(17, 30, 23, 0.05);
 }
 
 .topbar-nav-link {
@@ -240,19 +195,24 @@ body {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-secondary);
-  padding: 8px 2px;
-  border-bottom: 2px solid transparent;
+  padding: 8px 14px;
+  border-radius: 10px;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   white-space: nowrap;
 }
 
 .topbar-nav-link:hover {
-  color: var(--text-primary);
+  color: var(--accent-primary);
+  background-color: var(--bg-surface-hover);
 }
 
 .topbar-nav-link.active {
-  color: var(--text-primary);
+  color: var(--accent-soft-text);
+  background-color: var(--accent-soft);
   font-weight: 600;
-  border-bottom-color: var(--accent-primary);
 }
 
 /* Segmented Tabs */

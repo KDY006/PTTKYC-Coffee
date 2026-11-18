@@ -53,6 +53,13 @@ class NhanSuIntegrationTest {
         mvc.perform(post("/api/nhan-su/nhan-vien").session(admin).contentType("application/json").content(payload)).andExpect(status().isCreated()).andExpect(jsonPath("$.matKhau").doesNotExist());
     }
 
+    @Test
+    void staffCannotAccessKhoDashboardOrRestock() throws Exception {
+        mvc.perform(get("/api/kho/dashboard").session(staff)).andExpect(status().isForbidden());
+        mvc.perform(post("/api/kho/nhap-kho").session(staff).contentType("application/json").content("{\"maNL\":1,\"soLuongNhap\":10}")).andExpect(status().isForbidden());
+        mvc.perform(get("/api/kho/dashboard").session(manager)).andExpect(status().isOk());
+    }
+
     private MockHttpSession session(int id, String role) {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute("maNV", id);
