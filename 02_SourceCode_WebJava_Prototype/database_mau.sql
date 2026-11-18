@@ -6,6 +6,8 @@
 
 CREATE DATABASE IF NOT EXISTS `quanly_cafe` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `quanly_cafe`;
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
 
 -- 1. BẢNG NHÂN VIÊN
 DROP TABLE IF EXISTS `cham_cong`;
@@ -26,7 +28,7 @@ CREATE TABLE `nhan_vien` (
     `mat_khau` VARCHAR(255) NOT NULL,
     `vai_tro` VARCHAR(20) NOT NULL DEFAULT 'STAFF',
     `trang_thai` VARCHAR(20) NOT NULL DEFAULT 'DANG_LAM'
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2. BẢNG CA LÀM
 CREATE TABLE `ca_lam` (
@@ -35,7 +37,7 @@ CREATE TABLE `ca_lam` (
     `gio_bat_dau` TIME NOT NULL,
     `gio_ket_thuc` TIME NOT NULL,
     `he_so_luong` DOUBLE NOT NULL DEFAULT 1.0
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 3. BẢNG CHẤM CÔNG
 CREATE TABLE `cham_cong` (
@@ -49,7 +51,7 @@ CREATE TABLE `cham_cong` (
     `ghi_chu` VARCHAR(255),
     CONSTRAINT `fk_cc_nhanvien` FOREIGN KEY (`ma_nv`) REFERENCES `nhan_vien`(`ma_nv`) ON DELETE CASCADE,
     CONSTRAINT `fk_cc_calam` FOREIGN KEY (`ma_ca`) REFERENCES `ca_lam`(`ma_ca`) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 4. BẢNG BÀN
 CREATE TABLE `ban` (
@@ -57,7 +59,7 @@ CREATE TABLE `ban` (
     `ten_ban` VARCHAR(50) NOT NULL,
     `vi_tri` VARCHAR(50),
     `trang_thai` VARCHAR(20) NOT NULL DEFAULT 'TRONG'
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. BẢNG MÓN NƯỚC
 CREATE TABLE `mon_nuoc` (
@@ -67,7 +69,7 @@ CREATE TABLE `mon_nuoc` (
     `don_gia` DOUBLE NOT NULL,
     `hinh_anh` VARCHAR(255),
     `trang_thai` VARCHAR(20) NOT NULL DEFAULT 'DANG_BAN'
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 6. BẢNG HÓA ĐƠN
 CREATE TABLE `hoa_don` (
@@ -89,7 +91,7 @@ CREATE TABLE `hoa_don` (
     `phien_ban` BIGINT NOT NULL DEFAULT 0,
     CONSTRAINT `fk_hd_ban` FOREIGN KEY (`ma_ban`) REFERENCES `ban`(`ma_ban`) ON DELETE SET NULL,
     CONSTRAINT `fk_hd_nhanvien` FOREIGN KEY (`ma_nv`) REFERENCES `nhan_vien`(`ma_nv`)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 7. BẢNG CHI TIẾT HÓA ĐƠN (COMPOSITION)
 CREATE TABLE `chi_tiet_hoa_don` (
@@ -102,7 +104,7 @@ CREATE TABLE `chi_tiet_hoa_don` (
     `ghi_chu` VARCHAR(255),
     CONSTRAINT `fk_cthd_hoadon` FOREIGN KEY (`ma_hoa_don`) REFERENCES `hoa_don`(`ma_hoa_don`) ON DELETE CASCADE,
     CONSTRAINT `fk_cthd_monnuoc` FOREIGN KEY (`ma_mon`) REFERENCES `mon_nuoc`(`ma_mon`)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 8. BẢNG NGUYÊN LIỆU
 CREATE TABLE `nguyen_lieu` (
@@ -112,7 +114,7 @@ CREATE TABLE `nguyen_lieu` (
     `so_luong_ton` DOUBLE NOT NULL DEFAULT 0,
     `muc_ton_toi_thieu` DOUBLE NOT NULL DEFAULT 100,
     `don_gia_nhap` DOUBLE NOT NULL DEFAULT 0
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 9. BẢNG CÔNG THỨC (ASSOCIATION CLASS)
 CREATE TABLE `cong_thuc` (
@@ -123,7 +125,7 @@ CREATE TABLE `cong_thuc` (
     `ghi_chu` VARCHAR(255),
     CONSTRAINT `fk_ct_monnuoc` FOREIGN KEY (`ma_mon`) REFERENCES `mon_nuoc`(`ma_mon`) ON DELETE CASCADE,
     CONSTRAINT `fk_ct_nguyenlieu` FOREIGN KEY (`ma_nl`) REFERENCES `nguyen_lieu`(`ma_nl`) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==============================================================================
 -- DỮ LIỆU MẪU KHỞI TẠO (SEED DATA)

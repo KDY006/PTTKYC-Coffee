@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Kho & KPI - Coffee Management</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <script>
         (function() {
@@ -29,16 +31,16 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-cafe shadow-sm">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="kho.html"><i class="fa-solid fa-mug-hot me-2"></i>COFFEE POS</a>
+            <a class="navbar-brand fw-bold" href="kho.html">COFFEE POS</a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="banhang.html"><i class="fa-solid fa-cash-register me-1"></i> Bán Hàng (POS)</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="kho.html"><i class="fa-solid fa-warehouse me-1"></i> Quản Lý Kho & KPI</a></li>
-                    <li class="nav-item"><a class="nav-link" href="nhansu.html"><i class="fa-solid fa-users me-1"></i> Nhân Sự & Chấm Công</a></li>
+                    <li class="nav-item"><a class="nav-link" href="banhang.html">Bán Hàng (POS)</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="kho.html">Quản Lý Kho & KPI</a></li>
+                    <li class="nav-item"><a class="nav-link" href="nhansu.html">Nhân Sự & Chấm Công</a></li>
                 </ul>
                 <div class="d-flex align-items-center text-white">
-                    <span class="me-3 fw-semibold"><i class="fa-solid fa-user-tie me-1"></i> Quản lý kho</span>
-                    <button type="button" id="logoutBtn" class="btn btn-outline-light btn-sm" onclick="thucHienDangXuat()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
+                    <span class="me-3 fw-semibold">Quản lý kho</span>
+                    <button type="button" id="logoutBtn" class="btn btn-outline-light btn-sm" onclick="thucHienDangXuat()">Thoát</button>
                 </div>
             </div>
         </div>
@@ -50,34 +52,25 @@
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="card kpi-card shadow-sm p-3 bg-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-muted small fw-semibold">TỔNG DOANH THU HÔM NAY</span>
-                            <h3 id="kpiRevenue" class="fw-bold text-success mb-0">0 đ</h3>
-                        </div>
-                        <i class="fa-solid fa-coins fa-2x text-success opacity-50"></i>
+                    <div>
+                        <span class="text-muted small fw-semibold">TỔNG DOANH THU HÔM NAY</span>
+                        <h3 id="kpiRevenue" class="fw-bold text-success mb-0 mt-1">0 đ</h3>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card kpi-card shadow-sm p-3 bg-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-muted small fw-semibold">TỔNG ĐƠN ĐÃ THANH TOÁN</span>
-                            <h3 id="kpiOrders" class="fw-bold text-primary mb-0">0 đơn</h3>
-                        </div>
-                        <i class="fa-solid fa-receipt fa-2x text-primary opacity-50"></i>
+                    <div>
+                        <span class="text-muted small fw-semibold">TỔNG ĐƠN ĐÃ THANH TOÁN</span>
+                        <h3 id="kpiOrders" class="fw-bold text-primary mb-0 mt-1">0 đơn</h3>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card kpi-card shadow-sm p-3 bg-white border-danger">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-muted small fw-semibold">NGUYÊN LIỆU SẮP HẾT</span>
-                            <h3 id="kpiLowStock" class="fw-bold text-danger mb-0">0</h3>
-                        </div>
-                        <i class="fa-solid fa-triangle-exclamation fa-2x text-danger opacity-50"></i>
+                    <div>
+                        <span class="text-muted small fw-semibold">NGUYÊN LIỆU SẮP HẾT</span>
+                        <h3 id="kpiLowStock" class="fw-bold text-danger mb-0 mt-1">0</h3>
                     </div>
                 </div>
             </div>
@@ -86,13 +79,13 @@
         <!-- Bảng điều khiển quản lý tồn kho & công thức -->
         <div class="card shadow-sm">
             <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                <span class="fw-bold fs-5"><i class="fa-solid fa-boxes-stacked me-2 text-warning"></i>DANH MỤC NGUYÊN LIỆU & TỒN KHO</span>
+                <span class="fw-bold fs-5">DANH MỤC NGUYÊN LIỆU & TỒN KHO</span>
                 <div>
                     <button class="btn btn-primary btn-sm fw-semibold me-2" onclick="moModalCongThuc()">
-                        <i class="fa-solid fa-blender me-1"></i> Thiết Lập Định Mức Công Thức
+                        Thiết Lập Định Mức Công Thức
                     </button>
                     <button class="btn btn-outline-secondary btn-sm" onclick="loadKhoData()">
-                        <i class="fa-solid fa-rotate me-1"></i> Làm mới (F5)
+                        Làm mới (F5)
                     </button>
                 </div>
             </div>
@@ -125,7 +118,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-truck-ramp-box me-2"></i>Nhập Thêm Kho Nguyên Liệu</h5>
+                    <h5 class="modal-title fw-bold">Nhập Thêm Kho Nguyên Liệu</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -145,7 +138,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                     <button type="button" class="btn btn-primary fw-bold" onclick="thucHienNhapKho()">
-                        <i class="fa-solid fa-plus me-1"></i> Xác Nhận Nhập Kho
+                        Xác Nhận Nhập Kho
                     </button>
                 </div>
             </div>
@@ -157,7 +150,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-mortar-pestle me-2"></i>Thiết Lập Định Mức Công Thức (Recipe)</h5>
+                    <h5 class="modal-title fw-bold">Thiết Lập Định Mức Công Thức (Recipe)</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -187,7 +180,7 @@
                     </div>
                     <div class="text-end mb-3">
                         <button class="btn btn-success fw-bold" onclick="luuCongThuc()">
-                            <i class="fa-solid fa-floppy-disk me-1"></i> Lưu Định Mức Vào CSDL
+                            Lưu Định Mức Vào CSDL
                         </button>
                     </div>
 
@@ -261,12 +254,12 @@
                     <td class="text-muted">${nl.mucTonToiThieu.toLocaleString('vi-VN')}</td>
                     <td>
                         ${isLow 
-                            ? '<span class="badge bg-danger badge-low-stock p-2"><i class="fa-solid fa-triangle-exclamation me-1"></i>SẮP HẾT HÀNG</span>' 
-                            : '<span class="badge bg-success p-2"><i class="fa-solid fa-check-circle me-1"></i>Đủ hàng</span>'}
+                            ? '<span class="badge bg-danger badge-low-stock p-2">SẮP HẾT HÀNG</span>' 
+                            : '<span class="badge bg-success p-2">Đủ hàng</span>'}
                     </td>
                     <td class="text-center">
                         <button class="btn btn-outline-primary btn-sm" onclick="moModalNhapKho(${nl.maNL}, '${nl.tenNL}', '${nl.donViTinh}')">
-                            <i class="fa-solid fa-plus me-1"></i> Nhập kho
+                            Nhập kho
                         </button>
                     </td>
                 `;
@@ -300,7 +293,7 @@
 
                 if (res.ok) {
                     modalNhapKhoInstance.hide();
-                    showToast("✅ Nhập thêm kho thành công!", true);
+                    showToast("Nhập thêm kho thành công!", true);
                     loadKhoData();
                 } else {
                     showToast("Lỗi nhập kho!", false);
@@ -385,7 +378,7 @@
                 });
 
                 if (res.ok) {
-                    showToast("✅ Lưu định mức công thức thành công!", true);
+                    showToast("Lưu định mức công thức thành công!", true);
                     document.getElementById('recipeDinhMuc').value = '';
                     document.getElementById('recipeGhiChu').value = '';
                     loadRecipeByMon();

@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nhân Sự & Chấm Công - Coffee Management</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <script>
         (function() {
@@ -29,16 +31,16 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-cafe shadow-sm">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="nhansu.html"><i class="fa-solid fa-mug-hot me-2"></i>COFFEE POS</a>
+            <a class="navbar-brand fw-bold" href="nhansu.html">COFFEE POS</a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="banhang.html"><i class="fa-solid fa-cash-register me-1"></i> Bán Hàng (POS)</a></li>
-                    <li class="nav-item"><a class="nav-link" href="kho.html"><i class="fa-solid fa-warehouse me-1"></i> Quản Lý Kho & KPI</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="nhansu.html"><i class="fa-solid fa-users me-1"></i> Nhân Sự & Chấm Công</a></li>
+                    <li class="nav-item"><a class="nav-link" href="banhang.html">Bán Hàng (POS)</a></li>
+                    <li class="nav-item"><a class="nav-link" href="kho.html">Quản Lý Kho & KPI</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="nhansu.html">Nhân Sự & Chấm Công</a></li>
                 </ul>
                 <div class="d-flex align-items-center text-white">
-                    <span class="me-3 fw-semibold"><i class="fa-solid fa-user-gear me-1"></i> Quản lý nhân sự</span>
-                    <button type="button" id="logoutBtn" class="btn btn-outline-light btn-sm" onclick="thucHienDangXuat()"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
+                    <span class="me-3 fw-semibold">Quản lý nhân sự</span>
+                    <button type="button" id="logoutBtn" class="btn btn-outline-light btn-sm" onclick="thucHienDangXuat()">Thoát</button>
                 </div>
             </div>
         </div>
@@ -49,7 +51,7 @@
         <!-- Khối Chấm Công Nhanh -->
         <div class="card shadow-sm mb-4 border-warning">
             <div class="card-header bg-warning bg-opacity-25 d-flex justify-content-between align-items-center py-3">
-                <span class="fw-bold fs-5 text-dark"><i class="fa-solid fa-business-time me-2 text-warning"></i>CHẤM CÔNG CA LÀM VIỆC NHANH</span>
+                <span class="fw-bold fs-5 text-dark">CHẤM CÔNG CA LÀM VIỆC NHANH</span>
                 <span class="badge bg-dark" id="liveClock">00:00:00</span>
             </div>
             <div class="card-body">
@@ -68,7 +70,7 @@
                     </div>
                     <div class="col-md-4 d-flex gap-2">
                         <button class="btn btn-success fw-bold flex-grow-1" onclick="thucHienCheckIn()">
-                            <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Check-in Vào Ca
+                            Check-in Vào Ca
                         </button>
                     </div>
                 </div>
@@ -81,9 +83,9 @@
             <div class="col-lg-7">
                 <div class="card shadow-sm">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                        <span class="fw-bold"><i class="fa-solid fa-address-book me-2 text-primary"></i>HỒ SƠ NHÂN VIÊN</span>
+                        <span class="fw-bold">HỒ SƠ NHÂN VIÊN</span>
                         <button class="btn btn-primary btn-sm fw-semibold" onclick="moModalThemNV()">
-                            <i class="fa-solid fa-user-plus me-1"></i> Thêm Nhân Viên
+                            Thêm Nhân Viên
                         </button>
                     </div>
                     <div class="card-body p-0">
@@ -112,9 +114,9 @@
             <div class="col-lg-5">
                 <div class="card shadow-sm">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                        <span class="fw-bold"><i class="fa-solid fa-clock-rotate-left me-2 text-secondary"></i>LỊCH SỬ CHẤM CÔNG</span>
+                        <span class="fw-bold">LỊCH SỬ CHẤM CÔNG</span>
                         <button class="btn btn-outline-secondary btn-sm" onclick="loadLichSuChamCong()">
-                            <i class="fa-solid fa-rotate"></i>
+                            Làm mới
                         </button>
                     </div>
                     <div class="card-body p-0">
@@ -147,7 +149,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-plus me-2"></i>Thêm Mới Hồ Sơ Nhân Viên</h5>
+                    <h5 class="modal-title fw-bold">Thêm Mới Hồ Sơ Nhân Viên</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -179,7 +181,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                     <button type="button" class="btn btn-primary fw-bold" onclick="luuNhanVien()">
-                        <i class="fa-solid fa-check me-1"></i> Lưu Nhân Viên
+                        Lưu Nhân Viên
                     </button>
                 </div>
             </div>
@@ -230,7 +232,7 @@
                     <td><span class="badge bg-success">Đang làm</span></td>
                     <td class="text-center">
                         <button class="btn btn-outline-danger btn-sm" onclick="xoaNhanVien(${nv.maNV})">
-                            <i class="fa-solid fa-trash"></i>
+                            Xóa
                         </button>
                     </td>
                 `;
@@ -302,7 +304,7 @@
 
                 if (res.ok) {
                     const data = await res.json();
-                    showToast(`✅ Check-in thành công! Trạng thái: ${data.trangThai === 'DUNG_GIO' ? 'ĐÚNG GIỜ' : 'ĐI TRỄ'}`, true);
+                    showToast(`Check-in thành công! Trạng thái: ${data.trangThai === 'DUNG_GIO' ? 'ĐÚNG GIỜ' : 'ĐI TRỄ'}`, true);
                     loadLichSuChamCong();
                 } else {
                     showToast("Lỗi check-in!", false);
@@ -316,7 +318,7 @@
             try {
                 const res = await fetch(`/api/cham-cong/check-out/${maCC}`, { method: 'POST' });
                 if (res.ok) {
-                    showToast("✅ Check-out thành công!", true);
+                    showToast("Check-out thành công!", true);
                     loadLichSuChamCong();
                 }
             } catch (e) {
@@ -352,7 +354,7 @@
 
                 if (res.ok) {
                     modalThemNVInstance.hide();
-                    showToast("✅ Thêm nhân viên thành công!", true);
+                    showToast("Thêm nhân viên thành công!", true);
                     loadNhanVien();
                 } else {
                     showToast("Lỗi: Tên đăng nhập có thể đã bị trùng!", false);
@@ -367,7 +369,7 @@
             try {
                 const res = await fetch(`/api/nhan-su/nhan-vien/${id}`, { method: 'DELETE' });
                 if (res.ok) {
-                    showToast("✅ Đã xóa nhân viên!", true);
+                    showToast("Đã xóa nhân viên!", true);
                     loadNhanVien();
                 }
             } catch (e) {
