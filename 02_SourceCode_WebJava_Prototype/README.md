@@ -62,16 +62,16 @@ Mở trình duyệt truy cập các liên kết sau:
 
 Dự án trang bị đầy đủ **Kiểm thử tích hợp tự động (Automated Integration Tests)** và **Kịch bản kiểm thử hộp đen liên thông (Manual E2E Testing)**.
 
-### 4.1. Kiểm thử Tích hợp Tự động (`PosIntegrationTest.java`)
-Bộ kiểm thử tự động nằm tại `src/test/java/com/cafe/PosIntegrationTest.java`, sử dụng **JUnit 5**, **Spring MockMvc** và cơ sở dữ liệu **H2 In-Memory** (`src/test/resources/application-test.properties` với `@ActiveProfiles("test")`).
+### 4.1. Kiểm thử Tích hợp Tự động (`DonHangIntegrationTest.java` & `NhanSuIntegrationTest.java`)
+Bộ kiểm thử tự động nằm tại `src/test/java/com/cafe/DonHangIntegrationTest.java` và `NhanSuIntegrationTest.java`, sử dụng **JUnit 5**, **Spring MockMvc** và cơ sở dữ liệu **H2 In-Memory** (`src/test/resources/application-test.properties` với `@ActiveProfiles("test")`).
 * **An toàn dữ liệu:** Kiểm thử chạy hoàn toàn trên H2 trong bộ nhớ RAM (chế độ `MODE=MySQL`), **không kết nối và không làm ảnh hưởng** đến CSDL MySQL thật trên XAMPP của người dùng.
 * **Cách chạy kiểm thử tự động:**
-  * **Trên IDE (IntelliJ IDEA / VS Code / Eclipse):** Mở file `src/test/java/com/cafe/PosIntegrationTest.java` $\rightarrow$ Bấm chuột phải chọn **Run 'PosIntegrationTest'**.
+  * **Trên IDE (IntelliJ IDEA / VS Code / Eclipse):** Mở file `src/test/java/com/cafe/DonHangIntegrationTest.java` $\rightarrow$ Bấm chuột phải chọn **Run 'DonHangIntegrationTest'**.
   * **Qua dòng lệnh Maven:**
     ```bash
     mvn test
     ```
-* **Danh sách 13 Kịch bản Kiểm thử Tự động (Test Cases):**
+* **Danh sách 14 Kịch bản Kiểm thử Tự động Bán hàng & 3 Kịch bản Nhân sự (17 Tests):**
 
 | STT | Tên phương thức Test | Nội dung kiểm thử | Kỳ vọng |
 | :---: | :--- | :--- | :---: |

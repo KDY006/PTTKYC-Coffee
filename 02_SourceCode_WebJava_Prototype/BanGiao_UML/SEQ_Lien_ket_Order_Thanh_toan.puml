@@ -1,4 +1,4 @@
-@startuml
+﻿@startuml
 skinparam defaultFontName DejaVu Sans
 skinparam defaultFontSize 15
 skinparam shadowing false
@@ -18,66 +18,66 @@ skinparam maxMessageSize 360
 skinparam noteTextAlignment left
 hide footbox
 autonumber
-actor "Thu ngân" as A
+actor "Thu ngÃ¢n" as A
 boundary "Web POS" as UI
-control "OrderController" as C
-control "OrderService" as S
+control "DonHangController" as C
+control "DonHangService" as S
 control "KhoService" as K
 entity "Repository JPA" as R
 database "MySQL/MariaDB" as DB
-A -> UI : Gọi món và Lưu đơn
+A -> UI : Gá»i mÃ³n vÃ  LÆ°u Ä‘Æ¡n
 activate UI
-UI -> C : POST tạo đơn
+UI -> C : POST táº¡o Ä‘Æ¡n
 activate C
 C -> S : taoDonHang(dto)
 activate S
-S -> R : Lưu hóa đơn/chi tiết và bàn
+S -> R : LÆ°u hÃ³a Ä‘Æ¡n/chi tiáº¿t vÃ  bÃ n
 activate R
 R -> DB : INSERT/UPDATE trong transaction T1
 activate DB
-DB --> R : Kết quả
+DB --> R : Káº¿t quáº£
  deactivate DB
-R --> S : Hóa đơn
+R --> S : HÃ³a Ä‘Æ¡n
  deactivate R
-S --> C : Kết quả sau commit T1
+S --> C : Káº¿t quáº£ sau commit T1
  deactivate S
-C --> UI : Mã đơn + version
+C --> UI : MÃ£ Ä‘Æ¡n + version
  deactivate C
-UI --> A : Bàn Có khách; chưa trừ kho
+UI --> A : BÃ n CÃ³ khÃ¡ch; chÆ°a trá»« kho
  deactivate UI
-... Phục vụ khách, có thể cập nhật món ...
-A -> UI : Xác nhận thanh toán cùng mã đơn
+... Phá»¥c vá»¥ khÃ¡ch, cÃ³ thá»ƒ cáº­p nháº­t mÃ³n ...
+A -> UI : XÃ¡c nháº­n thanh toÃ¡n cÃ¹ng mÃ£ Ä‘Æ¡n
 activate UI
-UI -> C : POST thanh toán
+UI -> C : POST thanh toÃ¡n
 activate C
 C -> S : thanhToanDonHang(id,dto)
 activate S
 S -> K : truKhoTuDong(hoaDon)
 activate K
-K -> R : Khóa và trừ nguyên liệu
+K -> R : KhÃ³a vÃ  trá»« nguyÃªn liá»‡u
 activate R
-R -> DB : SELECT FOR UPDATE; UPDATE tồn trong T2
+R -> DB : SELECT FOR UPDATE; UPDATE tá»“n trong T2
 activate DB
-DB --> R : Kết quả
+DB --> R : Káº¿t quáº£
  deactivate DB
-R --> K : Đủ kho
+R --> K : Äá»§ kho
  deactivate R
-K --> S : Thành công
+K --> S : ThÃ nh cÃ´ng
  deactivate K
-S -> R : Chốt hóa đơn, trả bàn
+S -> R : Chá»‘t hÃ³a Ä‘Æ¡n, tráº£ bÃ n
 activate R
-R -> DB : UPDATE trong cùng T2
+R -> DB : UPDATE trong cÃ¹ng T2
 activate DB
-DB --> R : Kết quả
+DB --> R : Káº¿t quáº£
  deactivate DB
-R --> S : Hóa đơn PAID
+R --> S : HÃ³a Ä‘Æ¡n PAID
  deactivate R
-S --> C : Kết quả sau commit T2
+S --> C : Káº¿t quáº£ sau commit T2
  deactivate S
-C --> UI : Hóa đơn đã trả
+C --> UI : HÃ³a Ä‘Æ¡n Ä‘Ã£ tráº£
  deactivate C
-UI --> A : Bill, tiền thừa và bàn Trống
+UI --> A : Bill, tiá»n thá»«a vÃ  bÃ n Trá»‘ng
  deactivate UI
-note over S,DB : T1 và T2 là hai transaction riêng.\nTrong T2, hóa đơn + kho + bàn commit/rollback cùng nhau.
+note over S,DB : T1 vÃ  T2 lÃ  hai transaction riÃªng.\nTrong T2, hÃ³a Ä‘Æ¡n + kho + bÃ n commit/rollback cÃ¹ng nhau.
 
 @enduml

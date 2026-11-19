@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/nhan-su")
 public class NhanSuController {
     private final NhanSuService nhanSuService;
-    private final SessionAccess access;
+    private final PhanQuyenSession access;
 
-    public NhanSuController(NhanSuService nhanSuService, SessionAccess access) { this.nhanSuService = nhanSuService; this.access = access; }
+    public NhanSuController(NhanSuService nhanSuService, PhanQuyenSession access) { this.nhanSuService = nhanSuService; this.access = access; }
 
     @GetMapping("/nhan-vien")
     public List<NhanVien> layDanhSachNhanVien(HttpSession session) {

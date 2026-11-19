@@ -1,4 +1,4 @@
-@startuml
+﻿@startuml
 skinparam defaultFontName DejaVu Sans
 skinparam defaultFontSize 15
 skinparam shadowing false
@@ -18,65 +18,65 @@ skinparam maxMessageSize 360
 skinparam noteTextAlignment left
 hide footbox
 autonumber
-actor "Thu ngân" as A
+actor "Thu ngÃ¢n" as A
 boundary "banhang.html\nbanhang.js" as UI
-control "OrderController" as C
-control "OrderService" as S
+control "DonHangController" as C
+control "DonHangService" as S
 entity "Repository JPA" as R
 database "MySQL/MariaDB" as DB
-A -> UI : Chọn món, ghi chú; Lưu đơn
+A -> UI : Chá»n mÃ³n, ghi chÃº; LÆ°u Ä‘Æ¡n
 activate UI
-UI -> C : POST /api/order/tao-don\nOrderDTO + yeuCauTao
+UI -> C : POST /api/order/tao-don\nDonHangDTO + yeuCauTao
 activate C
-C -> C : staff(session), lấy maNV tại server
+C -> C : staff(session), láº¥y maNV táº¡i server
 C -> S : taoDonHang(dto)
 activate S
-note over S,DB : Bắt đầu transaction qua Spring proxy
+note over S,DB : Báº¯t Ä‘áº§u transaction qua Spring proxy
 S -> R : findByYeuCauTao(key)
 activate R
-R -> DB : SELECT theo mã yêu cầu
+R -> DB : SELECT theo mÃ£ yÃªu cáº§u
 activate DB
-DB --> R : Đơn cũ hoặc không có
+DB --> R : ÄÆ¡n cÅ© hoáº·c khÃ´ng cÃ³
  deactivate DB
-R --> S : Kết quả
+R --> S : Káº¿t quáº£
  deactivate R
-alt Mã yêu cầu đã có và đúng nhân viên
-  S --> C : Trả cùng hóa đơn
-else Yêu cầu mới
-  opt Tại bàn
-    S -> R : khoaBan(maBan), tìm đơn mở
+alt MÃ£ yÃªu cáº§u Ä‘Ã£ cÃ³ vÃ  Ä‘Ãºng nhÃ¢n viÃªn
+  S --> C : Tráº£ cÃ¹ng hÃ³a Ä‘Æ¡n
+else YÃªu cáº§u má»›i
+  opt Táº¡i bÃ n
+    S -> R : khoaBan(maBan), tÃ¬m Ä‘Æ¡n má»Ÿ
     activate R
-    R -> DB : SELECT bàn FOR UPDATE; SELECT đơn chờ
+    R -> DB : SELECT bÃ n FOR UPDATE; SELECT Ä‘Æ¡n chá»
     activate DB
-    DB --> R : Bàn và trạng thái đơn
+    DB --> R : BÃ n vÃ  tráº¡ng thÃ¡i Ä‘Æ¡n
     deactivate DB
-    R --> S : Kết quả
+    R --> S : Káº¿t quáº£
     deactivate R
   end
-  S -> R : Đọc nhân viên và món đang bán
+  S -> R : Äá»c nhÃ¢n viÃªn vÃ  mÃ³n Ä‘ang bÃ¡n
   activate R
-  R -> DB : SELECT dữ liệu tham chiếu
+  R -> DB : SELECT dá»¯ liá»‡u tham chiáº¿u
   activate DB
-  DB --> R : Dữ liệu
+  DB --> R : Dá»¯ liá»‡u
   deactivate DB
-  R --> S : Nhân viên, món và giá
+  R --> S : NhÃ¢n viÃªn, mÃ³n vÃ  giÃ¡
   deactivate R
-  S -> S : Kiểm tra dữ liệu; tính tổng tại server
-  S -> R : save(bàn nếu có); saveAndFlush(hoaDon)
+  S -> S : Kiá»ƒm tra dá»¯ liá»‡u; tÃ­nh tá»•ng táº¡i server
+  S -> R : save(bÃ n náº¿u cÃ³); saveAndFlush(hoaDon)
   activate R
-  R -> DB : INSERT hóa đơn/chi tiết; UPDATE bàn
+  R -> DB : INSERT hÃ³a Ä‘Æ¡n/chi tiáº¿t; UPDATE bÃ n
   activate DB
-  DB --> R : Kết quả lưu
+  DB --> R : Káº¿t quáº£ lÆ°u
   deactivate DB
-  R --> S : Hóa đơn + version
+  R --> S : HÃ³a Ä‘Æ¡n + version
   deactivate R
-  note over S,DB : Commit khi kết thúc service thành công; lỗi thì rollback
-  S --> C : Hóa đơn đã lưu
+  note over S,DB : Commit khi káº¿t thÃºc service thÃ nh cÃ´ng; lá»—i thÃ¬ rollback
+  S --> C : HÃ³a Ä‘Æ¡n Ä‘Ã£ lÆ°u
 end
  deactivate S
-C --> UI : HTTP 201 + JSON\nhoặc 400/409 khi lỗi
+C --> UI : HTTP 201 + JSON\nhoáº·c 400/409 khi lá»—i
  deactivate C
-UI --> A : Mã đơn, món và tổng; cập nhật bàn
+UI --> A : MÃ£ Ä‘Æ¡n, mÃ³n vÃ  tá»•ng; cáº­p nháº­t bÃ n
  deactivate UI
 
 @enduml

@@ -373,8 +373,8 @@ Theo chuẩn mực học thuật bài giảng của TS. Hồ Thị Linh, nhóm t
    * *Bước 1:* Người dùng nhập Tên đăng nhập và Mật khẩu vào form đăng nhập trên `index.html`.
    * *Bước 2:* Người dùng bấm nút "Đăng Nhập".
    * *Bước 3:* Trình duyệt gửi request `POST /api/auth/login` kèm payload JSON lên máy chủ Spring Boot.
-   * *Bước 4:* `AuthController` tiếp nhận và chuyển tiếp dữ liệu đến `AuthService`.
-   * *Bước 5:* `AuthService` đối chiếu thông tin với CSDL: kiểm tra tên đăng nhập và khớp mật khẩu.
+   * *Bước 4:* `XacThucController` tiếp nhận và chuyển tiếp dữ liệu đến `NhanSuService`.
+   * *Bước 5:* `NhanSuService` đối chiếu thông tin với CSDL: kiểm tra tên đăng nhập và khớp mật khẩu.
    * *Bước 6:* Máy chủ tạo phiên làm việc bảo mật `HttpSession`, lưu `maNV` và `vaiTro` vào phiên.
    * *Bước 7:* Máy chủ trả về HTTP 200 OK kèm JSON thông tin người dùng (đã loại bỏ trường mật khẩu).
    * *Bước 8:* Client lưu thông tin người dùng vào `localStorage` và điều hướng:
@@ -431,7 +431,7 @@ Theo chuẩn mực học thuật bài giảng của TS. Hồ Thị Linh, nhóm t
    * *Bước 6:* Hệ thống tính toán tổng tạm tính hiển thị tức thì.
    * *Bước 7:* Nhân viên bấm nút "Lưu đơn".
    * *Bước 8:* Client sinh mã khóa duy nhất `yeuCauTao` (UUID) và gửi request `POST /api/order/tao-don`.
-   * *Bước 9:* `OrderService` kiểm tra hợp lệ, tạo thực thể `HoaDon` mới, lưu các dòng `ChiTietHoaDon`, chụp lại đơn giá bán tại thời điểm hiện tại và chuyển trạng thái bàn sang `CO_KHACH`.
+   * *Bước 9:* `DonHangService` kiểm tra hợp lệ, tạo thực thể `HoaDon` mới, lưu các dòng `ChiTietHoaDon`, chụp lại đơn giá bán tại thời điểm hiện tại và chuyển trạng thái bàn sang `CO_KHACH`.
    * *Bước 10:* Giao diện hiển thị thông báo thành công: "Đã lưu đơn #X. Bàn và món đã được ghi nhận", thẻ bàn trên giao diện chuyển sang viền đỏ có khách.
 7. **Luồng sự kiện thay thế:**
    * *3a. Tạo đơn mang đi:* Tại Bước 1, nhân viên bấm nút "+ Đơn mang đi". Hệ thống cho phép tạo đơn mà không cần chọn mã bàn.
@@ -510,7 +510,7 @@ Theo chuẩn mực học thuật bài giảng của TS. Hồ Thị Linh, nhóm t
    * *Bước 5:* Với phương thức Tiền mặt: Thu ngân nhập "Tiền khách đưa". Hệ thống tính toán và hiển thị ngay số "Tiền thừa" trả khách.
    * *Bước 6:* Thu ngân bấm "Xác nhận thanh toán".
    * *Bước 7:* Client gửi `POST /api/order/{maHoaDon}/thanh-toan` kèm mã `yeuCauThanhToan` (UUID), `phienBan`, chiết khấu và tiền khách đưa.
-   * *Bước 8:* `OrderService` mở giao dịch `@Transactional(rollbackFor = Exception.class)`.
+   * *Bước 8:* `DonHangService` mở giao dịch `@Transactional(rollbackFor = Exception.class)`.
    * *Bước 9:* Hệ thống khóa bi quan dòng hóa đơn và kiểm tra:
      - Kiểm tra tiền khách đưa $\ge$ số tiền phải thu.
      - Kiểm tra phân quyền chiết khấu: chặn nếu `STAFF` gửi chiết khấu $> 0$.
@@ -673,7 +673,7 @@ Biểu đồ đóng gói thể hiện cấu trúc phân chia thư mục mã ngu�
 * `com.cafe`: Chứa lớp khởi chạy ứng dụng `QuanLyCafeApplication.java`.
 * `com.cafe.entity`: Chứa 9 lớp thực thể ánh xạ JPA tương ứng với 9 bảng CSDL (`NhanVien`, `CaLam`, `ChamCong`, `Ban`, `MonNuoc`, `NguyenLieu`, `CongThuc`, `HoaDon`, `ChiTietHoaDon`).
 * `com.cafe.repository`: Chứa 9 interface kế thừa `JpaRepository<T, ID>` để thực hiện các thao tác CRUD và các truy vấn tùy biến.
-* `com.cafe.service`: Chứa các lớp cài đặt logic nghiệp vụ (`AuthService`, `OrderService`, `KhoService`, `NhanSuService`, `ChamCongService`).
+* `com.cafe.service`: Chứa các lớp cài đặt logic nghiệp vụ (`DonHangService`, `KhoService`, `NhanSuService`).
 * `com.cafe.controller`: Chứa các REST Controller tiếp nhận và trả lời HTTP Request cho từng phân hệ.
 * `com.cafe.dto`: Chứa các đối tượng đóng gói dữ liệu truyền tải (`ThanhToanDTO`, `OrderRequestDTO`, `ChiTietRequestDTO`).
 * `src/main/resources/static`: Chứa toàn bộ các tài nguyên giao diện Web tĩnh (HTML, CSS, JS, Favicon).
@@ -884,10 +884,10 @@ Mô hình ERD được thiết kế theo chuẩn ký pháp chân quạ (*Crow's 
 
 ##### Phân tích chi tiết Biểu đồ Tuần tự Trừ kho (Hình 6.1):
 1. **Khởi phát:** Thu ngân bấm nút "Thanh toán & Xuất hóa đơn" trên giao diện `banhang.html`. Client gửi request `POST /api/order/{maHoaDon}/thanh-toan`.
-2. **Tiếp nhận & Mở giao dịch:** `OrderController` chuyển tiếp đến `OrderService`. Phương thức `thanhToanDonHang` mở khối giao dịch toàn vẹn:
+2. **Tiếp nhận & Mở giao dịch:** `DonHangController` chuyển tiếp đến `DonHangService`. Phương thức `thanhToanDonHang` mở khối giao dịch toàn vẹn:
    `@Transactional(rollbackFor = Exception.class)`.
-3. **Khóa dòng hóa đơn:** `OrderService` gửi truy vấn `SELECT * FROM hoa_don WHERE ma_hoa_don = ? FOR UPDATE` để ngăn chặn các luồng khác can thiệp đồng thời vào đơn này.
-4. **Ủy quyền phân hệ Kho:** `OrderService` gọi `khoService.truKhoTuDong(hoaDon)` với thuộc tính lan truyền giao dịch `@Transactional(propagation = Propagation.MANDATORY)` (bắt buộc phải chạy trong giao dịch đang mở).
+3. **Khóa dòng hóa đơn:** `DonHangService` gửi truy vấn `SELECT * FROM hoa_don WHERE ma_hoa_don = ? FOR UPDATE` để ngăn chặn các luồng khác can thiệp đồng thời vào đơn này.
+4. **Ủy quyền phân hệ Kho:** `DonHangService` gọi `khoService.truKhoTuDong(hoaDon)` với thuộc tính lan truyền giao dịch `@Transactional(propagation = Propagation.MANDATORY)` (bắt buộc phải chạy trong giao dịch đang mở).
 5. **Vòng lặp bóc tách định mức BOM:**
    * Hệ thống lặp qua từng `ChiTietHoaDon` trong hóa đơn.
    * `KhoService` gọi `CongThucRepository.findByMonNuoc(monNuoc)` lấy danh sách nguyên liệu cấu thành.
@@ -907,7 +907,7 @@ Mô hình ERD được thiết kế theo chuẩn ký pháp chân quạ (*Crow's 
 > ![Hình 6.2: Biểu đồ Tuần tự quy trình Bán hàng POS và Lưu đơn](file:///d:/3.1.%20PTTKYC/CK/diagram/Sequence_POS.svg)
 
 ##### Phân tích chi tiết Biểu đồ Tuần tự POS (Hình 6.2):
-* Thể hiện luồng tương tác giữa Thu ngân $\rightarrow$ `banhang.html` $\rightarrow$ `OrderController` $\rightarrow$ `OrderService` $\rightarrow$ `BanRepository` $\rightarrow$ `HoaDonRepository` $\rightarrow$ `MySQL`.
+* Thể hiện luồng tương tác giữa Thu ngân $\rightarrow$ `banhang.html` $\rightarrow$ `DonHangController` $\rightarrow$ `DonHangService` $\rightarrow$ `BanRepository` $\rightarrow$ `HoaDonRepository` $\rightarrow$ `MySQL`.
 * Minh họa việc bắt giữ mã `yeuCauTao` để chống tạo trùng đơn (Idempotency).
 * Thể hiện việc cập nhật trạng thái bàn sang `CO_KHACH` và kích hoạt tăng số phiên bản `phien_ban` của đơn hàng.
 
@@ -1082,7 +1082,7 @@ Tất cả các hình ảnh minh chứng dưới đây được chụp trực ti
 ---
 
 ### 7.3. Kế hoạch và kết quả kiểm thử tích hợp tự động Backend (14/14 Test Cases Passed)
-Toàn bộ mã nguồn kiểm thử tích hợp tự động được viết trong tệp tin `PosIntegrationTest.java` sử dụng JUnit 5, Spring MockMvc và cơ sở dữ liệu H2 In-Memory tách biệt (`application-test.properties`), đảm bảo việc chạy test tự động an toàn tuyệt đối, không làm thay đổi CSDL MySQL thật trên XAMPP.
+Toàn bộ mã nguồn kiểm thử tích hợp tự động được viết trong tệp tin `DonHangIntegrationTest.java` (và `NhanSuIntegrationTest.java`) sử dụng JUnit 5, Spring MockMvc và cơ sở dữ liệu H2 In-Memory tách biệt (`application-test.properties`), đảm bảo việc chạy test tự động an toàn tuyệt đối, không làm thay đổi CSDL MySQL thật trên XAMPP.
 
 * Lệnh thực thi kiểm thử:
   ```powershell
@@ -1090,7 +1090,7 @@ Toàn bộ mã nguồn kiểm thử tích hợp tự động được viết tro
   ```
 * **Kết quả thực tế:** `Tests run: 14, Failures: 0, Errors: 0, Skipped: 0` – **100% BUILD SUCCESS**.
 
-**Bảng 7.1: Bảng tổng hợp 14 ca kiểm thử tích hợp tự động Backend (PosIntegrationTest)**
+**Bảng 7.1: Bảng tổng hợp 14 ca kiểm thử tích hợp tự động Backend (DonHangIntegrationTest)**
 
 | STT | Tên phương thức kiểm thử trong mã nguồn | Nghiệp vụ kiểm tra chi tiết | Kết quả kỳ vọng | Kết quả thực tế |
 | :---: | :--- | :--- | :---: | :---: |

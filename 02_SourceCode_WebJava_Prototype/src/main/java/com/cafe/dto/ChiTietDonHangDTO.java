@@ -1,14 +1,15 @@
 package com.cafe.dto;
 
-public class OrderItemDTO {
+public class ChiTietDonHangDTO {
+
     private Integer maMon;
     private Integer soLuong;
     private String ghiChu;
 
-    public OrderItemDTO() {
+    public ChiTietDonHangDTO() {
     }
 
-    public OrderItemDTO(Integer maMon, Integer soLuong, String ghiChu) {
+    public ChiTietDonHangDTO(Integer maMon, Integer soLuong, String ghiChu) {
         this.maMon = maMon;
         this.soLuong = soLuong;
         this.ghiChu = ghiChu;

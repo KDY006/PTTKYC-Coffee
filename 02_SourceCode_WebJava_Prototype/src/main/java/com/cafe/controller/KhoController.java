@@ -17,9 +17,9 @@ import java.util.Map;
 public class KhoController {
 
     private final KhoService khoService;
-    private final SessionAccess access;
+    private final PhanQuyenSession access;
 
-    public KhoController(KhoService khoService, SessionAccess access) {
+    public KhoController(KhoService khoService, PhanQuyenSession access) {
         this.khoService = khoService;
         this.access = access;
     }

@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/phan-ca")
 public class PhanCaController {
     private final NhanSuService nhanSuService;
-    private final SessionAccess access;
-    public PhanCaController(NhanSuService nhanSuService, SessionAccess access) { this.nhanSuService = nhanSuService; this.access = access; }
+    private final PhanQuyenSession access;
+    public PhanCaController(NhanSuService nhanSuService, PhanQuyenSession access) { this.nhanSuService = nhanSuService; this.access = access; }
 
     @PostMapping
     public ResponseEntity<PhanCa> phanCa(@RequestBody PhanCaDTO dto, HttpSession session) {

@@ -1,10 +1,12 @@
 package com.cafe.controller;
 
 import com.cafe.entity.Ban;
-import com.cafe.service.OrderService;
+import com.cafe.service.DonHangService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -12,17 +14,17 @@ import java.util.List;
 @RequestMapping("/api/ban")
 public class BanController {
 
-    private final OrderService orderService;
-    private final SessionAccess access;
+    private final DonHangService donHangService;
+    private final PhanQuyenSession access;
 
-    public BanController(OrderService orderService, SessionAccess access) {
-        this.orderService = orderService;
+    public BanController(DonHangService donHangService, PhanQuyenSession access) {
+        this.donHangService = donHangService;
         this.access = access;
     }
 
     @GetMapping
     public ResponseEntity<List<Ban>> layDanhSachBan(HttpSession session) {
         access.userId(session);
-        return ResponseEntity.ok(orderService.layDanhSachBan());
+        return ResponseEntity.ok(donHangService.layDanhSachBan());
     }
 }

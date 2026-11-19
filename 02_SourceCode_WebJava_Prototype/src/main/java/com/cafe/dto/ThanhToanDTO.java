@@ -1,8 +1,14 @@
 package com.cafe.dto;
 
 public class ThanhToanDTO {
+
     private Double chietKhau = 0.0;
     private String phuongThucTT = "TIEN_MAT"; // TIEN_MAT, CHUYEN_KHOAN
+    private Double tienKhachDua;
+    private Boolean xacNhanChuyenKhoan = false;
+    private String maThamChieu;
+    private String yeuCauThanhToan;
+    private Long phienBan;
 
     public ThanhToanDTO() {
     }
@@ -10,6 +16,17 @@ public class ThanhToanDTO {
     public ThanhToanDTO(Double chietKhau, String phuongThucTT) {
         this.chietKhau = chietKhau;
         this.phuongThucTT = phuongThucTT;
+    }
+
+    public ThanhToanDTO(Double chietKhau, String phuongThucTT, Double tienKhachDua,
+                        Boolean xacNhanChuyenKhoan, String maThamChieu, String yeuCauThanhToan, Long phienBan) {
+        this.chietKhau = chietKhau;
+        this.phuongThucTT = phuongThucTT;
+        this.tienKhachDua = tienKhachDua;
+        this.xacNhanChuyenKhoan = xacNhanChuyenKhoan;
+        this.maThamChieu = maThamChieu;
+        this.yeuCauThanhToan = yeuCauThanhToan;
+        this.phienBan = phienBan;
     }
 
     public Double getChietKhau() {
@@ -28,23 +45,43 @@ public class ThanhToanDTO {
         this.phuongThucTT = phuongThucTT;
     }
 
-    private Double tienKhachDua = null;
-    public Double getTienKhachDua() { return tienKhachDua; }
-    public void setTienKhachDua(Double value) { tienKhachDua = value; }
+    public Double getTienKhachDua() {
+        return tienKhachDua;
+    }
 
-    private Boolean xacNhanChuyenKhoan = false;
-    public Boolean getXacNhanChuyenKhoan() { return xacNhanChuyenKhoan; }
-    public void setXacNhanChuyenKhoan(Boolean value) { xacNhanChuyenKhoan = value; }
+    public void setTienKhachDua(Double tienKhachDua) {
+        this.tienKhachDua = tienKhachDua;
+    }
 
-    private String maThamChieu = null;
-    public String getMaThamChieu() { return maThamChieu; }
-    public void setMaThamChieu(String value) { maThamChieu = value; }
+    public Boolean getXacNhanChuyenKhoan() {
+        return xacNhanChuyenKhoan;
+    }
 
-    private String yeuCauThanhToan = null;
-    public String getYeuCauThanhToan() { return yeuCauThanhToan; }
-    public void setYeuCauThanhToan(String value) { yeuCauThanhToan = value; }
+    public void setXacNhanChuyenKhoan(Boolean xacNhanChuyenKhoan) {
+        this.xacNhanChuyenKhoan = xacNhanChuyenKhoan;
+    }
 
-    private Long phienBan = null;
-    public Long getPhienBan() { return phienBan; }
-    public void setPhienBan(Long value) { phienBan = value; }
+    public String getMaThamChieu() {
+        return maThamChieu;
+    }
+
+    public void setMaThamChieu(String maThamChieu) {
+        this.maThamChieu = maThamChieu;
+    }
+
+    public String getYeuCauThanhToan() {
+        return yeuCauThanhToan;
+    }
+
+    public void setYeuCauThanhToan(String yeuCauThanhToan) {
+        this.yeuCauThanhToan = yeuCauThanhToan;
+    }
+
+    public Long getPhienBan() {
+        return phienBan;
+    }
+
+    public void setPhienBan(Long phienBan) {
+        this.phienBan = phienBan;
+    }
 }

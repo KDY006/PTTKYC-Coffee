@@ -1,4 +1,4 @@
-@startuml
+﻿@startuml
 skinparam defaultFontName DejaVu Sans
 skinparam defaultFontSize 15
 skinparam shadowing false
@@ -18,67 +18,67 @@ skinparam maxMessageSize 360
 skinparam noteTextAlignment left
 hide footbox
 autonumber
-actor "Thu ngân" as A
+actor "Thu ngÃ¢n" as A
 boundary "banhang.html\nbanhang.js" as UI
-control "OrderController" as C
-control "OrderService" as S
+control "DonHangController" as C
+control "DonHangService" as S
 entity "Repository JPA" as R
 database "MySQL/MariaDB" as DB
-A -> UI : Sửa/hủy dòng; Lưu đơn
+A -> UI : Sá»­a/há»§y dÃ²ng; LÆ°u Ä‘Æ¡n
 activate UI
-UI -> C : PUT /api/order/{id}/mon\nOrderDTO + phienBan
+UI -> C : PUT /api/order/{id}/mon\nDonHangDTO + phienBan
 activate C
-C -> C : Kiểm tra session
+C -> C : Kiá»ƒm tra session
 C -> S : capNhatDon(id,dto)
 activate S
-note over S,DB : Transaction cập nhật đơn
+note over S,DB : Transaction cáº­p nháº­t Ä‘Æ¡n
 S -> R : khoaHoaDon(id)
 activate R
-R -> DB : SELECT hóa đơn FOR UPDATE
+R -> DB : SELECT hÃ³a Ä‘Æ¡n FOR UPDATE
 activate DB
-DB --> R : Hóa đơn và version hiện tại
+DB --> R : HÃ³a Ä‘Æ¡n vÃ  version hiá»‡n táº¡i
  deactivate DB
-R --> S : Hóa đơn
+R --> S : HÃ³a Ä‘Æ¡n
  deactivate R
-alt Đơn đã kết thúc hoặc version cũ
- S --> C : Lỗi xung đột 409
-else Đơn mở và version đúng
- S -> R : Đọc món; saveAndFlush(hoaDon)
+alt ÄÆ¡n Ä‘Ã£ káº¿t thÃºc hoáº·c version cÅ©
+ S --> C : Lá»—i xung Ä‘á»™t 409
+else ÄÆ¡n má»Ÿ vÃ  version Ä‘Ãºng
+ S -> R : Äá»c mÃ³n; saveAndFlush(hoaDon)
  activate R
- R -> DB : SELECT món; DELETE/INSERT chi tiết;\nUPDATE tổng và version
+ R -> DB : SELECT mÃ³n; DELETE/INSERT chi tiáº¿t;\nUPDATE tá»•ng vÃ  version
  activate DB
- DB --> R : Kết quả
+ DB --> R : Káº¿t quáº£
  deactivate DB
- R --> S : Hóa đơn cập nhật
+ R --> S : HÃ³a Ä‘Æ¡n cáº­p nháº­t
  deactivate R
- note over S,DB : Commit; lỗi lưu thì rollback
- S --> C : Hóa đơn mới
+ note over S,DB : Commit; lá»—i lÆ°u thÃ¬ rollback
+ S --> C : HÃ³a Ä‘Æ¡n má»›i
 end
  deactivate S
-C --> UI : JSON hoặc lỗi
+C --> UI : JSON hoáº·c lá»—i
  deactivate C
-UI --> A : Tổng mới hoặc yêu cầu tải lại
+UI --> A : Tá»•ng má»›i hoáº·c yÃªu cáº§u táº£i láº¡i
  deactivate UI
-== Nhánh hủy toàn bộ đơn ==
-A -> UI : Xác nhận hủy đơn
+== NhÃ¡nh há»§y toÃ n bá»™ Ä‘Æ¡n ==
+A -> UI : XÃ¡c nháº­n há»§y Ä‘Æ¡n
 activate UI
 UI -> C : POST /api/order/{id}/huy\n{phienBan}
 activate C
 C -> S : huyDonHang(id,version)
 activate S
-S -> R : Khóa và kiểm tra; ghi DA_HUY; trả bàn
+S -> R : KhÃ³a vÃ  kiá»ƒm tra; ghi DA_HUY; tráº£ bÃ n
 activate R
-R -> DB : UPDATE hóa đơn và bàn trong transaction
+R -> DB : UPDATE hÃ³a Ä‘Æ¡n vÃ  bÃ n trong transaction
 activate DB
-DB --> R : Kết quả
+DB --> R : Káº¿t quáº£
  deactivate DB
-R --> S : Hóa đơn đã hủy
+R --> S : HÃ³a Ä‘Æ¡n Ä‘Ã£ há»§y
  deactivate R
-S --> C : Kết quả sau commit
+S --> C : Káº¿t quáº£ sau commit
  deactivate S
-C --> UI : JSON hoặc lỗi; PAID bị từ chối
+C --> UI : JSON hoáº·c lá»—i; PAID bá»‹ tá»« chá»‘i
  deactivate C
-UI --> A : Đơn đã hủy; không trừ kho
+UI --> A : ÄÆ¡n Ä‘Ã£ há»§y; khÃ´ng trá»« kho
  deactivate UI
 
 @enduml

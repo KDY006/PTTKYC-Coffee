@@ -1,13 +1,14 @@
 package com.cafe.dto;
 
-public class LoginDTO {
+public class DangNhapDTO {
+
     private String tenDangNhap;
     private String matKhau;
 
-    public LoginDTO() {
+    public DangNhapDTO() {
     }
 
-    public LoginDTO(String tenDangNhap, String matKhau) {
+    public DangNhapDTO(String tenDangNhap, String matKhau) {
         this.tenDangNhap = tenDangNhap;
         this.matKhau = matKhau;
     }

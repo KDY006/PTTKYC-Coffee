@@ -1,13 +1,14 @@
 package com.cafe.dto;
 
-public class CheckInDTO {
+public class ChamCongDTO {
+
     private Integer maNV;
     private Integer maCa;
 
-    public CheckInDTO() {
+    public ChamCongDTO() {
     }
 
-    public CheckInDTO(Integer maNV, Integer maCa) {
+    public ChamCongDTO(Integer maNV, Integer maCa) {
         this.maNV = maNV;
         this.maCa = maCa;
     }

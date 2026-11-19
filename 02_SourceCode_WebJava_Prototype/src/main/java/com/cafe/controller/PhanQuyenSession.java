@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 @Component
-public class SessionAccess {
+public class PhanQuyenSession {
     public Integer userId(HttpSession session) {
         Object id = session.getAttribute("maNV");
         if (!(id instanceof Integer)) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập lại");

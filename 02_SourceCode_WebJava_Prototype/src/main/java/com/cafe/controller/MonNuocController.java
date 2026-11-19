@@ -1,10 +1,13 @@
 package com.cafe.controller;
 
 import com.cafe.entity.MonNuoc;
-import com.cafe.service.OrderService;
+import com.cafe.service.DonHangService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -12,11 +15,11 @@ import java.util.List;
 @RequestMapping("/api/mon-nuoc")
 public class MonNuocController {
 
-    private final OrderService orderService;
-    private final SessionAccess access;
+    private final DonHangService donHangService;
+    private final PhanQuyenSession access;
 
-    public MonNuocController(OrderService orderService, SessionAccess access) {
-        this.orderService = orderService;
+    public MonNuocController(DonHangService donHangService, PhanQuyenSession access) {
+        this.donHangService = donHangService;
         this.access = access;
     }
 
@@ -26,6 +29,6 @@ public class MonNuocController {
             @RequestParam(required = false) String q,
             HttpSession session) {
         access.userId(session);
-        return ResponseEntity.ok(orderService.layDanhSachMonNuoc(danhMuc, q));
+        return ResponseEntity.ok(donHangService.layDanhSachMonNuoc(danhMuc, q));
     }
 }

@@ -88,12 +88,18 @@ CREATE TABLE `hoa_don` (
     `ma_ban` INT NULL,
     `ma_nv` INT NOT NULL,
     `thoi_gian_tao` DATETIME NOT NULL,
+    `thoi_gian_thanh_toan` DATETIME NULL,
     `loai_don` VARCHAR(20) NOT NULL DEFAULT 'TAI_BAN',
     `tong_tien_goc` DOUBLE NOT NULL DEFAULT 0,
     `chiet_khau` DOUBLE NOT NULL DEFAULT 0,
     `tong_tien_thanh_toan` DOUBLE NOT NULL DEFAULT 0,
+    `tien_khach_dua` DOUBLE NULL,
     `phuong_thuc_tt` VARCHAR(20) DEFAULT 'TIEN_MAT',
+    `ma_tham_chieu` VARCHAR(100) UNIQUE,
     `trang_thai` VARCHAR(20) NOT NULL DEFAULT 'CHO_THANH_TOAN',
+    `yeu_cau_tao` VARCHAR(36) UNIQUE,
+    `yeu_cau_thanh_toan` VARCHAR(36) UNIQUE,
+    `phien_ban` BIGINT DEFAULT 0,
     CONSTRAINT `fk_hd_ban` FOREIGN KEY (`ma_ban`) REFERENCES `ban`(`ma_ban`) ON DELETE SET NULL,
     CONSTRAINT `fk_hd_nhanvien` FOREIGN KEY (`ma_nv`) REFERENCES `nhan_vien`(`ma_nv`)
 ) ENGINE=InnoDB;

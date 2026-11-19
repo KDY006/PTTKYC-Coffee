@@ -1,4 +1,4 @@
-@startuml
+﻿@startuml
 skinparam defaultFontName DejaVu Sans
 skinparam defaultFontSize 15
 skinparam shadowing false
@@ -18,76 +18,76 @@ skinparam maxMessageSize 360
 skinparam noteTextAlignment left
 hide footbox
 autonumber
-actor "Thu ngân" as A
+actor "Thu ngÃ¢n" as A
 boundary "banhang.html\nbanhang.js" as UI
-control "OrderController" as C
-control "OrderService" as S
+control "DonHangController" as C
+control "DonHangService" as S
 control "KhoService" as K
 entity "Repository JPA" as R
 database "MySQL/MariaDB" as DB
-A -> UI : Nhập tiền/chiết khấu; Xác nhận
+A -> UI : Nháº­p tiá»n/chiáº¿t kháº¥u; XÃ¡c nháº­n
 activate UI
 UI -> C : POST /api/order/{id}/thanh-toan\nThanhToanDTO + version + UUID
 activate C
-C -> C : Kiểm tra session và quyền chiết khấu
+C -> C : Kiá»ƒm tra session vÃ  quyá»n chiáº¿t kháº¥u
 C -> S : thanhToanDonHang(id,dto)
 activate S
-note over S,DB : Một transaction bao trùm hóa đơn, bàn và kho
+note over S,DB : Má»™t transaction bao trÃ¹m hÃ³a Ä‘Æ¡n, bÃ n vÃ  kho
 S -> R : khoaHoaDon(id)
 activate R
-R -> DB : SELECT hóa đơn FOR UPDATE
+R -> DB : SELECT hÃ³a Ä‘Æ¡n FOR UPDATE
 activate DB
-DB --> R : Hóa đơn và version
+DB --> R : HÃ³a Ä‘Æ¡n vÃ  version
  deactivate DB
-R --> S : Hóa đơn
+R --> S : HÃ³a Ä‘Æ¡n
  deactivate R
-alt Đã trả với cùng mã yêu cầu
- S --> C : Hóa đơn cũ; không gọi KhoService
-else Yêu cầu thanh toán hợp lệ
- S -> S : Kiểm tra OPEN, version, tiền, tham chiếu
+alt ÄÃ£ tráº£ vá»›i cÃ¹ng mÃ£ yÃªu cáº§u
+ S --> C : HÃ³a Ä‘Æ¡n cÅ©; khÃ´ng gá»i KhoService
+else YÃªu cáº§u thanh toÃ¡n há»£p lá»‡
+ S -> S : Kiá»ƒm tra OPEN, version, tiá»n, tham chiáº¿u
  S -> K : truKhoTuDong(hoaDon)
  activate K
- note over K,DB : MANDATORY: tham gia transaction của OrderService
- K -> R : Đọc công thức; gom lượng cần dùng;\nkhóa nguyên liệu theo mã tăng dần
+ note over K,DB : MANDATORY: tham gia transaction cá»§a DonHangService
+ K -> R : Äá»c cÃ´ng thá»©c; gom lÆ°á»£ng cáº§n dÃ¹ng;\nkhÃ³a nguyÃªn liá»‡u theo mÃ£ tÄƒng dáº§n
  activate R
- R -> DB : SELECT công thức; SELECT tồn FOR UPDATE;\nrefresh tồn rồi kiểm tra
+ R -> DB : SELECT cÃ´ng thá»©c; SELECT tá»“n FOR UPDATE;\nrefresh tá»“n rá»“i kiá»ƒm tra
  activate DB
- DB --> R : Định mức và tồn hiện tại
+ DB --> R : Äá»‹nh má»©c vÃ  tá»“n hiá»‡n táº¡i
  deactivate DB
- R --> K : Dữ liệu
+ R --> K : Dá»¯ liá»‡u
  deactivate R
- alt Thiếu công thức hoặc thiếu nguyên liệu
-   K --> S : Ném exception
-   note over S,DB : Rollback mọi thay đổi; đơn còn chờ thanh toán
-   S --> C : Lỗi nghiệp vụ
- else Đủ nguyên liệu
-   K -> R : save nguyên liệu với tồn mới
+ alt Thiáº¿u cÃ´ng thá»©c hoáº·c thiáº¿u nguyÃªn liá»‡u
+   K --> S : NÃ©m exception
+   note over S,DB : Rollback má»i thay Ä‘á»•i; Ä‘Æ¡n cÃ²n chá» thanh toÃ¡n
+   S --> C : Lá»—i nghiá»‡p vá»¥
+ else Äá»§ nguyÃªn liá»‡u
+   K -> R : save nguyÃªn liá»‡u vá»›i tá»“n má»›i
    activate R
-   R -> DB : UPDATE nguyên liệu
+   R -> DB : UPDATE nguyÃªn liá»‡u
    activate DB
-   DB --> R : Kết quả
+   DB --> R : Káº¿t quáº£
    deactivate DB
-   R --> K : Đã ghi trong transaction
+   R --> K : ÄÃ£ ghi trong transaction
    deactivate R
-   K --> S : Hoàn tất bước kho
-   S -> R : Ghi PAID, tiền nhận, thời gian;\ntrả bàn; saveAndFlush
+   K --> S : HoÃ n táº¥t bÆ°á»›c kho
+   S -> R : Ghi PAID, tiá»n nháº­n, thá»i gian;\ntráº£ bÃ n; saveAndFlush
    activate R
-   R -> DB : UPDATE hóa đơn và bàn
+   R -> DB : UPDATE hÃ³a Ä‘Æ¡n vÃ  bÃ n
    activate DB
-   DB --> R : Kết quả
+   DB --> R : Káº¿t quáº£
    deactivate DB
-   R --> S : Hóa đơn
+   R --> S : HÃ³a Ä‘Æ¡n
    deactivate R
-   note over S,DB : Commit sau khi service hoàn tất thành công
-   S --> C : Hóa đơn đã thanh toán
+   note over S,DB : Commit sau khi service hoÃ n táº¥t thÃ nh cÃ´ng
+   S --> C : HÃ³a Ä‘Æ¡n Ä‘Ã£ thanh toÃ¡n
  end
  deactivate K
 end
  deactivate S
-C --> UI : HTTP 200 hoặc 400/409
+C --> UI : HTTP 200 hoáº·c 400/409
  deactivate C
-UI --> A : Bill hoặc lỗi; giữ mã đơn để xử lý lại
+UI --> A : Bill hoáº·c lá»—i; giá»¯ mÃ£ Ä‘Æ¡n Ä‘á»ƒ xá»­ lÃ½ láº¡i
  deactivate UI
-note over UI : Mất phản hồi: GET lại hóa đơn,\nkhông tạo đơn mới để thử thanh toán.
+note over UI : Máº¥t pháº£n há»“i: GET láº¡i hÃ³a Ä‘Æ¡n,\nkhÃ´ng táº¡o Ä‘Æ¡n má»›i Ä‘á»ƒ thá»­ thanh toÃ¡n.
 
 @enduml

@@ -1,7 +1,19 @@
 package com.cafe.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,6 +39,9 @@ public class HoaDon implements Serializable {
     @Column(name = "thoi_gian_tao", nullable = false)
     private LocalDateTime thoiGianTao = LocalDateTime.now();
 
+    @Column(name = "thoi_gian_thanh_toan")
+    private LocalDateTime thoiGianThanhToan = null;
+
     @Column(name = "loai_don", nullable = false, length = 20)
     private String loaiDon = "TAI_BAN"; // TAI_BAN, MANG_DI
 
@@ -39,47 +54,31 @@ public class HoaDon implements Serializable {
     @Column(name = "tong_tien_thanh_toan", nullable = false)
     private Double tongTienThanhToan = 0.0;
 
+    @Column(name = "tien_khach_dua")
+    private Double tienKhachDua = null;
+
     @Column(name = "phuong_thuc_tt", length = 20)
     private String phuongThucTT = "TIEN_MAT"; // TIEN_MAT, CHUYEN_KHOAN
+
+    @Column(name = "ma_tham_chieu", length = 100, unique = true)
+    private String maThamChieu = null;
 
     @Column(name = "trang_thai", nullable = false, length = 20)
     private String trangThai = "CHO_THANH_TOAN"; // CHO_THANH_TOAN, DA_THANH_TOAN, DA_HUY
 
-    @OneToMany(mappedBy = "hoaDon", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private List<ChiTietHoaDon> danhSachChiTiet = new ArrayList<>();
+    @Column(name = "yeu_cau_tao", length = 36, unique = true)
+    private String yeuCauTao = null;
 
+    @Column(name = "yeu_cau_thanh_toan", length = 36, unique = true)
+    private String yeuCauThanhToan = null;
 
     @Version
     @Column(name = "phien_ban", columnDefinition = "bigint default 0")
     private Long phienBan = 0L;
-    public Long getPhienBan() { return phienBan; }
-    public void setPhienBan(Long value) { phienBan = value; }
 
-    @Column(name = "yeu_cau_tao", length = 36, unique = true)
-    private String yeuCauTao = null;
-    public String getYeuCauTao() { return yeuCauTao; }
-    public void setYeuCauTao(String value) { yeuCauTao = value; }
-
-    @Column(name = "yeu_cau_thanh_toan", length = 36, unique = true)
-    private String yeuCauThanhToan = null;
-    public String getYeuCauThanhToan() { return yeuCauThanhToan; }
-    public void setYeuCauThanhToan(String value) { yeuCauThanhToan = value; }
-
-    @Column(name = "tien_khach_dua")
-    private Double tienKhachDua = null;
-    public Double getTienKhachDua() { return tienKhachDua; }
-    public void setTienKhachDua(Double value) { tienKhachDua = value; }
-
-    @Column(name = "ma_tham_chieu", length = 100, unique = true)
-    private String maThamChieu = null;
-    public String getMaThamChieu() { return maThamChieu; }
-    public void setMaThamChieu(String value) { maThamChieu = value; }
-
-    @Column(name = "thoi_gian_thanh_toan")
-    private LocalDateTime thoiGianThanhToan = null;
-    public LocalDateTime getThoiGianThanhToan() { return thoiGianThanhToan; }
-    public void setThoiGianThanhToan(LocalDateTime value) { thoiGianThanhToan = value; }
+    @OneToMany(mappedBy = "hoaDon", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<ChiTietHoaDon> danhSachChiTiet = new ArrayList<>();
 
     public HoaDon() {
     }
@@ -116,6 +115,14 @@ public class HoaDon implements Serializable {
         this.thoiGianTao = thoiGianTao;
     }
 
+    public LocalDateTime getThoiGianThanhToan() {
+        return thoiGianThanhToan;
+    }
+
+    public void setThoiGianThanhToan(LocalDateTime thoiGianThanhToan) {
+        this.thoiGianThanhToan = thoiGianThanhToan;
+    }
+
     public String getLoaiDon() {
         return loaiDon;
     }
@@ -148,6 +155,14 @@ public class HoaDon implements Serializable {
         this.tongTienThanhToan = tongTienThanhToan;
     }
 
+    public Double getTienKhachDua() {
+        return tienKhachDua;
+    }
+
+    public void setTienKhachDua(Double tienKhachDua) {
+        this.tienKhachDua = tienKhachDua;
+    }
+
     public String getPhuongThucTT() {
         return phuongThucTT;
     }
@@ -156,12 +171,44 @@ public class HoaDon implements Serializable {
         this.phuongThucTT = phuongThucTT;
     }
 
+    public String getMaThamChieu() {
+        return maThamChieu;
+    }
+
+    public void setMaThamChieu(String maThamChieu) {
+        this.maThamChieu = maThamChieu;
+    }
+
     public String getTrangThai() {
         return trangThai;
     }
 
     public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
+    }
+
+    public String getYeuCauTao() {
+        return yeuCauTao;
+    }
+
+    public void setYeuCauTao(String yeuCauTao) {
+        this.yeuCauTao = yeuCauTao;
+    }
+
+    public String getYeuCauThanhToan() {
+        return yeuCauThanhToan;
+    }
+
+    public void setYeuCauThanhToan(String yeuCauThanhToan) {
+        this.yeuCauThanhToan = yeuCauThanhToan;
+    }
+
+    public Long getPhienBan() {
+        return phienBan;
+    }
+
+    public void setPhienBan(Long phienBan) {
+        this.phienBan = phienBan;
     }
 
     public List<ChiTietHoaDon> getDanhSachChiTiet() {

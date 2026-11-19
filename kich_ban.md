@@ -271,7 +271,7 @@
 
 > 🗣️ **LỜI THOẠI (DUY):**  
 > *"Kính thưa Cô, để bảo chứng cho độ tin cậy của phần mềm:*  
-> * Hệ thống đã vượt qua xuất sắc **14/14 ca kiểm thử tích hợp tự động Backend (`PosIntegrationTest.java`) đạt 100%** trên H2 In-Memory tách biệt.  
+> * Hệ thống đã vượt qua xuất sắc **14/14 ca kiểm thử tích hợp tự động Backend (`DonHangIntegrationTest.java`) đạt 100%** trên H2 In-Memory tách biệt.  
 > * Vượt qua **16/16 kịch bản kiểm thử hộp đen E2E tự động trên trình duyệt Chrome đạt 100%**.  
 > * Khắc phục triệt để 6 lỗi kỹ thuật từ phân quyền đến bảng mã tiếng Việt có dấu.  
 > * Nhóm đề xuất chiến lược chuyển giao trực tiếp vào đầu tuần (**Direct Cutover on Monday**) để đưa phần mềm vào vận hành thực tế tại các quán cà phê vừa và nhỏ.*  
