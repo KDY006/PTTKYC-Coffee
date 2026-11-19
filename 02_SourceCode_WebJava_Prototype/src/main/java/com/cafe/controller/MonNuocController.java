@@ -1,6 +1,6 @@
 package com.cafe.controller;
 
-import com.cafe.entity.MonNuoc;
+import com.cafe.dto.MonNuocPosDTO;
 import com.cafe.service.DonHangService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +24,12 @@ public class MonNuocController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MonNuoc>> layDanhSachMonNuoc(
+    public ResponseEntity<List<MonNuocPosDTO>> layDanhSachMonNuoc(
             @RequestParam(required = false) String danhMuc,
             @RequestParam(required = false) String q,
+            @RequestParam(required = false) Integer boQuaHoaDonId,
             HttpSession session) {
         access.userId(session);
-        return ResponseEntity.ok(donHangService.layDanhSachMonNuoc(danhMuc, q));
+        return ResponseEntity.ok(donHangService.layDanhSachMonNuocPos(danhMuc, q, boQuaHoaDonId));
     }
 }

@@ -31,60 +31,75 @@ public class DonHangController {
         this.access = access;
     }
 
-    private Integer requireStaffOrHigher(HttpSession s) {
-        return access.requireAny(s, "STAFF", "MANAGER", "ADMIN");
-    }
-
     @GetMapping("/danh-sach")
     public List<HoaDon> layDanhSach(HttpSession s) {
-        requireStaffOrHigher(s);
+        access.requireDangNhap(s);
         return donHangService.layDanhSachHoaDon();
     }
 
     @GetMapping("/{id}")
     public HoaDon layTheoId(@PathVariable Integer id, HttpSession s) {
-        requireStaffOrHigher(s);
+        access.requireDangNhap(s);
         return donHangService.layHoaDonTheoId(id);
     }
 
     @GetMapping("/theo-ban/{id}")
     public ResponseEntity<?> layTheoBan(@PathVariable Integer id, HttpSession s) {
-        requireStaffOrHigher(s);
+        access.requireDangNhap(s);
         HoaDon h = donHangService.layDonTheoBan(id);
         return h == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(h);
     }
 
     @GetMapping("/theo-yeu-cau/{key}")
     public ResponseEntity<?> layTheoYeuCau(@PathVariable String key, HttpSession s) {
-        requireStaffOrHigher(s);
+        access.requireDangNhap(s);
         HoaDon h = donHangService.layDonTheoYeuCau(key);
         return h == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(h);
     }
 
     @PostMapping("/tao-don")
     public ResponseEntity<HoaDon> taoDonHang(@RequestBody DonHangDTO dto, HttpSession s) {
-        dto.setMaNV(requireStaffOrHigher(s));
+        Integer nvId = access.requireDangNhap(s);
+        dto.setMaNV(nvId);
         return ResponseEntity.status(HttpStatus.CREATED).body(donHangService.taoDonHang(dto));
     }
 
     @PutMapping("/{id}/mon")
     public HoaDon capNhatDon(@PathVariable Integer id, @RequestBody DonHangDTO dto, HttpSession s) {
-        requireStaffOrHigher(s);
+        access.requireDangNhap(s);
         return donHangService.capNhatDon(id, dto);
+    }
+
+    @PostMapping("/{id}/yeu-cau-thanh-toan")
+    public HoaDon yeuCauThanhToan(@PathVariable Integer id, @RequestBody Map<String, Long> body, HttpSession s) {
+        access.requireDangNhap(s);
+        Long phienBan = body != null ? body.get("phienBan") : null;
+        return donHangService.yeuCauThanhToan(id, phienBan);
+    }
+
+    @PostMapping("/{id}/quay-lai-phuc-vu")
+    public HoaDon quayLaiPhucVu(@PathVariable Integer id, @RequestBody Map<String, Long> body, HttpSession s) {
+        access.requireDangNhap(s);
+        Long phienBan = body != null ? body.get("phienBan") : null;
+        return donHangService.quayLaiPhucVu(id, phienBan);
     }
 
     @PostMapping("/{id}/thanh-toan")
     public HoaDon thanhToan(@PathVariable Integer id, @RequestBody ThanhToanDTO dto, HttpSession s) {
-        requireStaffOrHigher(s);
-        if (dto.getChietKhau() != null && dto.getChietKhau() > 0 && "STAFF".equals(access.role(s))) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chiết khấu cần tài khoản Manager hoặc Admin");
+        access.requireThuNganHoacQuanLy(s);
+        String role = access.role(s);
+        if (dto.getChietKhau() != null && dto.getChietKhau() > 0) {
+            if (!PhanQuyenSession.QUAN_LY.equals(role) && !"MANAGER".equals(role) && !"ADMIN".equals(role)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chiết khấu chỉ dành cho Quản lý cửa hàng!");
+            }
         }
-        return donHangService.thanhToanDonHang(id, dto);
+        Integer cashierId = access.userId(s);
+        return donHangService.thanhToanDonHang(id, dto, cashierId);
     }
 
     @PostMapping("/{id}/huy")
     public HoaDon huyDonHang(@PathVariable Integer id, @RequestBody Map<String, Long> body, HttpSession s) {
-        requireStaffOrHigher(s);
+        access.requireThuNganHoacQuanLy(s);
         return donHangService.huyDonHang(id, body != null ? body.get("phienBan") : null);
     }
 }

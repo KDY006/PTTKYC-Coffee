@@ -27,15 +27,21 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Kiểm thử tích hợp Đơn hàng & POS:
- * Kiểm tra toàn bộ vòng đời đơn hàng, khóa lạc quan @Version, khóa bi quan chống bán khống,
- * tính Idempotency và phân quyền bán hàng.
+ * Kiểm thử tích hợp Đơn hàng & POS 3 Trạng thái & RBAC 3 Cấp:
+ * Kiểm chứng Phục vụ (PHUC_VU) tạo đơn, yêu cầu thanh toán;
+ * Thu ngân (THU_NGAN) đối soát thanh toán tiền mặt/chuyển khoản, tính tiền
+ * thừa, trừ kho BOM;
+ * Quản lý (QUAN_LY) toàn quyền chiết khấu và hủy đơn;
+ * Kiểm chứng tính Idempotency, khóa lạc quan @Version, khóa bi quan chống bán
+ * khống.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -54,21 +60,37 @@ class DonHangIntegrationTest {
     @Autowired
     private DonHangService service;
 
-    private MockHttpSession staff;
-    private MockHttpSession manager;
+    private MockHttpSession waiter; // PHUC_VU
+    private MockHttpSession cashier; // THU_NGAN
+    private MockHttpSession manager; // QUAN_LY
 
     @BeforeEach
     void seed() {
-        for (String t : List.of("phan_ca", "chi_tiet_hoa_don", "hoa_don", "cong_thuc", "nguyen_lieu", "mon_nuoc", "ban", "cham_cong", "nhan_vien")) {
+        for (String t : List.of("lich_su_kho", "phan_ca", "chi_tiet_hoa_don", "hoa_don", "cong_thuc", "nguyen_lieu", "mon_nuoc", "ban",
+                "cham_cong", "nhan_vien")) {
             db.update("delete from " + t);
         }
-        db.update("insert into nhan_vien(ma_nv,ho_ten,ten_dang_nhap,mat_khau,vai_tro,trang_thai) values(1,'Staff','staff','123456','STAFF','DANG_LAM'),(2,'Manager','manager','123456','MANAGER','DANG_LAM')");
-        db.update("insert into ban(ma_ban,ten_ban,trang_thai) values(1,'Bàn 01','TRONG'),(2,'Bàn 02','TRONG')");
-        db.update("insert into mon_nuoc(ma_mon,ten_mon,danh_muc,don_gia,trang_thai) values(1,'Cà phê sữa','Cà phê',29000,'DANG_BAN'),(2,'Trà đào','Trà',38000,'DANG_BAN'),(3,'Món thiếu công thức','Trà',20000,'DANG_BAN')");
-        db.update("insert into nguyen_lieu(ma_nl,ten_nl,don_vi_tinh,so_luong_ton,muc_ton_toi_thieu,don_gia_nhap) values(1,'Sữa đặc','ml',120,100,80),(2,'Trà','g',100,10,20)");
-        db.update("insert into cong_thuc(ma_cong_thuc,ma_mon,ma_nl,dinh_muc) values(1,1,1,30),(2,2,2,15)");
-        staff = session(1, "STAFF");
-        manager = session(2, "MANAGER");
+        db.update("insert into nhan_vien(ma_nv,ho_ten,ten_dang_nhap,mat_khau,vai_tro,trang_thai) values" +
+                "(1,'Lê Tấn Đạt','phucvu1','123456','PHUC_VU','DANG_LAM')," +
+                "(2,'Trần Văn Quý','thungan1','123456','THU_NGAN','DANG_LAM')," +
+                "(3,'Nguyễn Văn Duy','quanly','123456','QUAN_LY','DANG_LAM')");
+        db.update(
+                "insert into ban(ma_ban,ten_ban,vi_tri,so_ghe,trang_thai) values(1,'Bàn 01','Tầng 1',2,'TRONG'),(2,'Bàn 02','Tầng 1',4,'TRONG')");
+        db.update(
+                "insert into mon_nuoc(ma_mon,ten_mon,danh_muc,don_gia,trang_thai) values" +
+                "(1,'Cà phê sữa đá','Cà phê',29000,'DANG_BAN')," +
+                "(2,'Bạc xỉu','Cà phê',32000,'DANG_BAN')," +
+                "(3,'Món thiếu công thức','Trà',20000,'DANG_BAN')," +
+                "(4,'Trà đào','Trà',38000,'DANG_BAN')");
+        db.update(
+                "insert into nguyen_lieu(ma_nl,ten_nl,don_vi_tinh,so_luong_ton,muc_ton_toi_thieu,don_gia_nhap) values" +
+                "(1,'Sữa đặc','ml',120,100,80)," +
+                "(2,'Trà','g',100,10,20)");
+        db.update("insert into cong_thuc(ma_cong_thuc,ma_mon,ma_nl,dinh_muc) values(1,1,1,30),(2,2,1,40),(3,4,2,15)");
+
+        waiter = session(1, "PHUC_VU");
+        cashier = session(2, "THU_NGAN");
+        manager = session(3, "QUAN_LY");
     }
 
     private MockHttpSession session(int id, String role) {
@@ -78,15 +100,19 @@ class DonHangIntegrationTest {
         return s;
     }
 
-    private JsonNode call(String method, String path, Object body, MockHttpSession s, int status) throws Exception {
+    private JsonNode call(String method, String path, Object body, MockHttpSession s, int expectedStatus)
+            throws Exception {
         var req = switch (method) {
             case "POST" -> post(path);
             case "PUT" -> put(path);
             default -> get(path);
         };
-        if (s != null) req.session(s);
-        if (body != null) req.contentType("application/json").content(mapper.writeValueAsBytes(body));
-        String text = mvc.perform(req).andExpect(status().is(status)).andReturn().getResponse().getContentAsString();
+        if (s != null)
+            req.session(s);
+        if (body != null)
+            req.contentType("application/json").content(mapper.writeValueAsBytes(body));
+        String text = mvc.perform(req).andExpect(status().is(expectedStatus)).andReturn().getResponse()
+                .getContentAsString();
         return text.isBlank() ? mapper.nullNode() : mapper.readTree(text);
     }
 
@@ -94,14 +120,14 @@ class DonHangIntegrationTest {
         Map<String, Object> p = new HashMap<>();
         p.put("yeuCauTao", key);
         p.put("maBan", table);
-        p.put("maNV", 2);
         p.put("loaiDon", table == null ? "MANG_DI" : "TAI_BAN");
         p.put("danhSachMon", List.of(Map.of("maMon", product, "soLuong", quantity, "ghiChu", "ít đường")));
         return p;
     }
 
     private JsonNode create(Integer table, int product, int quantity) throws Exception {
-        return call("POST", "/api/order/tao-don", payload(UUID.randomUUID().toString(), table, product, quantity), staff, 201);
+        return call("POST", "/api/order/tao-don", payload(UUID.randomUUID().toString(), table, product, quantity),
+                waiter, 201);
     }
 
     private Map<String, Object> payment(JsonNode h, String key, double cash) {
@@ -110,8 +136,7 @@ class DonHangIntegrationTest {
                 "phienBan", h.get("phienBan").asLong(),
                 "chietKhau", 0,
                 "phuongThucTT", "TIEN_MAT",
-                "tienKhachDua", cash
-        ));
+                "tienKhachDua", cash));
     }
 
     private double stock() {
@@ -122,7 +147,7 @@ class DonHangIntegrationTest {
     void loginSessionDoesNotExposePassword() throws Exception {
         var r = mvc.perform(post("/api/auth/login")
                 .contentType("application/json")
-                .content("{\"tenDangNhap\":\"staff\",\"matKhau\":\"123456\"}"))
+                .content("{\"tenDangNhap\":\"phucvu1\",\"matKhau\":\"123456\"}"))
                 .andExpect(status().isOk())
                 .andReturn();
         assertFalse(mapper.readTree(r.getResponse().getContentAsString()).has("matKhau"));
@@ -138,93 +163,222 @@ class DonHangIntegrationTest {
     }
 
     @Test
-    void saveReloadUpdateCancel() throws Exception {
+    void waiterCanOrderAndRequestPaymentButCannotConfirmPayment() throws Exception {
+        // 1. Phục vụ mở bàn 01: bàn chuyển sang DANG_DUNG_NUOC (viền xanh lá)
+        JsonNode h = create(1, 1, 1);
+        assertEquals("DANG_DUNG_NUOC", db.queryForObject("select trang_thai from ban where ma_ban=1", String.class));
+        assertEquals("DANG_PHUC_VU", h.get("trangThai").asText());
+
+        // 2. Phục vụ bấm yêu cầu thanh toán: bàn chuyển sang CHO_THANH_TOAN (viền vàng hổ phách)
+        JsonNode reqPay = call("POST", "/api/order/" + h.get("maHoaDon") + "/yeu-cau-thanh-toan",
+                Map.of("phienBan", h.get("phienBan").asLong()), waiter, 200);
+        assertEquals("CHO_THANH_TOAN", db.queryForObject("select trang_thai from ban where ma_ban=1", String.class));
+        assertEquals("CHO_THANH_TOAN", reqPay.get("trangThai").asText());
+
+        // 3. Phục vụ cố tình gọi thanh toán -> bị chặn 403 Forbidden
+        var pay = payment(reqPay, UUID.randomUUID().toString(), 50000);
+        call("POST", "/api/order/" + h.get("maHoaDon") + "/thanh-toan", pay, waiter, 403);
+
+        // Phục vụ cố tình gọi hủy đơn -> bị chặn 403 Forbidden
+        call("POST", "/api/order/" + h.get("maHoaDon") + "/huy",
+                Map.of("phienBan", reqPay.get("phienBan").asLong()), waiter, 403);
+
+        // 4. Thu ngân vào đối soát và thanh toán -> thành công 200 OK, bàn trả về TRONG (viền xanh dương)
+        JsonNode paid = call("POST", "/api/order/" + h.get("maHoaDon") + "/thanh-toan", pay, cashier, 200);
+        assertEquals("DA_THANH_TOAN", paid.get("trangThai").asText());
+        assertEquals("TRONG", db.queryForObject("select trang_thai from ban where ma_ban=1", String.class));
+        assertEquals(2, paid.at("/nhanVienThuNgan/maNV").asInt()); // Ghi nhận đúng Thu ngân chốt đơn
+    }
+
+    @Test
+    void menuCalculatesAvailableCupsWithSoftReservationWithoutExposingStock() throws Exception {
+        // 1. Kiểm tra ban đầu: Sữa đặc có 120ml
+        // Cà phê sữa đá (30ml/ly) -> 4 ly
+        // Bạc xỉu (40ml/ly) -> 3 ly
+        JsonNode menu = call("GET", "/api/mon-nuoc", null, waiter, 200);
+        assertTrue(menu.isArray());
+        JsonNode cfSua = null;
+        JsonNode bacXiu = null;
+        for (JsonNode m : menu) {
+            assertFalse(m.has("soLuongTon"), "Tuyệt đối không để lộ dữ liệu tồn kho gốc (soLuongTon)");
+            if (m.get("maMon").asInt() == 1) cfSua = m;
+            if (m.get("maMon").asInt() == 2) bacXiu = m;
+        }
+        assertNotNull(cfSua);
+        assertNotNull(bacXiu);
+        assertEquals(4, cfSua.get("soLyCoTheLam").asInt());
+        assertEquals(3, bacXiu.get("soLyCoTheLam").asInt());
+
+        // 2. Tạo đơn 2 ly Cà phê sữa đá (chưa thanh toán) -> Soft Reservation giữ 60ml sữa đặc
+        create(1, 1, 2);
+
+        // 3. Số ly khả dụng lập tức giảm tức thì:
+        // Cà phê sữa đá: (120 - 60)/30 = 2 ly
+        // Bạc xỉu: (120 - 60)/40 = 1 ly
+        JsonNode menuAfter = call("GET", "/api/mon-nuoc", null, waiter, 200);
+        for (JsonNode m : menuAfter) {
+            if (m.get("maMon").asInt() == 1) {
+                assertEquals(2, m.get("soLyCoTheLam").asInt());
+            }
+            if (m.get("maMon").asInt() == 2) {
+                assertEquals(1, m.get("soLyCoTheLam").asInt());
+            }
+        }
+    }
+
+    @Test
+    void addMoreItemsOnlyPrintsDeltaToBarAndBlockedWhenWaitingPayment() throws Exception {
+        // 1. Phục vụ tạo đơn 1 ly Cà phê sữa đá tại Bàn 01
         JsonNode h = create(1, 1, 1);
         assertEquals(29000, h.get("tongTienGoc").asInt());
-        assertEquals("CO_KHACH", db.queryForObject("select trang_thai from ban where ma_ban=1", String.class));
-        JsonNode loaded = call("GET", "/api/order/theo-ban/1", null, staff, 200);
-        assertEquals(h.get("maHoaDon"), loaded.get("maHoaDon"));
+        assertEquals("DANG_DUNG_NUOC", db.queryForObject("select trang_thai from ban where ma_ban=1", String.class));
+        assertNotNull(h.get("phieuInBar"));
+        assertEquals(1, h.get("phieuInBar").size());
+
+        // 2. Khách gọi thêm 1 ly cà phê sữa đá (tổng cộng 2 ly) khi bàn đang DANG_DUNG_NUOC
         var p = payload(UUID.randomUUID().toString(), 1, 1, 2);
         p.put("phienBan", h.get("phienBan").asLong());
-        JsonNode updated = call("PUT", "/api/order/" + h.get("maHoaDon") + "/mon", p, staff, 200);
+        JsonNode updated = call("PUT", "/api/order/" + h.get("maHoaDon") + "/mon", p, waiter, 200);
         assertEquals(58000, updated.get("tongTienGoc").asInt());
-        call("PUT", "/api/order/" + h.get("maHoaDon") + "/mon", p, staff, 409);
-        call("POST", "/api/order/" + h.get("maHoaDon") + "/huy", Map.of("phienBan", updated.get("phienBan").asLong()), staff, 200);
-        assertEquals("TRONG", db.queryForObject("select trang_thai from ban where ma_ban=1", String.class));
-        assertEquals(120, stock());
-        call("POST", "/api/order/" + h.get("maHoaDon") + "/thanh-toan", payment(updated, UUID.randomUUID().toString(), 100000), staff, 409);
+
+        // Hệ thống CHỈ trả món mới trong phieuInBarBoSung (delta = 2 - 1 = 1 ly)
+        assertNotNull(updated.get("phieuInBarBoSung"));
+        assertEquals(1, updated.get("phieuInBarBoSung").size());
+        assertEquals(1, updated.at("/phieuInBarBoSung/0/soLuong").asInt());
+
+        // 3. Phục vụ bấm Yêu cầu thanh toán -> Bàn & Đơn sang CHO_THANH_TOAN (viền Vàng)
+        JsonNode reqPay = call("POST", "/api/order/" + h.get("maHoaDon") + "/yeu-cau-thanh-toan",
+                Map.of("phienBan", updated.get("phienBan").asLong()), waiter, 200);
+        assertEquals("CHO_THANH_TOAN", reqPay.get("trangThai").asText());
+        assertEquals("CHO_THANH_TOAN", db.queryForObject("select trang_thai from ban where ma_ban=1", String.class));
+
+        // 4. Cố tình sửa món khi bàn đang CHO_THANH_TOAN -> Máy chủ chặn 409 Conflict (E2)
+        var pTry = payload(UUID.randomUUID().toString(), 1, 1, 3);
+        pTry.put("phienBan", reqPay.get("phienBan").asLong());
+        call("PUT", "/api/order/" + h.get("maHoaDon") + "/mon", pTry, waiter, 409);
+
+        // 5. Bấm "Quay lại phục vụ" -> Bàn trở lại DANG_DUNG_NUOC (viền Xanh lá)
+        JsonNode back = call("POST", "/api/order/" + h.get("maHoaDon") + "/quay-lai-phuc-vu",
+                Map.of("phienBan", reqPay.get("phienBan").asLong()), waiter, 200);
+        assertEquals("DANG_PHUC_VU", back.get("trangThai").asText());
+        assertEquals("DANG_DUNG_NUOC", db.queryForObject("select trang_thai from ban where ma_ban=1", String.class));
+    }
+
+    @Test
+    void cashierConfirmsCashAndTransferPaymentAndClosesTable() throws Exception {
+        // [Phần A: Thanh toán TIEN_MAT]
+        JsonNode h = create(2, 1, 1);
+        var pay = payment(h, UUID.randomUUID().toString(), 50000);
+        String path = "/api/order/" + h.get("maHoaDon") + "/thanh-toan";
+
+        // Tiền khách đưa chưa đủ -> 400 Bad Request
+        pay.put("tienKhachDua", 20000);
+        call("POST", path, pay, cashier, 400);
+
+        // Thu ngân chốt thanh toán tiền mặt đủ 50.000đ
+        pay.put("tienKhachDua", 50000);
+        JsonNode paid = call("POST", path, pay, cashier, 200);
+        assertEquals("DA_THANH_TOAN", paid.get("trangThai").asText());
+        assertEquals(2, paid.at("/nhanVienThuNgan/maNV").asInt());
+        assertEquals(21000, paid.get("tienThua").asDouble());
+        assertEquals("TRONG", db.queryForObject("select trang_thai from ban where ma_ban=2", String.class));
+        assertEquals(90, stock()); // 120ml - 30ml = 90ml
+
+        // Idempotency: retry cùng mã yeuCauThanhToan không trừ kho lần 2
+        call("POST", path, pay, cashier, 200);
+        assertEquals(90, stock());
+
+        // Kiểm tra lịch sử kho ghi nhận tự động XUAT_BAN_HANG
+        int countLsk = db.queryForObject(
+                "select count(*) from lich_su_kho where loai_gd='XUAT_BAN_HANG' and ma_hoa_don=" + h.get("maHoaDon").asInt() + " and ma_nv=2",
+                Integer.class);
+        assertEquals(1, countLsk);
+
+        // [Phần B: Thanh toán CHUYEN_KHOAN]
+        JsonNode h2 = create(2, 1, 1);
+        Map<String, Object> payTransfer = new HashMap<>(Map.of(
+                "yeuCauThanhToan", UUID.randomUUID().toString(),
+                "phienBan", h2.get("phienBan").asLong(),
+                "chietKhau", 0,
+                "phuongThucTT", "CHUYEN_KHOAN",
+                "xacNhanChuyenKhoan", true,
+                "maThamChieu", "TX_POS_TRANSFER_01",
+                "minhChungChuyenKhoan", "Thu ngân đã xác nhận biến động số dư qua app"));
+
+        JsonNode paidTransfer = call("POST", "/api/order/" + h2.get("maHoaDon") + "/thanh-toan", payTransfer, cashier, 200);
+        assertEquals("DA_THANH_TOAN", paidTransfer.get("trangThai").asText());
+        assertEquals(2, paidTransfer.at("/nhanVienThuNgan/maNV").asInt());
+        assertEquals("TRONG", db.queryForObject("select trang_thai from ban where ma_ban=2", String.class));
+        assertEquals(60, stock()); // 90ml - 30ml = 60ml
+    }
+
+    @Test
+    void cashierCannotApplyDiscountOnlyManagerCan() throws Exception {
+        JsonNode h = create(null, 1, 1);
+        var p = payment(h, UUID.randomUUID().toString(), 50000);
+        String path = "/api/order/" + h.get("maHoaDon") + "/thanh-toan";
+
+        // Thu ngân cố tình chiết khấu -> bị chặn 403 Forbidden
+        p.put("chietKhau", 1000);
+        call("POST", path, p, cashier, 403);
+
+        // Quản lý gửi chiết khấu âm hoặc vượt tổng đơn -> lỗi 400
+        p.put("chietKhau", -1);
+        call("POST", path, p, manager, 400);
+        p.put("chietKhau", 30000);
+        call("POST", path, p, manager, 400);
+
+        // Quản lý chiết khấu hợp lệ 5000đ -> thành công 200 OK (29000 - 5000 = 24000)
+        p.put("chietKhau", 5000);
+        assertEquals(24000, call("POST", path, p, manager, 200).get("tongTienThanhToan").asInt());
     }
 
     @Test
     void createRetryReturnsSameOrderAndTableRejectsSecond() throws Exception {
         var p = payload(UUID.randomUUID().toString(), 1, 1, 1);
-        var h = call("POST", "/api/order/tao-don", p, staff, 201);
-        assertEquals(h.get("maHoaDon"), call("POST", "/api/order/tao-don", p, staff, 201).get("maHoaDon"));
-        call("POST", "/api/order/tao-don", payload(UUID.randomUUID().toString(), 1, 2, 1), staff, 409);
+        var h = call("POST", "/api/order/tao-don", p, waiter, 201);
+        assertEquals(h.get("maHoaDon"), call("POST", "/api/order/tao-don", p, waiter, 201).get("maHoaDon"));
+        call("POST", "/api/order/tao-don", payload(UUID.randomUUID().toString(), 1, 2, 1), waiter, 409);
         assertEquals(1, db.queryForObject("select count(*) from hoa_don", Integer.class));
     }
 
     @Test
     void rejectsInvalidAndEmptyOrders() throws Exception {
-        call("POST", "/api/order/tao-don", payload(UUID.randomUUID().toString(), 1, 1, 0), staff, 400);
+        call("POST", "/api/order/tao-don", payload(UUID.randomUUID().toString(), 1, 1, 0), waiter, 400);
         var p = payload(UUID.randomUUID().toString(), null, 1, 1);
         p.put("loaiDon", "TAI_BAN");
-        call("POST", "/api/order/tao-don", p, staff, 400);
+        call("POST", "/api/order/tao-don", p, waiter, 400);
         p.put("loaiDon", "MANG_DI");
         p.put("danhSachMon", List.of());
-        call("POST", "/api/order/tao-don", p, staff, 400);
+        call("POST", "/api/order/tao-don", p, waiter, 400);
         assertEquals(0, db.queryForObject("select count(*) from hoa_don", Integer.class));
     }
 
     @Test
-    void paymentCashStockAndRetryOnce() throws Exception {
-        JsonNode h = create(2, 1, 1);
-        var pay = payment(h, UUID.randomUUID().toString(), 50000);
-        String path = "/api/order/" + h.get("maHoaDon") + "/thanh-toan";
-        pay.put("tienKhachDua", 28000);
-        call("POST", path, pay, staff, 400);
-        assertEquals(120, stock());
-        pay.put("tienKhachDua", 50000);
-        JsonNode paid = call("POST", path, pay, staff, 200);
-        assertEquals("DA_THANH_TOAN", paid.get("trangThai").asText());
-        assertEquals(21000, paid.get("tienKhachDua").asDouble() - paid.get("tongTienThanhToan").asDouble());
-        assertEquals(90, stock());
-        call("POST", path, pay, staff, 200);
-        assertEquals(90, stock());
-        pay.put("yeuCauThanhToan", UUID.randomUUID().toString());
-        call("POST", path, pay, staff, 409);
-        call("POST", "/api/order/" + h.get("maHoaDon") + "/huy", Map.of("phienBan", paid.get("phienBan").asLong()), staff, 409);
+    void cannotCreateOrderExceedingStock() throws Exception {
+        // 5 ly x 30ml = 150ml > 120ml tồn kho khả dụng -> Bị chặn ngay từ bước tạo đơn
+        // (E3)
+        call("POST", "/api/order/tao-don", payload(UUID.randomUUID().toString(), 1, 1, 5), waiter, 400);
     }
 
     @Test
     void insufficientStockRollsBackWholePayment() throws Exception {
-        JsonNode h = create(1, 1, 5);
-        call("POST", "/api/order/" + h.get("maHoaDon") + "/thanh-toan", payment(h, UUID.randomUUID().toString(), 200000), staff, 400);
-        assertEquals(120, stock());
-        assertEquals("CHO_THANH_TOAN", db.queryForObject("select trang_thai from hoa_don", String.class));
-        assertEquals("CO_KHACH", db.queryForObject("select trang_thai from ban where ma_ban=1", String.class));
+        JsonNode h = create(1, 1, 4); // 4 ly x 30ml = 120ml <= 120ml tồn
+        // Giả lập biến động kho sụt giảm trước khi thu ngân bấm thanh toán
+        db.update("update nguyen_lieu set so_luong_ton = 10 where ma_nl = 1");
+        call("POST", "/api/order/" + h.get("maHoaDon") + "/thanh-toan",
+                payment(h, UUID.randomUUID().toString(), 200000), cashier, 400);
+        assertEquals(10, stock());
+        assertEquals("DANG_PHUC_VU", db.queryForObject("select trang_thai from hoa_don", String.class));
+        assertEquals("DANG_DUNG_NUOC", db.queryForObject("select trang_thai from ban where ma_ban=1", String.class));
     }
 
     @Test
     void missingRecipeBlocked() throws Exception {
         JsonNode h = create(null, 3, 1);
-        call("POST", "/api/order/" + h.get("maHoaDon") + "/thanh-toan", payment(h, UUID.randomUUID().toString(), 50000), staff, 400);
+        call("POST", "/api/order/" + h.get("maHoaDon") + "/thanh-toan", payment(h, UUID.randomUUID().toString(), 50000),
+                cashier, 400);
         assertEquals(120, stock());
-    }
-
-    @Test
-    void discountValidationAndRole() throws Exception {
-        JsonNode h = create(null, 1, 1);
-        var p = payment(h, UUID.randomUUID().toString(), 50000);
-        String path = "/api/order/" + h.get("maHoaDon") + "/thanh-toan";
-        p.put("chietKhau", 1000);
-        call("POST", path, p, staff, 403);
-        p.put("chietKhau", -1);
-        call("POST", path, p, manager, 400);
-        p.put("chietKhau", 30000);
-        call("POST", path, p, manager, 400);
-        p.put("chietKhau", 1000);
-        assertEquals(28000, call("POST", path, p, manager, 200).get("tongTienThanhToan").asInt());
     }
 
     @Test
@@ -234,13 +388,15 @@ class DonHangIntegrationTest {
         p.put("phuongThucTT", "CHUYEN_KHOAN");
         p.put("maThamChieu", "TX001");
         String path = "/api/order/" + h.get("maHoaDon") + "/thanh-toan";
-        call("POST", path, p, staff, 400);
+        call("POST", path, p, cashier, 400);
         p.put("xacNhanChuyenKhoan", true);
-        call("POST", path, p, staff, 200);
+        p.put("minhChungChuyenKhoan", "Đã nhận biến động số dư qua app");
+        call("POST", path, p, cashier, 200);
+
         JsonNode h2 = create(null, 1, 1);
         p.put("phienBan", h2.get("phienBan").asLong());
         p.put("yeuCauThanhToan", UUID.randomUUID().toString());
-        call("POST", "/api/order/" + h2.get("maHoaDon") + "/thanh-toan", p, staff, 409);
+        call("POST", "/api/order/" + h2.get("maHoaDon") + "/thanh-toan", p, cashier, 409);
         assertEquals(90, stock());
     }
 
@@ -250,7 +406,8 @@ class DonHangIntegrationTest {
         db.update("update mon_nuoc set don_gia=35000 where ma_mon=1");
         var p = payload(UUID.randomUUID().toString(), null, 1, 2);
         p.put("phienBan", h.get("phienBan").asLong());
-        assertEquals(58000, call("PUT", "/api/order/" + h.get("maHoaDon") + "/mon", p, staff, 200).get("tongTienGoc").asInt());
+        assertEquals(58000,
+                call("PUT", "/api/order/" + h.get("maHoaDon") + "/mon", p, waiter, 200).get("tongTienGoc").asInt());
     }
 
     @Test
@@ -270,7 +427,7 @@ class DonHangIntegrationTest {
                     p.setYeuCauThanhToan(UUID.randomUUID().toString());
                     p.setTienKhachDua(50000d);
                     try {
-                        service.thanhToanDonHang(id, p);
+                        service.thanhToanDonHang(id, p, 2);
                         return true;
                     } catch (org.springframework.web.server.ResponseStatusException e) {
                         return false;
@@ -280,7 +437,8 @@ class DonHangIntegrationTest {
             start.countDown();
             int successes = 0;
             for (var r : results) {
-                if (r.get(15, TimeUnit.SECONDS)) successes++;
+                if (r.get(15, TimeUnit.SECONDS))
+                    successes++;
             }
             assertEquals(1, successes);
             assertEquals(90, stock());
@@ -291,8 +449,11 @@ class DonHangIntegrationTest {
 
     @Test
     void twoOrdersCannotOversellSharedIngredient() throws Exception {
-        JsonNode a = create(null, 1, 3);
-        JsonNode b = create(null, 1, 3);
+        JsonNode a = create(null, 1, 2); // 2 ly x 30ml = 60ml
+        JsonNode b = create(null, 1, 2); // 2 ly x 30ml = 60ml -> Tong 120ml hop le
+        // Giam ton kho xuong 90ml de tao tinh huong tranh chap tai thoi diem thanh toan
+        // (chi 1 don thanh toan duoc)
+        db.update("update nguyen_lieu set so_luong_ton = 90 where ma_nl = 1");
         ExecutorService pool = Executors.newFixedThreadPool(2);
         CountDownLatch start = new CountDownLatch(1);
         try {
@@ -305,7 +466,7 @@ class DonHangIntegrationTest {
                     p.setYeuCauThanhToan(UUID.randomUUID().toString());
                     p.setTienKhachDua(100000d);
                     try {
-                        service.thanhToanDonHang(h.get("maHoaDon").asInt(), p);
+                        service.thanhToanDonHang(h.get("maHoaDon").asInt(), p, 2);
                         return true;
                     } catch (IllegalArgumentException e) {
                         return false;
@@ -315,11 +476,13 @@ class DonHangIntegrationTest {
             start.countDown();
             int success = 0;
             for (var f : jobs) {
-                if (f.get(15, TimeUnit.SECONDS)) success++;
+                if (f.get(15, TimeUnit.SECONDS))
+                    success++;
             }
             assertEquals(1, success);
             assertEquals(30, stock());
-            assertEquals(1, db.queryForObject("select count(*) from hoa_don where trang_thai='DA_THANH_TOAN'", Integer.class));
+            assertEquals(1,
+                    db.queryForObject("select count(*) from hoa_don where trang_thai='DA_THANH_TOAN'", Integer.class));
         } finally {
             pool.shutdownNow();
         }
@@ -329,8 +492,9 @@ class DonHangIntegrationTest {
     void duplicateProductLinesAggregateStock() throws Exception {
         var p = payload(UUID.randomUUID().toString(), null, 1, 1);
         p.put("danhSachMon", List.of(Map.of("maMon", 1, "soLuong", 3), Map.of("maMon", 1, "soLuong", 2)));
-        JsonNode h = call("POST", "/api/order/tao-don", p, staff, 201);
-        call("POST", "/api/order/" + h.get("maHoaDon") + "/thanh-toan", payment(h, UUID.randomUUID().toString(), 200000), staff, 400);
+        // 3 + 2 = 5 ly x 30ml = 150ml > 120ml ton -> Bi chan boi kiem tra tran giỏ hang
+        // (E3) voi status 400
+        call("POST", "/api/order/tao-don", p, waiter, 400);
         assertEquals(120, stock());
     }
 }

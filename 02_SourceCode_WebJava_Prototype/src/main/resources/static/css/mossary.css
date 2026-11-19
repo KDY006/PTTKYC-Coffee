@@ -1,29 +1,62 @@
 :root {
   color-scheme: light;
-  --bg-canvas: #f5f8f2;
-  --bg-surface: #ffffff;
-  --bg-surface-muted: #e9efe4;
-  --bg-surface-hover: #f0f5ec;
-  --bg-sidebar: #ffffff;
-  --bg-header: rgba(255, 255, 255, 0.92);
-  --border-subtle: #dce5d6;
-  --border-strong: #c3d1bb;
-  --text-primary: #111e17;
-  --text-secondary: #46594d;
-  --text-muted: #6c7f73;
-  --accent-primary: #4a7c2c;
-  --accent-hover: #3b6422;
-  --accent-text: #ffffff;
-  --accent-soft: #eaf3e1;
-  --accent-soft-text: #2f5519;
-  --btn-dark: #13221a;
-  --btn-dark-hover: #1e3529;
-  --btn-dark-text: #ffffff;
+  /* Nền sáng tối ưu in ấn A4 */
+  --bg-page: #F8F9FA;
+  --bg-surface: #FFFFFF;
+  --bg-surface-subtle: #F1F5F9;
+  --bg-surface-muted: #F1F5F9;
+  --bg-surface-hover: #F8FAFC;
+  --bg-topbar: #FFFFFF;
+  --bg-canvas: #F8F9FA;
+  --bg-sidebar: #FFFFFF;
+  --bg-header: #FFFFFF;
+
+  /* Chữ tương phản cao (không dùng xám quá nhạt) */
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #4B5563;
+
+  /* Viền phân khối rõ nét thay vì phụ thuộc box-shadow */
+  --border-default: #CBD5E1;
+  --border-strong: #94A3B8;
+  --border-subtle: #CBD5E1;
+
+  /* Nhận diện thương hiệu Sangrimar Cafe & Lounge */
+  --brand-primary: #5D4037;
+  --brand-accent: #8D6E63;
+  --brand-tint: #FBF8F4;
+
+  --accent-primary: #5D4037;
+  --accent-hover: #4E342E;
+  --accent-text: #FFFFFF;
+  --accent-soft: #FBF8F4;
+  --accent-soft-text: #5D4037;
+  --btn-dark: #3E2723;
+  --btn-dark-hover: #2E1C18;
+  --btn-dark-text: #FFFFFF;
+
+  /* 3 màu viền Sơ đồ Bàn (dày 2.5px) */
+  --table-empty-border: #0D6EFD;     /* TRONG: Xanh dương */
+  --table-empty-bg: #EFF6FF;
+  --table-serving-border: #198754;   /* DANG_DUNG_NUOC: Xanh lá cây */
+  --table-serving-bg: #ECFDF5;
+  --table-paying-border: #D97706;    /* CHO_THANH_TOAN: Vàng hổ phách */
+  --table-paying-bg: #FFFBEB;
+
+  /* Nhãn trạng thái số ly còn lại trên thẻ Món POS */
+  --stock-ok-text: #15803D;
+  --stock-ok-bg: #F0FDF4;
+  --stock-low-text: #B45309;
+  --stock-low-bg: #FFFBEB;
+  --stock-out-text: #B91C1C;
+  --stock-out-bg: #FEF2F2;
+
   --status-success-text: #15803d;
   --status-warning-text: #b45309;
   --status-danger-text: #dc2626;
-  --font-display: "Archivo", "Plus Jakarta Sans", system-ui, sans-serif;
-  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+
+  --font-display: "Roboto", "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-sans: "Roboto", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -181,13 +214,11 @@ body {
 
 .app-topbar {
   height: 68px;
-  background-color: var(--bg-header);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-topbar);
+  border-bottom: 2px solid var(--border-default);
   position: sticky;
   top: 0;
   z-index: 1020;
-  box-shadow: 0 2px 8px rgba(17, 30, 23, 0.05);
 }
 
 .topbar-nav-link {
@@ -196,7 +227,7 @@ body {
   font-weight: 500;
   color: var(--text-secondary);
   padding: 8px 14px;
-  border-radius: 10px;
+  border-radius: 8px;
   transition: all 0.15s ease;
   display: flex;
   align-items: center;
@@ -205,14 +236,16 @@ body {
 }
 
 .topbar-nav-link:hover {
-  color: var(--accent-primary);
-  background-color: var(--bg-surface-hover);
+  color: var(--brand-primary);
+  background-color: var(--brand-tint);
 }
 
 .topbar-nav-link.active {
-  color: var(--accent-soft-text);
-  background-color: var(--accent-soft);
-  font-weight: 600;
+  color: var(--brand-primary);
+  background-color: var(--brand-tint);
+  border-bottom: 3px solid var(--brand-primary);
+  border-radius: 8px 8px 0 0;
+  font-weight: 700;
 }
 
 /* Segmented Tabs */
@@ -221,6 +254,7 @@ body {
   gap: 4px;
   padding: 4px;
   background-color: var(--bg-surface-muted);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   overflow-x: auto;
 }
@@ -244,19 +278,19 @@ body {
 
 .moss-tab-btn.active {
   background-color: var(--bg-surface);
-  color: var(--text-primary);
-  font-weight: 600;
-  box-shadow: 0 1px 2px rgba(17, 30, 23, 0.06);
+  color: var(--brand-primary);
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(17, 30, 23, 0.08);
 }
 
-/* Table Buttons in POS */
+/* Table Buttons in POS (v2.0 - 3 Trạng thái chuẩn hóa, viền dày 2.5px) */
 .pos-table-btn {
   width: 100%;
-  min-height: 82px;
-  padding: 12px 14px;
+  min-height: 88px;
+  padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  background-color: var(--bg-surface-hover);
+  border: 2.5px solid var(--border-default);
+  background-color: var(--bg-surface);
   color: var(--text-primary);
   text-align: left;
   display: flex;
@@ -264,22 +298,131 @@ body {
   justify-content: space-between;
   transition: all 0.15s ease;
   cursor: pointer;
+  position: relative;
 }
 
 .pos-table-btn:hover {
-  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.pos-table-btn.occupied {
-  border-color: var(--accent-primary);
-  background-color: var(--accent-soft);
+/* 1. Bàn trống: Viền Xanh dương */
+.pos-table-btn.status-trong {
+  border: 2.5px solid var(--table-empty-border) !important;
+  background-color: var(--table-empty-bg) !important;
+}
+.pos-table-btn.status-trong .table-badge {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
+/* 2. Đang dùng nước: Viền Xanh lá cây */
+.pos-table-btn.status-dang-dung-nuoc {
+  border: 2.5px solid var(--table-serving-border) !important;
+  background-color: var(--table-serving-bg) !important;
+}
+.pos-table-btn.status-dang-dung-nuoc .table-badge {
+  background-color: #dcfce7;
+  color: #15803d;
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* 3. Chờ thanh toán hoàn tất: Viền Vàng hổ phách */
+.pos-table-btn.status-cho-thanh-toan {
+  border: 2.5px solid var(--table-paying-border) !important;
+  background-color: var(--table-paying-bg) !important;
+}
+.pos-table-btn.status-cho-thanh-toan .table-badge {
+  background-color: #fef3c7;
+  color: #b45309;
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Hiển thị số tiền trên thẻ bàn */
+.table-amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #111827;
+  font-family: var(--font-mono);
+}
+
+/* Nhãn trạng thái tồn kho khả dụng POS v2.0 */
+.stock-badge-ok {
+  background-color: var(--stock-ok-bg);
+  color: var(--stock-ok-text);
+  border: 1px solid rgba(21, 128, 61, 0.3);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.stock-badge-low {
+  background-color: var(--stock-low-bg);
+  color: var(--stock-low-text);
+  border: 1px solid rgba(180, 83, 9, 0.35);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.stock-badge-out {
+  background-color: var(--stock-out-bg);
+  color: var(--stock-out-text);
+  border: 1px solid rgba(185, 28, 28, 0.35);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.menu-card.out-of-stock {
+  opacity: 0.62;
+  filter: grayscale(40%);
+}
+
+/* Hiệu ứng khi bàn đang được click chọn */
 .pos-table-btn.selected {
-  background-color: var(--btn-dark);
-  border-color: var(--btn-dark);
-  color: var(--btn-dark-text);
-  box-shadow: 0 4px 12px rgba(19, 34, 26, 0.18);
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.35), 0 6px 16px rgba(15, 23, 42, 0.12);
+}
+.pos-table-btn.status-dang-dung-nuoc.selected {
+  box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.4), 0 6px 16px rgba(15, 23, 42, 0.12);
+}
+.pos-table-btn.status-cho-thanh-toan.selected {
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.45), 0 6px 16px rgba(15, 23, 42, 0.12);
+}
+
+/* Thẻ đơn Mang đi */
+.pos-table-btn.takeaway-card {
+  border-color: #334155;
+  background-color: #1e293b;
+  color: #ffffff;
+}
+.pos-table-btn.takeaway-card .table-badge {
+  background-color: #475569;
+  color: #f8fafc;
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.pos-table-btn.takeaway-card.selected {
+  box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.5), 0 6px 16px rgba(15, 23, 42, 0.25);
 }
 
 /* Menu Product Cards */
@@ -418,4 +561,101 @@ body {
   border: 1px solid var(--border-subtle);
   background-color: var(--bg-surface);
   color: var(--text-primary);
+}
+
+/* ==========================================================================
+   BỘ 3 MẪU PHIẾU IN CHUẨN THƯƠNG HIỆU SANGRIMAR CAFE & LOUNGE (@media print)
+   - Tối ưu in ấn A4 và máy in nhiệt POS 80mm
+   - Ẩn toàn bộ thanh điều hướng, topbar, sidebar và nút thao tác
+   - In sắc nét tương phản cao, định dạng phiếu chuyên nghiệp
+   ========================================================================== */
+@media print {
+  @page {
+    size: auto;
+    margin: 6mm 8mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ẩn giao diện nền hệ thống và các thành phần không thuộc phiếu in */
+  .app-layout,
+  #app-sidebar-root,
+  #app-topbar-root,
+  .modal-backdrop,
+  .btn,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Chỉ hiển thị Modal đang active */
+  .modal {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  .modal:not(.show) {
+    display: none !important;
+  }
+
+  .modal-dialog {
+    position: static !important;
+    margin: 0 auto !important;
+    max-width: 480px !important;
+    width: 100% !important;
+    transform: none !important;
+  }
+
+  .modal-content {
+    border: 1.5px solid #000000 !important;
+    box-shadow: none !important;
+    padding: 12px !important;
+    background: #ffffff !important;
+    border-radius: 6px !important;
+  }
+
+  .modal-body {
+    padding: 0 !important;
+    color: #000000 !important;
+  }
+
+  /* Bảng món in sắc nét */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  table th, table td {
+    color: #000000 !important;
+    border-color: #333333 !important;
+    padding: 4px 2px !important;
+  }
+
+  .border-dark, .border-secondary, .border-top, .border-bottom {
+    border-color: #000000 !important;
+  }
+
+  .text-muted, .text-secondary {
+    color: #333333 !important;
+  }
+
+  .badge {
+    border: 1px solid #000000 !important;
+    color: #000000 !important;
+    background: transparent !important;
+  }
+
+  img {
+    max-width: 150px !important;
+    page-break-inside: avoid;
+  }
 }

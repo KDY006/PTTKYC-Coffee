@@ -25,6 +25,9 @@ public class ChiTietHoaDon implements Serializable {
     @Column(name = "so_luong", nullable = false)
     private Integer soLuong = 1;
 
+    @Column(name = "so_luong_da_in_bar", nullable = false)
+    private Integer soLuongDaInBar = 0;
+
     @Column(name = "don_gia_ban", nullable = false)
     private Double donGiaBan;
 
@@ -42,6 +45,18 @@ public class ChiTietHoaDon implements Serializable {
         this.hoaDon = hoaDon;
         this.monNuoc = monNuoc;
         this.soLuong = soLuong;
+        this.soLuongDaInBar = soLuong;
+        this.donGiaBan = donGiaBan;
+        this.thanhTien = thanhTien;
+        this.ghiChu = ghiChu;
+    }
+
+    public ChiTietHoaDon(Integer maCTHD, HoaDon hoaDon, MonNuoc monNuoc, Integer soLuong, Integer soLuongDaInBar, Double donGiaBan, Double thanhTien, String ghiChu) {
+        this.maCTHD = maCTHD;
+        this.hoaDon = hoaDon;
+        this.monNuoc = monNuoc;
+        this.soLuong = soLuong;
+        this.soLuongDaInBar = soLuongDaInBar;
         this.donGiaBan = donGiaBan;
         this.thanhTien = thanhTien;
         this.ghiChu = ghiChu;
@@ -77,6 +92,14 @@ public class ChiTietHoaDon implements Serializable {
 
     public void setSoLuong(Integer soLuong) {
         this.soLuong = soLuong;
+    }
+
+    public Integer getSoLuongDaInBar() {
+        return soLuongDaInBar;
+    }
+
+    public void setSoLuongDaInBar(Integer soLuongDaInBar) {
+        this.soLuongDaInBar = soLuongDaInBar;
     }
 
     public Double getDonGiaBan() {

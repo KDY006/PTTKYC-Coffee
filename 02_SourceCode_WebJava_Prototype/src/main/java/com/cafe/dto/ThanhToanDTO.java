@@ -7,6 +7,7 @@ public class ThanhToanDTO {
     private Double tienKhachDua;
     private Boolean xacNhanChuyenKhoan = false;
     private String maThamChieu;
+    private String minhChungChuyenKhoan;
     private String yeuCauThanhToan;
     private Long phienBan;
 
@@ -67,6 +68,14 @@ public class ThanhToanDTO {
 
     public void setMaThamChieu(String maThamChieu) {
         this.maThamChieu = maThamChieu;
+    }
+
+    public String getMinhChungChuyenKhoan() {
+        return minhChungChuyenKhoan;
+    }
+
+    public void setMinhChungChuyenKhoan(String minhChungChuyenKhoan) {
+        this.minhChungChuyenKhoan = minhChungChuyenKhoan;
     }
 
     public String getYeuCauThanhToan() {

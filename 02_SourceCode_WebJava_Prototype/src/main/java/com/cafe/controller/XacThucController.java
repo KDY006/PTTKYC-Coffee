@@ -26,16 +26,53 @@ public class XacThucController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody DangNhapDTO dto, HttpSession session) {
+        // Kiểm tra xem session có đang bị tạm khóa do nhập sai liên tiếp không
+        Long khoaDen = (Long) session.getAttribute("khoaDangNhapDen");
+        if (khoaDen != null) {
+            long conLaiMs = khoaDen - System.currentTimeMillis();
+            if (conLaiMs > 0) {
+                long conLaiGiay = (conLaiMs / 1000) + 1;
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                        .body(Map.of("error", "Đăng nhập sai quá 5 lần liên tiếp. Vui lòng thử lại sau " + conLaiGiay + " giây."));
+            } else {
+                session.removeAttribute("khoaDangNhapDen");
+                session.removeAttribute("soLanDangNhapSai");
+            }
+        }
+
         try {
             NhanVien nv = nhanSuService.dangNhap(dto);
             if (!"DANG_LAM".equals(nv.getTrangThai())) {
                 throw new RuntimeException("Tài khoản đã ngừng làm việc");
             }
+
+            // Đăng nhập thành công -> Xóa bộ đếm sai và lưu phiên
+            session.removeAttribute("soLanDangNhapSai");
+            session.removeAttribute("khoaDangNhapDen");
+
             session.setAttribute("maNV", nv.getMaNV());
             session.setAttribute("vaiTro", nv.getVaiTro());
+            session.setAttribute("hoTen", nv.getHoTen());
+            session.setAttribute("tenDangNhap", nv.getTenDangNhap());
+
             return ResponseEntity.ok(nv);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+            Integer soLanSai = (Integer) session.getAttribute("soLanDangNhapSai");
+            if (soLanSai == null) {
+                soLanSai = 0;
+            }
+            soLanSai++;
+
+            if (soLanSai >= 5) {
+                session.setAttribute("khoaDangNhapDen", System.currentTimeMillis() + 60_000L); // Khóa 60 giây
+                session.removeAttribute("soLanDangNhapSai");
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                        .body(Map.of("error", "Đăng nhập sai 5 lần liên tiếp. Tài khoản bị tạm khóa trong 60 giây."));
+            } else {
+                session.setAttribute("soLanDangNhapSai", soLanSai);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Sai tên đăng nhập hoặc mật khẩu!"));
+            }
         }
     }
 
@@ -45,7 +82,12 @@ public class XacThucController {
         if (id == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Vui lòng đăng nhập lại"));
         }
-        return ResponseEntity.ok(Map.of("maNV", id, "vaiTro", session.getAttribute("vaiTro")));
+        return ResponseEntity.ok(Map.of(
+                "maNV", id,
+                "vaiTro", session.getAttribute("vaiTro"),
+                "hoTen", session.getAttribute("hoTen") != null ? session.getAttribute("hoTen") : "",
+                "tenDangNhap", session.getAttribute("tenDangNhap") != null ? session.getAttribute("tenDangNhap") : ""
+        ));
     }
 
     @PostMapping("/logout")

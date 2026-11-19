@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 
 import java.io.Serializable;
@@ -34,10 +35,17 @@ public class HoaDon implements Serializable {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ma_nv", nullable = false)
-    private NhanVien nhanVien;
+    private NhanVien nhanVien; // Phục vụ / Thu ngân tạo đơn
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ma_nv_thu_ngan", nullable = true)
+    private NhanVien nhanVienThuNgan; // Thu ngân / Quản lý xác nhận thanh toán
 
     @Column(name = "thoi_gian_tao", nullable = false)
     private LocalDateTime thoiGianTao = LocalDateTime.now();
+
+    @Column(name = "thoi_gian_yeu_cau_tt")
+    private LocalDateTime thoiGianYeuCauTT = null;
 
     @Column(name = "thoi_gian_thanh_toan")
     private LocalDateTime thoiGianThanhToan = null;
@@ -57,14 +65,20 @@ public class HoaDon implements Serializable {
     @Column(name = "tien_khach_dua")
     private Double tienKhachDua = null;
 
+    @Column(name = "tien_thua", nullable = false)
+    private Double tienThua = 0.0;
+
     @Column(name = "phuong_thuc_tt", length = 20)
     private String phuongThucTT = "TIEN_MAT"; // TIEN_MAT, CHUYEN_KHOAN
 
     @Column(name = "ma_tham_chieu", length = 100, unique = true)
     private String maThamChieu = null;
 
+    @Column(name = "minh_chung_chuyen_khoan", length = 255)
+    private String minhChungChuyenKhoan = null;
+
     @Column(name = "trang_thai", nullable = false, length = 20)
-    private String trangThai = "CHO_THANH_TOAN"; // CHO_THANH_TOAN, DA_THANH_TOAN, DA_HUY
+    private String trangThai = "DANG_PHUC_VU"; // DANG_PHUC_VU, CHO_THANH_TOAN, DA_THANH_TOAN, DA_HUY
 
     @Column(name = "yeu_cau_tao", length = 36, unique = true)
     private String yeuCauTao = null;
@@ -79,6 +93,12 @@ public class HoaDon implements Serializable {
     @OneToMany(mappedBy = "hoaDon", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<ChiTietHoaDon> danhSachChiTiet = new ArrayList<>();
+
+    @Transient
+    private List<ChiTietHoaDon> phieuInBar;
+
+    @Transient
+    private List<ChiTietHoaDon> phieuInBarBoSung;
 
     public HoaDon() {
     }
@@ -107,12 +127,28 @@ public class HoaDon implements Serializable {
         this.nhanVien = nhanVien;
     }
 
+    public NhanVien getNhanVienThuNgan() {
+        return nhanVienThuNgan;
+    }
+
+    public void setNhanVienThuNgan(NhanVien nhanVienThuNgan) {
+        this.nhanVienThuNgan = nhanVienThuNgan;
+    }
+
     public LocalDateTime getThoiGianTao() {
         return thoiGianTao;
     }
 
     public void setThoiGianTao(LocalDateTime thoiGianTao) {
         this.thoiGianTao = thoiGianTao;
+    }
+
+    public LocalDateTime getThoiGianYeuCauTT() {
+        return thoiGianYeuCauTT;
+    }
+
+    public void setThoiGianYeuCauTT(LocalDateTime thoiGianYeuCauTT) {
+        this.thoiGianYeuCauTT = thoiGianYeuCauTT;
     }
 
     public LocalDateTime getThoiGianThanhToan() {
@@ -163,6 +199,14 @@ public class HoaDon implements Serializable {
         this.tienKhachDua = tienKhachDua;
     }
 
+    public Double getTienThua() {
+        return tienThua;
+    }
+
+    public void setTienThua(Double tienThua) {
+        this.tienThua = tienThua;
+    }
+
     public String getPhuongThucTT() {
         return phuongThucTT;
     }
@@ -177,6 +221,14 @@ public class HoaDon implements Serializable {
 
     public void setMaThamChieu(String maThamChieu) {
         this.maThamChieu = maThamChieu;
+    }
+
+    public String getMinhChungChuyenKhoan() {
+        return minhChungChuyenKhoan;
+    }
+
+    public void setMinhChungChuyenKhoan(String minhChungChuyenKhoan) {
+        this.minhChungChuyenKhoan = minhChungChuyenKhoan;
     }
 
     public String getTrangThai() {
@@ -222,5 +274,21 @@ public class HoaDon implements Serializable {
     public void addChiTiet(ChiTietHoaDon chiTiet) {
         danhSachChiTiet.add(chiTiet);
         chiTiet.setHoaDon(this);
+    }
+
+    public List<ChiTietHoaDon> getPhieuInBar() {
+        return phieuInBar;
+    }
+
+    public void setPhieuInBar(List<ChiTietHoaDon> phieuInBar) {
+        this.phieuInBar = phieuInBar;
+    }
+
+    public List<ChiTietHoaDon> getPhieuInBarBoSung() {
+        return phieuInBarBoSung;
+    }
+
+    public void setPhieuInBarBoSung(List<ChiTietHoaDon> phieuInBarBoSung) {
+        this.phieuInBarBoSung = phieuInBarBoSung;
     }
 }

@@ -1,6 +1,6 @@
 package com.cafe.controller;
 
-import com.cafe.entity.Ban;
+import com.cafe.dto.BanHienThiDTO;
 import com.cafe.service.DonHangService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +23,14 @@ public class BanController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Ban>> layDanhSachBan(HttpSession session) {
-        access.userId(session);
-        return ResponseEntity.ok(donHangService.layDanhSachBan());
+    public ResponseEntity<List<BanHienThiDTO>> layDanhSachBan(HttpSession session) {
+        access.requireDangNhap(session);
+        return ResponseEntity.ok(donHangService.layDanhSachBanHienThi());
+    }
+
+    @GetMapping("/so-do")
+    public ResponseEntity<List<BanHienThiDTO>> laySoDoBan(HttpSession session) {
+        access.requireDangNhap(session);
+        return ResponseEntity.ok(donHangService.layDanhSachBanHienThi());
     }
 }

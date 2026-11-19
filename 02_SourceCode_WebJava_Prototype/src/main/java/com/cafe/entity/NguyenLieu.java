@@ -90,4 +90,8 @@ public class NguyenLieu implements Serializable {
     public boolean isSapHet() {
         return this.soLuongTon <= this.mucTonToiThieu;
     }
+
+    public Double getGiaTriTon() {
+        return (this.soLuongTon != null && this.donGiaNhap != null) ? this.soLuongTon * this.donGiaNhap : 0.0;
+    }
 }

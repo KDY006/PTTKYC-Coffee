@@ -2,8 +2,13 @@ package com.cafe;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+import java.time.Clock;
 
 @SpringBootApplication
+@EnableScheduling
 public class QuanLyCafeApplication {
 
     public static void main(String[] args) {
@@ -15,5 +20,10 @@ public class QuanLyCafeApplication {
         System.out.println(">>> QUAN LY KHO & KPI:          http://localhost:8080/kho.html <<<");
         System.out.println(">>> QUAN LY NHAN SU & CHAM CONG: http://localhost:8080/nhansu.html <<<");
         System.out.println("==================================================================");
+    }
+
+    @Bean
+    public Clock systemClock() {
+        return Clock.systemDefaultZone();
     }
 }
