@@ -2,12 +2,12 @@
 
 > **Dự án:** Hệ thống Quản lý Quán Cà phê Sangrimar Cafe & Lounge  
 > **Thư mục làm việc:** `d:\3.1. PTTKYC\CK`  
-> **Thời điểm cập nhật:** 20/11/2026 (Hoàn tất File 4: `NANGCAP_CHAMCONG.md`)  
+> **Thời điểm cập nhật:** 20/11/2026 (Hoàn tất Đồng bộ Sơ đồ, Báo cáo Nghiệp vụ, Báo cáo Kỹ thuật & Kịch bản)  
 
 ---
 
 ## 1. Nguyên tắc làm việc
-- Thực hiện tuần tự 4 file markdown theo lệnh của người dùng.
+- Thực hiện tuần tự các yêu cầu nâng cấp theo lệnh của người dùng.
 - Không chạy kiểm thử tự động (Puppeteer/Browser/JUnit runner); người dùng trực tiếp kiểm thử thủ công.
 - Tên thương hiệu duy nhất: **Sangrimar Cafe & Lounge**.
 - Giữ nguyên chuẩn mã hóa UTF-8 tiếng Việt toàn bộ hệ thống.
@@ -164,3 +164,74 @@
    - Xóa file script kiểm thử tạm thời `chay_kiem_thu_chup_anh.js`.
    - Chạy lệnh `./mvnw clean compile`: Hoàn tất biên dịch sạch lỗi 100% (`BUILD SUCCESS`).
    - Khởi động lại dịch vụ Spring Boot và kiểm tra cả 4 trang giao diện đều phản hồi `HTTP 200 OK`.
+
+---
+
+## 7. Đồng bộ 100% 13 File Sơ đồ PlantUML với Code Thực tế & CSDL v2.0 (20/11/2026)
+1. **Tuân thủ 2 nguyên tắc nghiêm ngặt:**
+   - **100% Tiếng Việt không dấu:** Toàn bộ tiêu đề, nhãn luồng, trạng thái, chú thích, Use Case viết bằng tiếng Việt không dấu (đã kiểm tra qua script regex tự động đạt 0 ký tự có dấu, 0 emoji).
+   - **Giữ nguyên 100% định danh code gốc:** Giữ nguyên chính xác tên Class, Entity, DTO, Repository, Service, Scheduler, Controller, tên bảng, tên cột và tên hàm thực tế trong mã nguồn Java.
+2. **Danh mục 13 file sơ đồ đã cập nhật hoàn tất:**
+   - `01_KienTruc_TongThe.puml`: Kiến trúc 3 tầng Spring Boot 3.2.5 (cổng 8080), MySQL 8.0 (cổng 3306), 11 bảng CSDL, Scheduler, RBAC 3 vai trò (`QUAN_LY`, `THU_NGAN`, `PHUC_VU`).
+   - `02_TrienKhai_HeThong.puml`: Mô hình triển khai vật lý On-Premise tại quán, kết nối máy in nhiệt K80/K58, HikariCP, Tomcat 10 nhúng.
+   - `03_UseCase_TongQuat.puml`: 3 Actor phân cấp kế thừa + Actor Scheduler; bổ sung đầy đủ Use Case: `soLyCoTheLam`, In Bar, Yêu cầu thanh toán, Quay lại phục vụ, In tạm tính, Kiểm kê hao hụt, Sổ nhật ký kho, Phân ca tuần, Đổi ca, Chốt ca tự động.
+   - `04_Lop_ThietKe.puml`: Đầy đủ 11 Entity JPA, 21 DTO, 11 Repository, 3 Service, 1 Scheduler, 9 Controller và các phương thức thực tế.
+   - `05_ERD_DuLieu.puml`: Chuẩn hóa 3NF 11 bảng CSDL (`database_mau.sql` v2.0), bổ sung bảng `lich_su_kho`, các ràng buộc PK, FK, UK, CHECK.
+   - `06_Activity_TruKho.puml`: Luồng giao dịch `@Transactional` trừ kho BOM, sắp xếp khóa chống Deadlock, ghi nhật ký `XUAT_BAN_HANG` và mở bàn về `TRONG`.
+   - `07_Activity_BanHang.puml`: Sơ đồ hoạt động phân làn (Khách - Phục vụ - Bar - Thu ngân - Hệ thống) theo chu trình SOP phục vụ tại bàn.
+   - `08_Activity_ChamCong.puml`: 4 luồng hoạt động: Check-in, Check-out thời gian thực, Chốt ca tự động qua scheduler, và Quản lý duyệt điều chỉnh công.
+   - `09_Sequence_TruKho.puml`: Sơ đồ tuần tự đa tầng từ UI -> Controller -> Service -> Repositories -> Database khi thu ngân chốt đơn trừ kho.
+   - `10_Sequence_BanHang.puml`: Sơ đồ tuần tự 4 giai đoạn bán hàng: Mở bàn, In Bar Delta, Yêu cầu thanh toán & In tạm tính, Xác nhận thanh toán & Đóng bàn.
+   - `11_Sequence_ChamCong.puml`: Sơ đồ tuần tự Check-in, Check-out và Tiến trình `ChotCaTuDongScheduler` chạy ngầm.
+   - `12_StateMachine_TrangThai.puml`: Vòng đời trạng thái Bàn (`TRONG`, `DANG_DUNG_NUOC`, `CHO_THANH_TOAN`), Hóa đơn (`DANG_PHUC_VU`, `CHO_THANH_TOAN`, `DA_THANH_TOAN`, `DA_HUY`), Chấm công (6 trạng thái), Tồn kho và Nhân sự.
+   - `13_Package_SpringBoot.puml`: Đóng gói package Clean Architecture: `controller`, `dto`, `entity`, `repository`, `scheduler`, `service`, `static`.
+3. **Kiểm tra cú pháp:** 13/13 file hợp lệ 100%, không có lỗi biên dịch.
+
+---
+
+## 8. Hoàn thiện Báo cáo Nghiệp vụ Toàn diện `BAO_CAO_NGHIEP_VU.md` (20/11/2026)
+- **Định hướng tài liệu:** Chuyên biệt 100% về mặt Nghiệp vụ Quản trị & Vận hành ngành F&B (dung lượng ~75 KB).
+- **Nội dung 9 chương lớn:**
+  1. Tổng quan Doanh nghiệp Sangrimar Cafe & Lounge, mô hình Full-service Table Dining và 4 điểm nghẽn nghiệp vụ chí mạng.
+  2. Cơ cấu tổ chức, 5 nhóm Stakeholders, ma trận phân quyền RBAC 3 vai trò và cơ chế Kiểm soát kép (Dual Control).
+  3. Chu trình Phục vụ Tại bàn (SOP 9 bước), sơ đồ bàn 3 màu viền, thực đơn thông minh Soft Reservation & Bottleneck, cơ chế In Bar Delta, Phiếu Tạm Tính (Proforma Bill) và Bộ 3 mẫu phiếu in nghiệp vụ.
+  4. Quản trị Kho nguyên liệu (13 nguyên liệu chuẩn), Bảng định mức BOM 12 món, trừ kho tự động nguyên tử, giá vốn Bình quân gia quyền (WAC), kiểm kê hao hụt và Sổ nhật ký biến động kho (`lich_su_kho`).
+  5. Quản trị Nhân sự, 3 ca làm việc & hệ số lương ca tối 1.2, phân ca tuần với Quy tắc cân bằng vai trò (bắt buộc có Thu ngân/Quản lý), 7 Quy tắc Chấm công chuẩn hóa (BR-CC-01 -> BR-CC-07), tiến trình chốt ca quá hạn và lưu vết kiểm toán sửa công.
+  6. Hệ thống KPI Quản trị (Dashboard 4 kỳ), cơ cấu doanh thu Tiền mặt vs Chuyển khoản QR, báo cáo Menu Engineering (Top 5 Best-sellers) và Bảng tính công phục vụ lương.
+  7. Bảng tổng hợp 26 Quy tắc nghiệp vụ chuẩn hóa (BR-SEC, BR-POS, BR-INV, BR-CC).
+  8. Ma trận Quản trị rủi ro vận hành: Chống gian lận hóa đơn, xử lý lệch sổ két, sự cố chuyển khoản giả mạo, đổ vỡ nguyên liệu và khách hủy món sau khi Bar đã pha.
+  9. Đánh giá hiệu quả kinh tế và kết luận.
+
+---
+
+## 9. Hoàn thiện Báo cáo Kỹ thuật & Hiện thực Hệ thống `BAO_CAO_HE_THONG.md` (20/11/2026)
+- **Định hướng tài liệu:** Chuyên biệt 100% về Công nghệ, Kiến trúc Phần mềm và Hiện thực Kỹ thuật (dung lượng ~74 KB).
+- **Nội dung 9 chương kỹ thuật chuyên sâu:**
+  1. Ngăn xếp công nghệ: Spring Boot 3.2.5, Java 17/25, Tomcat 10 nhúng, Hibernate 6, HikariCP, MySQL 8.0, HTML5/CSS3/Vanilla JS ES6+.
+  2. Cấu trúc cây thư mục dự án và phân rã package Clean Architecture.
+  3. Đặc tả chi tiết 32 Điểm cuối REST API thuộc 9 nhóm phân hệ (tham số Request, Response JSON, mã lỗi HTTP).
+  4. Kiến trúc đối tượng: Chi tiết 11 Entity JPA, 21 DTO, 11 Repository (JPQL tối ưu JOIN FETCH, FOR UPDATE), 3 Service, 1 Scheduler (`ChotCaTuDongScheduler`), Bean `java.time.Clock`, lược đồ DDL/DML 11 bảng CSDL chuẩn 3NF.
+  5. Chi tiết các luồng kỹ thuật lõi: Vòng đời đơn hàng đa pha, thuật toán trừ kho chống Deadlock qua `TreeMap`, cơ chế Soft Reservation, in Bar Delta, giá vốn WAC, chấm công thời gian thực với Clock, và tiến trình chốt ca tự động qua `@Scheduled`.
+  6. Ma trận phân quyền kỹ thuật 3 vai trò và Kiến trúc Bảo vệ 4 Tầng (UI Guard -> Session Filter -> Service Validation -> DB Constraints).
+  7. Các cơ chế an ninh nâng cao: Brute-force throttling (khóa 60s sau 5 lần sai - HTTP 429), ẩn mật khẩu `@JsonProperty(access = WRITE_ONLY)`, kiểm soát đồng thời (Optimistic Lock `@Version` trên HoaDon, Pessimistic Lock trên Ban và NguyenLieu), Idempotency và Exception Handler toàn cục.
+  8. Hiện trạng kiểm thử tự động: Minh chứng 19/19 ca kiểm thử tích hợp chuyên sâu đạt 100% Passed / BUILD SUCCESS.
+  9. Hướng dẫn khởi chạy, đóng gói Maven Wrapper và triển khai thực tế.
+
+---
+
+## 10. Đồng bộ Kịch bản Thuyết trình & Kiểm thử Thực hành `KICH_BAN.md` (20/11/2026)
+- Đồng bộ hoàn toàn với Website Sangrimar Cafe & Lounge v2.0:
+  - 3 tài khoản đăng nhập chuẩn: `quanly/quanly`, `thungan/thungan`, `phucvu/phucvu` kèm 3 nút Quick-fill 1-chạm.
+  - Sơ đồ bàn 3 màu viền (`TRONG` - Xanh dương, `DANG_DUNG_NUOC` - Xanh lá, `CHO_THANH_TOAN` - Vàng).
+  - 3 Kịch bản Live Demo thực tế: Demo 1 (Bán hàng POS, in Bar Delta, khóa bàn, in Phiếu Tạm Tính, đóng bàn trừ kho), Demo 2 (Chấm công cá nhân, phân ca tuần cảnh báo thiếu thu ngân, Quản lý sửa công có lưu vết), Demo 3 (Minh chứng trừ kho BOM, Sổ nhật ký kho, nhập kho WAC, kiểm kê hao hụt và KPI Dashboard).
+  - Bổ sung 6 câu hỏi và câu trả lời phản biện Q&A chuyên sâu (Deadlock, Soft Reservation, Price Snapshot, khóa chiết khấu, Bean Clock, bảng thứ 11 `lich_su_kho`).
+  - Cập nhật minh chứng kết quả kiểm thử: 19/19 ca kiểm thử tích hợp tự động Backend đạt 100% PASS.
+
+---
+
+## 11. Ma trận Phân định Rõ ràng 3 Tài liệu Báo cáo Lớn trong Dự án
+| Tiêu Chí Phân Định | `BAO_CAO.md` | `BAO_CAO_NGHIEP_VU.md` | `BAO_CAO_HE_THONG.md` |
+| :--- | :--- | :--- | :--- |
+| **Mục đích tài liệu** | Báo cáo đồ án môn học theo mẫu quy chuẩn của Khoa CNTT - ĐH Tôn Đức Thắng. | Báo cáo chuyên sâu về **Mặt Nghiệp vụ Vận hành & Chu trình Kinh doanh F&B**. | Báo cáo chuyên sâu về **Mặt Công nghệ, Kiến trúc Kỹ thuật & Hiện thực Mã nguồn**. |
+| **Đối tượng độc giả** | Giảng viên chấm thi học phần Kỹ nghệ Yêu cầu. | Ban Giám đốc, Chủ đầu tư, Trưởng quầy, Quản lý vận hành F&B. | Lập trình viên, Kiến trúc sư phần mềm, Đội ngũ DevOps/Kỹ thuật. |
+| **Trọng tâm nội dung** | Lời cam đoan, Lời cảm ơn, Khảo sát hiện trạng, Kỹ nghệ yêu cầu MoSCoW, Biểu đồ UML tổng quan. | SOP 9 bước phục vụ bàn, định mức BOM 12 món, kiểm kê hao hụt, 7 quy tắc chấm công, phân ca cân bằng, ma trận rủi ro. | 32 REST API, 11 JPA Entity, 21 DTO, 11 Repo, 3 Service, 1 Scheduler, chống Deadlock, Bean Clock, 19 tests. |

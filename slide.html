@@ -1,2236 +1,2186 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Slide Thuyết Trình: Hệ Thống Quản Lý Quán Cà Phê (Coffee POS & Inventory)</title>
-  <!-- Google Fonts: Be Vietnam Pro (Clean, Modern Vietnamese) + Patrick Hand (Notebook Handwritten Accent) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Patrick+Hand&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-desk: #2b3a42;
-      --paper-bg: #fffdf8;
-      --grid-line: #c8d8e8;
-      --grid-line-bold: #a8c2d8;
-      --margin-red: #e05252;
-      --margin-pink: #f48fb1;
-      --pencil-dark: #222d32;
-      --text-muted: #546e7a;
-      --pen-blue: #1565c0;
-      --pen-green: #2e7d32;
-      --pen-orange: #e65100;
-      --pen-purple: #6a1b9a;
-      --sticky-yellow: #fff9c4;
-      --sticky-shadow: rgba(0, 0, 0, 0.14);
-      --tape-bg: rgba(255, 238, 88, 0.55);
-      --badge-duy: #1565c0;
-      --badge-quy: #00897b;
-      --badge-dat: #ef6c00;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: var(--bg-desk);
-      background-image: 
-        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 80%),
-        linear-gradient(rgba(0,0,0,0.3) 1px, transparent 1px);
-      background-size: 100% 100%, 30px 30px;
-      color: var(--pencil-dark);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow-x: hidden;
-      user-select: none;
-    }
-
-    /* Top Progress Bar */
-    .progress-bar-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.15);
-      z-index: 1000;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      width: 6.25%;
-      background: linear-gradient(90deg, #ffd54f, #ffb300, #ff8f00);
-      transition: width 0.3s ease;
-      box-shadow: 0 0 10px rgba(255, 179, 0, 0.7);
-    }
-
-    /* Main Slide Presentation Stage */
-    .presentation-stage {
-      width: 100%;
-      max-width: 1280px;
-      height: 720px;
-      position: relative;
-      margin: 20px auto;
-      perspective: 1200px;
-    }
-
-    /* Individual Slide Notebook Page */
-    .slide-page {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: var(--paper-bg);
-      /* Authentic School Notebook Grid Background (Ô ly caro) */
-      background-image: 
-        linear-gradient(var(--grid-line) 1px, transparent 1px),
-        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-      background-size: 24px 24px;
-      background-position: -1px -1px;
-      border-radius: 12px;
-      box-shadow: 
-        0 20px 40px rgba(0, 0, 0, 0.35),
-        0 4px 12px rgba(0, 0, 0, 0.15),
-        inset 0 0 80px rgba(220, 210, 190, 0.25);
-      border: 1px solid #d5dbdb;
-      display: none;
-      flex-direction: column;
-      padding: 32px 40px 32px 90px; /* Left padding reserves space for margin and spiral */
-      overflow: hidden;
-      animation: pageTurn 0.35s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
-    }
-
-    .slide-page.active {
-      display: flex;
-    }
-
-    @keyframes pageTurn {
-      0% {
-        opacity: 0.6;
-        transform: rotateY(-3deg) scale(0.98);
-      }
-      100% {
-        opacity: 1;
-        transform: rotateY(0deg) scale(1);
-      }
-    }
-
-    /* Left Red Notebook Margin (Lề đỏ vở học sinh) */
-    .slide-page::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 72px;
-      width: 2px;
-      background-color: var(--margin-red);
-      border-right: 1px solid var(--margin-pink);
-      z-index: 5;
-      pointer-events: none;
-    }
-
-    /* Spiral Binder on the Left Edge */
-    .spiral-spine {
-      position: absolute;
-      top: 24px;
-      bottom: 24px;
-      left: 18px;
-      width: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-around;
-      align-items: center;
-      z-index: 6;
-      pointer-events: none;
-    }
-
-    .spiral-ring {
-      width: 14px;
-      height: 14px;
-      background: radial-gradient(circle at 35% 35%, #444, #1a1a1a 70%);
-      border-radius: 50%;
-      box-shadow: 
-        inset 1px 1px 3px rgba(0,0,0,0.8),
-        0 0 0 2px rgba(255,255,255,0.7),
-        2px 2px 4px rgba(0,0,0,0.25);
-      position: relative;
-    }
-
-    .spiral-ring::after {
-      content: '';
-      position: absolute;
-      left: 7px;
-      top: -6px;
-      width: 20px;
-      height: 8px;
-      border: 3px solid #888;
-      border-bottom: none;
-      border-radius: 10px 10px 0 0;
-      opacity: 0.85;
-      transform: rotate(-15deg);
-    }
-
-    /* Top Washi Tape Decoration */
-    .washi-tape {
-      position: absolute;
-      top: -12px;
-      left: 50%;
-      transform: translateX(-50%) rotate(-1deg);
-      width: 140px;
-      height: 28px;
-      background-color: var(--tape-bg);
-      border-left: 2px dashed rgba(0, 0, 0, 0.15);
-      border-right: 2px dashed rgba(0, 0, 0, 0.15);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-      z-index: 10;
-      pointer-events: none;
-    }
-
-    /* Header Bar inside Slide */
-    .slide-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 2px dashed var(--pencil-dark);
-      padding-bottom: 12px;
-      margin-bottom: 18px;
-      position: relative;
-    }
-
-    .slide-meta-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .chapter-tag {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      background: #e2e8f0;
-      color: #334155;
-      padding: 4px 10px;
-      border-radius: 4px;
-      border: 1px solid #cbd5e1;
-    }
-
-    .speaker-pill {
-      font-size: 13px;
-      font-weight: 700;
-      padding: 4px 12px;
-      border-radius: 16px;
-      color: #fff;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-    }
-
-    .speaker-duy { background-color: var(--badge-duy); }
-    .speaker-quy { background-color: var(--badge-quy); }
-    .speaker-dat { background-color: var(--badge-dat); }
-
-    .slide-index-counter {
-      font-family: 'Patrick Hand', cursive;
-      font-size: 22px;
-      color: var(--text-muted);
-      font-weight: bold;
-    }
-
-    /* Slide Title */
-    .slide-title {
-      font-size: 28px;
-      font-weight: 800;
-      color: #1a202c;
-      letter-spacing: -0.5px;
-      line-height: 1.25;
-      margin-bottom: 18px;
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-    }
-
-    .slide-title .title-number {
-      color: var(--pen-blue);
-      font-family: 'Patrick Hand', cursive;
-      font-size: 32px;
-    }
-
-    /* Slide Body Layout (Split 2 Columns or Full Center) */
-    .slide-body {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 28px;
-      align-items: start;
-      min-height: 0; /* Prevents overflow */
-    }
-
-    .slide-body.full-width {
-      grid-template-columns: 1fr;
-    }
-
-    .slide-body.equal-columns {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    /* Left Content: Simple, Punchy Bullet Points */
-    .slide-text-content {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .bullet-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      background: rgba(255, 255, 255, 0.7);
-      padding: 12px 16px;
-      border-radius: 8px;
-      border-left: 4px solid var(--pen-blue);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-      font-size: 15px;
-      line-height: 1.5;
-      color: #2d3748;
-    }
-
-    .bullet-item.highlight-green {
-      border-left-color: var(--pen-green);
-    }
-    .bullet-item.highlight-orange {
-      border-left-color: var(--pen-orange);
-    }
-    .bullet-item.highlight-purple {
-      border-left-color: var(--pen-purple);
-    }
-
-    .bullet-num {
-      flex-shrink: 0;
-      width: 24px;
-      height: 24px;
-      background: #e2e8f0;
-      color: #1e293b;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 13px;
-    }
-
-    .bullet-item strong {
-      color: #0f172a;
-    }
-
-    /* Sub-pills for key items */
-    .tags-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 6px;
-    }
-
-    .tag-chip {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 3px 8px;
-      background: #edf2f7;
-      color: #475569;
-      border-radius: 4px;
-      border: 1px solid #cbd5e1;
-    }
-
-    .tag-chip.active-tag {
-      background: #e0f2fe;
-      color: #0369a1;
-      border-color: #7dd3fc;
-    }
-
-    /* Right Side: Prominent Image & Diagram Placeholder */
-    .image-placeholder-box {
-      background: #ffffff;
-      border: 2px dashed #94a3b8;
-      border-radius: 10px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      position: relative;
-      height: 100%;
-      max-height: 440px;
-      overflow: hidden;
-    }
-
-    .placeholder-badge {
-      position: absolute;
-      top: 10px;
-      left: 14px;
-      background: #fef08a;
-      color: #854d0e;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 3px 10px;
-      border-radius: 4px;
-      letter-spacing: 0.5px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      z-index: 4;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .image-container-frame {
-      width: 100%;
-      height: 310px;
-      background: #f8fafc;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      margin-top: 22px;
-      border: 1px solid #e2e8f0;
-      position: relative;
-    }
-
-    .image-container-frame img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      transition: transform 0.25s ease;
-    }
-
-    .image-container-frame img:hover {
-      transform: scale(1.03);
-    }
-
-    .image-fallback-notice {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 20px;
-      color: #64748b;
-    }
-
-    .image-fallback-icon {
-      font-size: 40px;
-      margin-bottom: 8px;
-    }
-
-    .image-caption-bar {
-      margin-top: 10px;
-      width: 100%;
-      text-align: center;
-    }
-
-    .image-caption-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 2px;
-    }
-
-    .image-path-hint {
-      font-family: 'Fira Code', monospace;
-      font-size: 11px;
-      color: #2563eb;
-      background: #eff6ff;
-      padding: 2px 8px;
-      border-radius: 4px;
-      display: inline-block;
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    /* Live Demo Specific Card Styling */
-    .demo-card-banner {
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      color: #f8fafc;
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 14px;
-      border-left: 6px solid #10b981;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    }
-
-    .demo-card-banner h4 {
-      font-size: 17px;
-      color: #34d399;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .demo-step-box {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 13.5px;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .demo-step-num {
-      background: #10b981;
-      color: #fff;
-      font-weight: bold;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      flex-shrink: 0;
-    }
-
-    /* Speaker Notes Accordion (Sticky Note Style) */
-    .speaker-notes-drawer {
-      position: absolute;
-      bottom: 12px;
-      left: 90px;
-      right: 40px;
-      background: var(--sticky-yellow);
-      border: 1px solid #fde047;
-      border-radius: 8px;
-      padding: 10px 16px;
-      box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
-      z-index: 20;
-      display: none;
-      max-height: 160px;
-      overflow-y: auto;
-      font-size: 13.5px;
-      line-height: 1.5;
-      color: #422006;
-      border-top: 4px solid #eab308;
-    }
-
-    .speaker-notes-drawer.open {
-      display: block;
-      animation: slideUpNotes 0.25s ease-out;
-    }
-
-    @keyframes slideUpNotes {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    .notes-header {
-      font-weight: 800;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #854d0e;
-      margin-bottom: 4px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .notes-close-btn {
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      color: #854d0e;
-      font-weight: bold;
-    }
-
-    /* Fixed Bottom Control Deck */
-    .control-deck {
-      position: fixed;
-      bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(8px);
-      padding: 8px 18px;
-      border-radius: 40px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-      z-index: 100;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-
-    .deck-btn {
-      background: transparent;
-      border: none;
-      color: #f8fafc;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-    }
-
-    .deck-btn:hover {
-      background: rgba(255, 255, 255, 0.18);
-      color: #38bdf8;
-    }
-
-    .deck-btn.primary {
-      background: #2563eb;
-      color: white;
-    }
-
-    .deck-btn.primary:hover {
-      background: #1d4ed8;
-    }
-
-    .deck-btn.notes-toggle-btn {
-      background: #ca8a04;
-      color: white;
-    }
-    .deck-btn.notes-toggle-btn:hover {
-      background: #a16207;
-    }
-
-    .deck-counter {
-      color: #94a3b8;
-      font-size: 13.5px;
-      font-weight: 700;
-      padding: 0 8px;
-      border-left: 1px solid rgba(255, 255, 255, 0.2);
-      border-right: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .deck-counter span {
-      color: #f8fafc;
-    }
-
-    /* Overview Modal (All 16 Slides Grid) */
-    .overview-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(15, 23, 42, 0.94);
-      backdrop-filter: blur(12px);
-      z-index: 2000;
-      display: none;
-      padding: 40px;
-      overflow-y: auto;
-    }
-
-    .overview-modal.open {
-      display: block;
-    }
-
-    .overview-header {
-      max-width: 1200px;
-      margin: 0 auto 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-    }
-
-    .overview-header h3 {
-      font-size: 24px;
-      font-weight: 700;
-    }
-
-    .overview-grid {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-    }
-
-    .overview-card {
-      background: #fffdf8;
-      border-radius: 8px;
-      padding: 14px;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 125px;
-    }
-
-    .overview-card:hover {
-      transform: translateY(-4px);
-      border-color: #38bdf8;
-      box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
-    }
-
-    .overview-card.current {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.5);
-    }
-
-    .ov-num {
-      font-size: 12px;
-      font-weight: bold;
-      color: #64748b;
-    }
-
-    .ov-title {
-      font-size: 13.5px;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 6px 0;
-      line-height: 1.35;
-    }
-
-    .ov-speaker {
-      font-size: 11px;
-      font-weight: 700;
-      display: inline-block;
-      padding: 2px 6px;
-      border-radius: 4px;
-      color: white;
-      align-self: flex-start;
-    }
-
-    /* Print / PDF view optimizations */
-    @media print {
-      body {
-        background: none;
-      }
-      .presentation-stage {
-        max-width: 100%;
-        height: auto;
-      }
-      .slide-page {
-        position: relative;
-        display: flex !important;
-        page-break-after: always;
-        height: 100vh;
-        margin-bottom: 20px;
-      }
-      .control-deck, .progress-bar-container, .speaker-notes-drawer {
-        display: none !important;
-      }
-    }
-  </style>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Slide Báo Cáo: Hệ Thống Quản Lý Quán Cà Phê – Sangrimar Cafe & Lounge</title>
+ <!-- Google Fonts: Be Vietnam Pro (Clean, Modern Vietnamese) + Patrick Hand (Notebook Handwritten Accent) -->
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Patrick+Hand&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+ <style>
+ :root {
+ --bg-desk: #2b3a42;
+ --paper-bg: #fffdf8;
+ --grid-line: #c8d8e8;
+ --grid-line-bold: #a8c2d8;
+ --margin-red: #e05252;
+ --margin-pink: #f48fb1;
+ --pencil-dark: #222d32;
+ --text-muted: #546e7a;
+ --pen-blue: #1565c0;
+ --pen-green: #2e7d32;
+ --pen-orange: #e65100;
+ --pen-purple: #6a1b9a;
+ --sticky-yellow: #fff9c4;
+ --sticky-shadow: rgba(0, 0, 0, 0.14);
+ --tape-bg: rgba(255, 238, 88, 0.55);
+ --badge-duy: #1565c0;
+ --badge-quy: #00897b;
+ --badge-dat: #ef6c00;
+ }
+
+ * {
+ box-sizing: border-box;
+ margin: 0;
+ padding: 0;
+ }
+
+ body {
+ font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+ background-color: var(--bg-desk);
+ background-image: 
+ radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 80%),
+ linear-gradient(rgba(0,0,0,0.3) 1px, transparent 1px);
+ background-size: 100% 100%, 30px 30px;
+ color: var(--pencil-dark);
+ min-height: 100vh;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ overflow-x: hidden;
+ user-select: none;
+ }
+
+ /* Top Progress Bar */
+ .progress-bar-container {
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 5px;
+ background: rgba(255, 255, 255, 0.15);
+ z-index: 1000;
+ }
+
+ .progress-bar-fill {
+ height: 100%;
+ width: 6.25%;
+ background: linear-gradient(90deg, #ffd54f, #ffb300, #ff8f00);
+ transition: width 0.3s ease;
+ box-shadow: 0 0 10px rgba(255, 179, 0, 0.7);
+ }
+
+ /* Main Slide Presentation Stage */
+ .presentation-stage {
+ width: 100%;
+ max-width: 1280px;
+ height: 720px;
+ position: relative;
+ margin: 20px auto;
+ perspective: 1200px;
+ }
+
+ /* Individual Slide Notebook Page */
+ .slide-page {
+ position: absolute;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background-color: var(--paper-bg);
+ /* Authentic School Notebook Grid Background (Ô ly caro) */
+ background-image: 
+ linear-gradient(var(--grid-line) 1px, transparent 1px),
+ linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+ background-size: 24px 24px;
+ background-position: -1px -1px;
+ border-radius: 12px;
+ box-shadow: 
+ 0 20px 40px rgba(0, 0, 0, 0.35),
+ 0 4px 12px rgba(0, 0, 0, 0.15),
+ inset 0 0 80px rgba(220, 210, 190, 0.25);
+ border: 1px solid #d5dbdb;
+ display: none;
+ flex-direction: column;
+ padding: 32px 40px 32px 90px; /* Left padding reserves space for margin and spiral */
+ overflow: hidden;
+ animation: pageTurn 0.35s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+ }
+
+ .slide-page.active {
+ display: flex;
+ }
+
+ @keyframes pageTurn {
+ 0% {
+ opacity: 0.6;
+ transform: rotateY(-3deg) scale(0.98);
+ }
+ 100% {
+ opacity: 1;
+ transform: rotateY(0deg) scale(1);
+ }
+ }
+
+ /* Left Red Notebook Margin (Lề đỏ vở học sinh) */
+ .slide-page::before {
+ content: '';
+ position: absolute;
+ top: 0;
+ bottom: 0;
+ left: 72px;
+ width: 2px;
+ background-color: var(--margin-red);
+ border-right: 1px solid var(--margin-pink);
+ z-index: 5;
+ pointer-events: none;
+ }
+
+ /* Spiral Binder on the Left Edge */
+ .spiral-spine {
+ position: absolute;
+ top: 24px;
+ bottom: 24px;
+ left: 18px;
+ width: 28px;
+ display: flex;
+ flex-direction: column;
+ justify-content: space-around;
+ align-items: center;
+ z-index: 6;
+ pointer-events: none;
+ }
+
+ .spiral-ring {
+ width: 14px;
+ height: 14px;
+ background: radial-gradient(circle at 35% 35%, #444, #1a1a1a 70%);
+ border-radius: 50%;
+ box-shadow: 
+ inset 1px 1px 3px rgba(0,0,0,0.8),
+ 0 0 0 2px rgba(255,255,255,0.7),
+ 2px 2px 4px rgba(0,0,0,0.25);
+ position: relative;
+ }
+
+ .spiral-ring::after {
+ content: '';
+ position: absolute;
+ left: 7px;
+ top: -6px;
+ width: 20px;
+ height: 8px;
+ border: 3px solid #888;
+ border-bottom: none;
+ border-radius: 10px 10px 0 0;
+ opacity: 0.85;
+ transform: rotate(-15deg);
+ }
+
+ /* Top Washi Tape Decoration */
+ .washi-tape {
+ position: absolute;
+ top: -12px;
+ left: 50%;
+ transform: translateX(-50%) rotate(-1deg);
+ width: 140px;
+ height: 28px;
+ background-color: var(--tape-bg);
+ border-left: 2px dashed rgba(0, 0, 0, 0.15);
+ border-right: 2px dashed rgba(0, 0, 0, 0.15);
+ box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+ z-index: 10;
+ pointer-events: none;
+ }
+
+ /* Header Bar inside Slide */
+ .slide-header {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ border-bottom: 2px dashed var(--pencil-dark);
+ padding-bottom: 12px;
+ margin-bottom: 18px;
+ position: relative;
+ }
+
+ .slide-meta-left {
+ display: flex;
+ align-items: center;
+ gap: 12px;
+ }
+
+ .chapter-tag {
+ font-size: 12px;
+ font-weight: 700;
+ text-transform: uppercase;
+ letter-spacing: 0.8px;
+ background: #e2e8f0;
+ color: #334155;
+ padding: 4px 10px;
+ border-radius: 4px;
+ border: 1px solid #cbd5e1;
+ }
+
+ .speaker-pill {
+ font-size: 13px;
+ font-weight: 700;
+ padding: 4px 12px;
+ border-radius: 16px;
+ color: #fff;
+ display: inline-flex;
+ align-items: center;
+ gap: 6px;
+ box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+ }
+
+ .speaker-duy { background-color: var(--badge-duy); }
+ .speaker-quy { background-color: var(--badge-quy); }
+ .speaker-dat { background-color: var(--badge-dat); }
+
+ .slide-index-counter {
+ font-family: 'Patrick Hand', cursive;
+ font-size: 22px;
+ color: var(--text-muted);
+ font-weight: bold;
+ }
+
+ /* Slide Title */
+ .slide-title {
+ font-size: 28px;
+ font-weight: 800;
+ color: #1a202c;
+ letter-spacing: -0.5px;
+ line-height: 1.25;
+ margin-bottom: 18px;
+ display: flex;
+ align-items: baseline;
+ gap: 10px;
+ }
+
+ .slide-title .title-number {
+ color: var(--pen-blue);
+ font-family: 'Patrick Hand', cursive;
+ font-size: 32px;
+ }
+
+ /* Slide Body Layout (Split 2 Columns or Full Center) */
+ .slide-body {
+ flex: 1;
+ display: grid;
+ grid-template-columns: 1.15fr 0.85fr;
+ gap: 28px;
+ align-items: start;
+ min-height: 0; /* Prevents overflow */
+ }
+
+ .slide-body.full-width {
+ grid-template-columns: 1fr;
+ }
+
+ .slide-body.equal-columns {
+ grid-template-columns: 1fr 1fr;
+ }
+
+ /* Left Content: Simple, Punchy Bullet Points */
+ .slide-text-content {
+ display: flex;
+ flex-direction: column;
+ gap: 14px;
+ }
+
+ .bullet-item {
+ display: flex;
+ align-items: flex-start;
+ gap: 12px;
+ background: rgba(255, 255, 255, 0.7);
+ padding: 12px 16px;
+ border-radius: 8px;
+ border-left: 4px solid var(--pen-blue);
+ box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+ font-size: 15px;
+ line-height: 1.5;
+ color: #2d3748;
+ }
+
+ .bullet-item.highlight-green {
+ border-left-color: var(--pen-green);
+ }
+ .bullet-item.highlight-orange {
+ border-left-color: var(--pen-orange);
+ }
+ .bullet-item.highlight-purple {
+ border-left-color: var(--pen-purple);
+ }
+
+ .bullet-num {
+ flex-shrink: 0;
+ width: 24px;
+ height: 24px;
+ background: #e2e8f0;
+ color: #1e293b;
+ border-radius: 50%;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-weight: 700;
+ font-size: 13px;
+ }
+
+ .bullet-item strong {
+ color: #0f172a;
+ }
+
+ /* Sub-pills for key items */
+ .tags-row {
+ display: flex;
+ flex-wrap: wrap;
+ gap: 8px;
+ margin-top: 6px;
+ }
+
+ .tag-chip {
+ font-size: 12px;
+ font-weight: 600;
+ padding: 3px 8px;
+ background: #edf2f7;
+ color: #475569;
+ border-radius: 4px;
+ border: 1px solid #cbd5e1;
+ }
+
+ .tag-chip.active-tag {
+ background: #e0f2fe;
+ color: #0369a1;
+ border-color: #7dd3fc;
+ }
+
+ /* Right Side: Prominent Image & Diagram Placeholder */
+ .image-placeholder-box {
+ background: #ffffff;
+ border: 2px dashed #94a3b8;
+ border-radius: 10px;
+ padding: 14px;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+ position: relative;
+ height: 100%;
+ max-height: 440px;
+ overflow: hidden;
+ }
+
+ .placeholder-badge {
+ position: absolute;
+ top: 10px;
+ left: 14px;
+ background: #fef08a;
+ color: #854d0e;
+ font-size: 11px;
+ font-weight: 800;
+ padding: 3px 10px;
+ border-radius: 4px;
+ letter-spacing: 0.5px;
+ box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+ z-index: 4;
+ display: flex;
+ align-items: center;
+ gap: 5px;
+ }
+
+ .image-container-frame {
+ width: 100%;
+ height: 310px;
+ background: #f8fafc;
+ border-radius: 6px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ overflow: hidden;
+ margin-top: 22px;
+ border: 1px solid #e2e8f0;
+ position: relative;
+ }
+
+ .image-container-frame img {
+ max-width: 100%;
+ max-height: 100%;
+ object-fit: contain;
+ transition: transform 0.25s ease;
+ }
+
+ .image-container-frame img:hover {
+ transform: scale(1.03);
+ }
+
+ .image-fallback-notice {
+ display: none;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ text-align: center;
+ padding: 20px;
+ color: #64748b;
+ }
+
+ .image-fallback-icon {
+ font-size: 40px;
+ margin-bottom: 8px;
+ }
+
+ .image-caption-bar {
+ margin-top: 10px;
+ width: 100%;
+ text-align: center;
+ }
+
+ .image-caption-title {
+ font-size: 14px;
+ font-weight: 700;
+ color: #1e293b;
+ margin-bottom: 2px;
+ }
+
+ .image-path-hint {
+ font-family: 'Fira Code', monospace;
+ font-size: 11px;
+ color: #2563eb;
+ background: #eff6ff;
+ padding: 2px 8px;
+ border-radius: 4px;
+ display: inline-block;
+ max-width: 100%;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+ }
+
+ /* Live Demo Specific Card Styling */
+ .demo-card-banner {
+ background: linear-gradient(135deg, #1e293b, #0f172a);
+ color: #f8fafc;
+ padding: 16px;
+ border-radius: 8px;
+ margin-bottom: 14px;
+ border-left: 6px solid #10b981;
+ box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+ }
+
+ .demo-card-banner h4 {
+ font-size: 17px;
+ color: #34d399;
+ margin-bottom: 4px;
+ display: flex;
+ align-items: center;
+ gap: 8px;
+ }
+
+ .demo-step-box {
+ background: #ffffff;
+ border: 1px solid #e2e8f0;
+ padding: 8px 12px;
+ border-radius: 6px;
+ font-size: 13.5px;
+ margin-bottom: 6px;
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ }
+
+ .demo-step-num {
+ background: #10b981;
+ color: #fff;
+ font-weight: bold;
+ width: 22px;
+ height: 22px;
+ border-radius: 50%;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 12px;
+ flex-shrink: 0;
+ }
+
+ /* Speaker Notes Accordion (Sticky Note Style) */
+ .speaker-notes-drawer {
+ position: absolute;
+ bottom: 12px;
+ left: 90px;
+ right: 40px;
+ background: var(--sticky-yellow);
+ border: 1px solid #fde047;
+ border-radius: 8px;
+ padding: 10px 16px;
+ box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
+ z-index: 20;
+ display: none;
+ max-height: 160px;
+ overflow-y: auto;
+ font-size: 13.5px;
+ line-height: 1.5;
+ color: #422006;
+ border-top: 4px solid #eab308;
+ }
+
+ .speaker-notes-drawer.open {
+ display: block;
+ animation: slideUpNotes 0.25s ease-out;
+ }
+
+ @keyframes slideUpNotes {
+ from { transform: translateY(20px); opacity: 0; }
+ to { transform: translateY(0); opacity: 1; }
+ }
+
+ .notes-header {
+ font-weight: 800;
+ font-size: 13px;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ color: #854d0e;
+ margin-bottom: 4px;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ }
+
+ .notes-close-btn {
+ background: transparent;
+ border: none;
+ cursor: pointer;
+ font-size: 16px;
+ color: #854d0e;
+ font-weight: bold;
+ }
+
+ /* Fixed Bottom Control Deck */
+ .control-deck {
+ position: fixed;
+ bottom: 16px;
+ display: flex;
+ align-items: center;
+ gap: 12px;
+ background: rgba(15, 23, 42, 0.88);
+ backdrop-filter: blur(8px);
+ padding: 8px 18px;
+ border-radius: 40px;
+ box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+ z-index: 100;
+ border: 1px solid rgba(255, 255, 255, 0.15);
+ }
+
+ .deck-btn {
+ background: transparent;
+ border: none;
+ color: #f8fafc;
+ font-family: inherit;
+ font-size: 14px;
+ font-weight: 600;
+ padding: 6px 14px;
+ border-radius: 20px;
+ cursor: pointer;
+ display: flex;
+ align-items: center;
+ gap: 6px;
+ transition: all 0.2s ease;
+ }
+
+ .deck-btn:hover {
+ background: rgba(255, 255, 255, 0.18);
+ color: #38bdf8;
+ }
+
+ .deck-btn.primary {
+ background: #2563eb;
+ color: white;
+ }
+
+ .deck-btn.primary:hover {
+ background: #1d4ed8;
+ }
+
+ .deck-btn.notes-toggle-btn {
+ background: #ca8a04;
+ color: white;
+ }
+ .deck-btn.notes-toggle-btn:hover {
+ background: #a16207;
+ }
+
+ .deck-counter {
+ color: #94a3b8;
+ font-size: 13.5px;
+ font-weight: 700;
+ padding: 0 8px;
+ border-left: 1px solid rgba(255, 255, 255, 0.2);
+ border-right: 1px solid rgba(255, 255, 255, 0.2);
+ }
+
+ .deck-counter span {
+ color: #f8fafc;
+ }
+
+ /* Overview Modal (All 16 Slides Grid) */
+ .overview-modal {
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(15, 23, 42, 0.94);
+ backdrop-filter: blur(12px);
+ z-index: 2000;
+ display: none;
+ padding: 40px;
+ overflow-y: auto;
+ }
+
+ .overview-modal.open {
+ display: block;
+ }
+
+ .overview-header {
+ max-width: 1200px;
+ margin: 0 auto 24px;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ color: white;
+ }
+
+ .overview-header h3 {
+ font-size: 24px;
+ font-weight: 700;
+ }
+
+ .overview-grid {
+ max-width: 1200px;
+ margin: 0 auto;
+ display: grid;
+ grid-template-columns: repeat(4, 1fr);
+ gap: 20px;
+ }
+
+ .overview-card {
+ background: #fffdf8;
+ border-radius: 8px;
+ padding: 14px;
+ cursor: pointer;
+ border: 2px solid transparent;
+ transition: all 0.2s ease;
+ display: flex;
+ flex-direction: column;
+ justify-content: space-between;
+ min-height: 125px;
+ }
+
+ .overview-card:hover {
+ transform: translateY(-4px);
+ border-color: #38bdf8;
+ box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
+ }
+
+ .overview-card.current {
+ border-color: #2563eb;
+ box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.5);
+ }
+
+ .ov-num {
+ font-size: 12px;
+ font-weight: bold;
+ color: #64748b;
+ }
+
+ .ov-title {
+ font-size: 13.5px;
+ font-weight: 700;
+ color: #0f172a;
+ margin: 6px 0;
+ line-height: 1.35;
+ }
+
+ .ov-speaker {
+ font-size: 11px;
+ font-weight: 700;
+ display: inline-block;
+ padding: 2px 6px;
+ border-radius: 4px;
+ color: white;
+ align-self: flex-start;
+ }
+
+ /* Print / PDF view optimizations */
+ @media print {
+ body {
+ background: none;
+ }
+ .presentation-stage {
+ max-width: 100%;
+ height: auto;
+ }
+ .slide-page {
+ position: relative;
+ display: flex !important;
+ page-break-after: always;
+ height: 100vh;
+ margin-bottom: 20px;
+ }
+ .control-deck, .progress-bar-container, .speaker-notes-drawer {
+ display: none !important;
+ }
+ }
+ </style>
 </head>
 <body>
 
-  <!-- Top Real-time Progress Bar -->
-  <div class="progress-bar-container">
-    <div class="progress-bar-fill" id="progressBar"></div>
-  </div>
-
-  <!-- Main Presentation Stage (16:9 Aspect Ratio Container) -->
-  <div class="presentation-stage" id="presentationStage">
-
-    <!-- ========================================== -->
-    <!-- SLIDE 1: TRANG TIÊU ĐỀ & GIỚI THIỆU NHÓM   -->
-    <!-- ========================================== -->
-    <div class="slide-page active" data-slide="1">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">ĐỒ ÁN CUỐI KỲ</span>
-          <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (30s)</span>
-        </div>
-        <div class="slide-index-counter">Trang 01 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">01.</span>
-        <span>Hệ Thống Quản Lý Quán Cà Phê (Coffee POS & Inventory System)</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item">
-            <div class="bullet-num">1</div>
-            <div>
-              <strong>Học phần:</strong> Phân tích và Thiết kế Yêu cầu (Mã môn: <code>502050</code>)<br>
-              <span class="text-muted">Khoa Công nghệ Thông tin - Trường Đại học Tôn Đức Thắng</span>
-            </div>
-          </div>
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">2</div>
-            <div>
-              <strong>Giảng viên hướng dẫn:</strong> TS. Hồ Thị Linh<br>
-              <span class="text-muted">Đánh giá đồ án phân tích thiết kế hệ thống và nguyên mẫu phần mềm</span>
-            </div>
-          </div>
-          <div class="bullet-item highlight-orange">
-            <div class="bullet-num">3</div>
-            <div>
-              <strong>Nhóm sinh viên thực hiện:</strong>
-              <div class="tags-row" style="margin-top: 8px;">
-                <span class="tag-chip active-tag">Nguyễn Văn Duy (521H0001 - Nhóm trưởng - 34%)</span>
-                <span class="tag-chip active-tag">Trần Văn Quý (521H0002 - 33%)</span>
-                <span class="tag-chip active-tag">Lê Tấn Đạt (521H0003 - 33%)</span>
-              </div>
-            </div>
-          </div>
-          <div class="bullet-item highlight-purple">
-            <div class="bullet-num">4</div>
-            <div>
-              <strong>Tổng thời lượng:</strong> 12 - 15 phút (Thuyết trình ~9 phút | Live Demo ~4.5 phút | Q&A)
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 1 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT LOGO / BIỂU TƯỢNG ĐỒ ÁN</div>
-          <div class="image-container-frame">
-            <img src="diagram/KienTrucTongThe.svg" alt="Logo & Kiến trúc tổng thể" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">☕</div>
-              <strong>Khung chèn Logo TĐT & Coffee POS</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Có thể đặt ảnh Logo Trường ĐH Tôn Đức Thắng hoặc ảnh mockup hệ thống.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Logo Đề tài & Sơ đồ kiến trúc tổng quan</div>
-            <div class="image-path-hint">Gợi ý file: diagram/KienTrucTongThe.svg</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 1 -->
-      <div class="speaker-notes-drawer" id="notes-1">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (30 giây)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(1)">✕</button>
-        </div>
-        <p>"Kính thưa Cô Hồ Thị Linh và toàn thể các bạn sinh viên đang có mặt trong buổi báo cáo ngày hôm nay! Em tên là Nguyễn Văn Duy – Trưởng nhóm đề tài. Hôm nay, nhóm chúng em gồm 3 thành viên: em – Nguyễn Văn Duy, bạn Trần Văn Quý và bạn Lê Tấn Đạt rất vinh dự được đại diện nhóm trình bày báo cáo bảo vệ đồ án môn học Phân tích và Thiết kế Yêu cầu với đề tài: 'Hệ Thống Quản Lý Quán Cà Phê – Coffee POS & Inventory Management System'. Sau đây, em xin phép được bắt đầu phần trình bày của nhóm."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 2: BỐI CẢNH & 3 ĐIỂM NGHẼN THỦ CÔNG  -->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="2">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">CHƯƠNG 1: BỐI CẢNH</span>
-          <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (1 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 02 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">02.</span>
-        <span>Bối Cảnh Thực Tế & 3 "Điểm Nghẽn" Vận Hành Thủ Công</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item">
-            <div class="bullet-num">1</div>
-            <div>
-              <strong>Order giấy viết tay nhầm lẫn:</strong> Giờ cao điểm dễ thất lạc phiếu, nhầm bàn, quầy pha chế nhận tin chậm gây chậm trễ phục vụ khách hàng.
-            </div>
-          </div>
-          <div class="bullet-item highlight-orange">
-            <div class="bullet-num">2</div>
-            <div>
-              <strong>Thất thoát kho ngầm & Pha chế cảm tính:</strong> Không có định mức nguyên liệu (BOM); cuối ngày chỉ kiểm đếm lon sữa/gói trà mà không thể đối soát hao hụt với số ly bán ra.
-            </div>
-          </div>
-          <div class="bullet-item highlight-purple">
-            <div class="bullet-num">3</div>
-            <div>
-              <strong>Lịch ca nhân viên xung đột:</strong> Nhân sự sinh viên làm part-time đổi ca liên tục; sổ chấm công giấy bị gạch xóa nhầm lẫn, khó tổng hợp giờ công chính xác.
-            </div>
-          </div>
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">✓</div>
-            <div>
-              <strong>Động lực nghiên cứu:</strong> Cần một hệ thống số hóa tập trung, liên thông Bán hàng - Trừ kho ngầm - Chấm công tự động.
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 2 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ 3 ĐIỂM NGHẼN NGHIỆP VỤ</div>
-          <div class="image-container-frame">
-            <img src="screenshots/01b_login_error.png" alt="Sơ đồ khảo sát As-Is" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">⚠️</div>
-              <strong>Khung chèn Sơ đồ Điểm Nghẽn As-Is</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Chèn sơ đồ minh họa quy trình thủ công: Ghi giấy -> Nhầm bàn -> Thất thoát kho.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">3 Nút thắt quy trình nghiệp vụ thủ công As-Is</div>
-            <div class="image-path-hint">Gợi ý file: Sơ đồ khảo sát nghiệp vụ hoặc hình ảnh minh họa</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 2 -->
-      <div class="speaker-notes-drawer" id="notes-2">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (1 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(2)">✕</button>
-        </div>
-        <p>"Thưa Cô, xuất phát từ quá trình khảo sát thực tế tại các mô hình quán cà phê vừa và nhỏ hiện nay, nhóm nhận thấy hầu hết các quán vẫn đang vận hành theo cách thủ công thô sơ, dẫn đến 3 'điểm nghẽn' chí mạng: Thứ nhất: Nhân viên phục vụ ghi order trên giấy viết tay, vào giờ cao điểm rất dễ thất lạc phiếu, nhầm bàn, phục vụ chậm khiến khách hàng bức xúc. Thứ hai: Nhân viên pha chế làm theo thói quen cảm tính; cuối ngày chủ quán kiểm kho chỉ đếm số lượng lon sữa, gói trà còn thừa mà hoàn toàn không thể đối chiếu xem hao hụt thực tế có khớp với số lượng ly đã bán hay do thất thoát, đổ vỡ ngầm. Thứ ba: Lực lượng nhân viên phần lớn là sinh viên làm việc part-time đổi ca liên tục. Bảng phân ca giấy bị gạch xóa nhầm lẫn, cuối tháng rất khó tổng hợp chính xác số giờ công thực tế. Ba điểm nghẽn này chính là lý do thôi thúc nhóm em xây dựng một giải pháp phần mềm số hóa toàn diện."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 3: MỤC TIÊU VÀ PHẠM VI (IN/OUT SCOPE)-->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="3">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">CHƯƠNG 1: MỤC TIÊU & PHẠM VI</span>
-          <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (45s)</span>
-        </div>
-        <div class="slide-index-counter">Trang 03 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">03.</span>
-        <span>Mục Tiêu To-Be & Phạm Vi Dự Án (In-Scope vs Out-of-Scope)</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">🎯</div>
-            <div>
-              <strong>Mục tiêu To-Be:</strong> Xây dựng ứng dụng Web tập trung, liên thông luồng dữ liệu tức thời: <em>Gọi món → Trừ kho ngầm tự động → Chấm công → KPI</em>.
-            </div>
-          </div>
-          <div class="bullet-item">
-            <div class="bullet-num">IN</div>
-            <div>
-              <strong>Phạm vi thực hiện (In-Scope):</strong>
-              <div class="tags-row" style="margin-top: 6px;">
-                <span class="tag-chip active-tag">POS 10 bàn thời gian thực</span>
-                <span class="tag-chip active-tag">Kho định mức công thức BOM</span>
-                <span class="tag-chip active-tag">Chấm công ca kíp & Báo trễ</span>
-                <span class="tag-chip active-tag">Thẻ KPI Doanh thu & Cảnh báo đỏ</span>
-              </div>
-            </div>
-          </div>
-          <div class="bullet-item highlight-orange">
-            <div class="bullet-num">OUT</div>
-            <div>
-              <strong>Ngoại phạm vi (Out-of-Scope):</strong> Không làm module hạch toán thuế VAT chuyên sâu; không tích hợp cổng ngân hàng trực tiếp (mô phỏng tiền mặt & quét mã QR).
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 3 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT BẢNG PHẠM VI DỰ ÁN</div>
-          <div class="image-container-frame">
-            <img src="screenshots/fixed_vietnamese_ui.png" alt="Bảng Scope Dự Án" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">📋</div>
-              <strong>Khung chèn Ma trận In-Scope & Out-of-Scope</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Đặt bảng phân loại ranh giới hệ thống hoặc hình ảnh sơ đồ Context Diagram.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Ma trận đối chiếu phạm vi In-Scope vs Out-of-Scope</div>
-            <div class="image-path-hint">Gợi ý file: screenshots/fixed_vietnamese_ui.png</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 3 -->
-      <div class="speaker-notes-drawer" id="notes-3">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (45 giây)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(3)">✕</button>
-        </div>
-        <p>"Về mục tiêu hệ thống (To-Be), nhóm hướng tới xây dựng một ứng dụng Web tập trung, kết nối đồng bộ và tức thì luồng dữ liệu giữa: Gọi món -> Trừ kho ngầm tự động -> Chấm công nhân sự -> Báo cáo KPI. Để đảm bảo tính khả thi và tập trung sâu vào chất lượng, nhóm xác định rõ ranh giới: Phạm vi thực hiện (In-Scope) bao gồm 3 phân hệ cốt lõi: Phân hệ Bán hàng POS 10 bàn; Phân hệ Kho bóc tách công thức pha chế (BOM) và cảnh báo tồn tối thiểu; Phân hệ Nhân sự phân ca và chấm công thời gian thực. Ngoại phạm vi (Out-of-Scope): Nhóm không bao gồm module hạch toán kế toán chuyên sâu về thuế VAT và không tích hợp cổng thanh toán ngân hàng trực tiếp qua thẻ mà mô phỏng thanh toán tiền mặt và chuyển khoản QR."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 4: KIẾN TRÚC PHÂN TẦNG (3-TIER)      -->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="4">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">CHƯƠNG 2: KIẾN TRÚC HỆ THỐNG</span>
-          <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (45s)</span>
-        </div>
-        <div class="slide-index-counter">Trang 04 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">04.</span>
-        <span>Kiến Trúc Phân Tầng Chuẩn Mực (3-Tier Layered Architecture)</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item">
-            <div class="bullet-num">T1</div>
-            <div>
-              <strong>Presentation Tier (Trình duyệt Web Client):</strong> HTML5, Bootstrap 5.3, phông chữ Roboto tiếng Việt có dấu, JavaScript Fetch API bất đồng bộ (AJAX).
-            </div>
-          </div>
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">T2</div>
-            <div>
-              <strong>Application Tier (Spring Boot 3 - Port 8080):</strong> Phân tầng Controller tiếp nhận request, Service xử lý logic nghiệp vụ, Repository ORM Spring Data JPA.
-            </div>
-          </div>
-          <div class="bullet-item highlight-orange">
-            <div class="bullet-num">T3</div>
-            <div>
-              <strong>Database Tier (MySQL 8.0 - Port 3306):</strong> Hệ quản trị CSDL quan hệ tuân thủ nghiêm ngặt tính toàn vẹn ACID, bảng mã chuẩn UTF-8mb4.
-            </div>
-          </div>
-          <div class="bullet-item highlight-purple">
-            <div class="bullet-num">👉</div>
-            <div>
-              <strong>Chuyển giao người trình bày:</strong> Kính mời bạn <strong>Trần Văn Quý</strong> tiếp nối với Yêu cầu chức năng & Luồng POS.
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 4 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ KIẾN TRÚC 3 TẦNG</div>
-          <div class="image-container-frame">
-            <img src="diagram/KienTrucTongThe.svg" alt="Sơ đồ Kiến Trúc Tổng Thể" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">🏛️</div>
-              <strong>Khung chèn KienTrucTongThe.svg</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Sơ đồ thể hiện 3 tầng Presentation - Application - Database.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Biểu đồ Kiến trúc 3 tầng Spring Boot & MySQL</div>
-            <div class="image-path-hint">Gợi ý file: diagram/KienTrucTongThe.svg</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 4 -->
-      <div class="speaker-notes-drawer" id="notes-4">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (45 giây)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(4)">✕</button>
-        </div>
-        <p>"Về mặt kiến trúc kỹ thuật, hệ thống được nhóm thiết kế tuân thủ nghiêm ngặt mô hình 3-Tier Layered Architecture chuẩn mực của Java Spring Boot: Tầng Presentation: Hoạt động trên trình duyệt Client với HTML5, Bootstrap 5.3, phông chữ Roboto tiếng Việt và JavaScript Fetch API bất đồng bộ. Tầng Application: Máy chủ Spring Boot chạy trên cổng 8080, phân tách trách nhiệm rành mạch giữa Controller điều hướng, Service xử lý logic nghiệp vụ và Repository truy vấn ORM. Tầng Database: Cơ sở dữ liệu quan hệ MySQL chạy trên cổng 3306, đảm bảo tính toàn vẹn dữ liệu giao dịch ACID. Tiếp theo đây, em xin mời bạn Trần Văn Quý trình bày chi tiết về phần phân tích yêu cầu và luồng Bán hàng POS."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 5: 15 FRS & MA TRẬN MOSCOW           -->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="5">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">CHƯƠNG 3: YÊU CẦU HỆ THỐNG</span>
-          <span class="speaker-pill speaker-quy">Trần Văn Quý (1 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 05 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">05.</span>
-        <span>Danh Mục 15 Yêu Cầu Chức Năng (FRs) & Bảng MoSCoW</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item">
-            <div class="bullet-num">1</div>
-            <div>
-              <strong>Nhóm 1 (Xác thực):</strong> FR-01: Đăng nhập phân quyền bảo mật 3 vai trò (Staff, Manager, Admin).
-            </div>
-          </div>
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">2</div>
-            <div>
-              <strong>Nhóm 2 (Bán hàng POS):</strong> FR-02 đến FR-06: Sơ đồ 10 bàn động, gọi món, ghi chú, chiết khấu quản lý, xuất hóa đơn in nhiệt.
-            </div>
-          </div>
-          <div class="bullet-item highlight-orange">
-            <div class="bullet-num">3</div>
-            <div>
-              <strong>Nhóm 3 (Kho & Định mức):</strong> FR-07 đến FR-11: Danh mục nguyên liệu, công thức pha chế BOM, trừ kho tự động, cảnh báo tồn đỏ.
-            </div>
-          </div>
-          <div class="bullet-item highlight-purple">
-            <div class="bullet-num">4</div>
-            <div>
-              <strong>Nhóm 4 (Nhân sự):</strong> FR-12 đến FR-15: Hồ sơ nhân viên, ca làm việc, chấm công thời gian thực & phát hiện đi trễ.
-            </div>
-          </div>
-          <div class="bullet-item">
-            <div class="bullet-num">★</div>
-            <div>
-              <strong>Độ hoàn thiện MoSCoW:</strong> 100% chức năng cốt lõi (Must-have) đã lập trình hoàn tất và chạy kiểm thử đạt 100%.
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 5 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT MA TRẬN MOSCOW</div>
-          <div class="image-container-frame">
-            <img src="screenshots/02_pos_screen.png" alt="Bảng Phân Loại MoSCoW" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">📊</div>
-              <strong>Khung chèn Bảng MoSCoW (Must / Should / Could)</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Đặt bảng tổng hợp độ ưu tiên MoSCoW cho 15 yêu cầu chức năng.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Bảng phân loại mức độ ưu tiên kỹ thuật MoSCoW</div>
-            <div class="image-path-hint">Gợi ý file: screenshots/02_pos_screen.png</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 5 -->
-      <div class="speaker-notes-drawer" id="notes-5">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Trần Văn Quý (1 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(5)">✕</button>
-        </div>
-        <p>"Em xin chào Cô và các bạn! Em tên là Trần Văn Quý. Trong đồ án này, em phụ trách việc phân tích yêu cầu và xây dựng phân hệ Bán hàng POS. Nhóm đã xác định và đánh mã đầy đủ 15 yêu cầu chức năng cốt lõi (FR-01 đến FR-15): Nhóm 1: Xác thực đăng nhập và bảo vệ phiên làm việc. Nhóm 2: Sơ đồ bàn động, gọi món tại bàn, mang đi, ghi chú pha chế, áp dụng chiết khấu và xuất hóa đơn nhiệt. Nhóm 3: Quản lý danh mục nguyên liệu, thiết lập định mức công thức BOM, tự động trừ kho và cảnh báo hết hàng. Nhóm 4: Quản lý hồ sơ nhân viên và chấm công đối chiếu thời gian thực. Qua kỹ thuật phân loại MoSCoW, nhóm xếp toàn bộ các tính năng cốt lõi vào nhóm Must-have và nhóm đã cài đặt thực tế đạt 100% trên phần mềm chạy thật."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 6: USE CASE TỔNG QUÁT                -->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="6">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">CHƯƠNG 4: THIẾT KẾ USE CASE</span>
-          <span class="speaker-pill speaker-quy">Trần Văn Quý (1 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 06 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">06.</span>
-        <span>Mô Hình Hóa Use Case Tổng Quát Chuẩn UML 2.5</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item">
-            <div class="bullet-num">👤</div>
-            <div>
-              <strong>3 Tác nhân chính (Actors):</strong> Staff (Thu ngân/Phục vụ), Manager (Quản lý cửa hàng), Admin (Quản trị hệ thống).
-            </div>
-          </div>
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">inc</div>
-            <div>
-              <strong>Quan hệ bắt buộc <code>&lt;&lt;include&gt;&gt;</code>:</strong> Tất cả các ca sử dụng nghiệp vụ đều bắt buộc liên kết với <em>"Xác thực đăng nhập"</em> để bảo mật.
-            </div>
-          </div>
-          <div class="bullet-item highlight-orange">
-            <div class="bullet-num">ext</div>
-            <div>
-              <strong>Quan hệ mở rộng <code>&lt;&lt;extend&gt;&gt;</code>:</strong>
-              <div class="tags-row" style="margin-top: 6px;">
-                <span class="tag-chip">Áp dụng chiết khấu &lt;&lt;extend&gt;&gt; Thanh toán (Chỉ Manager)</span>
-                <span class="tag-chip">Cảnh báo tồn đỏ &lt;&lt;extend&gt;&gt; Tự động trừ kho</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 6 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ USE CASE TỔNG QUÁT</div>
-          <div class="image-container-frame">
-            <img src="diagram/UseCaseTongQuat.svg" alt="Sơ đồ Use Case Tổng Quát" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">🌐</div>
-              <strong>Khung chèn UseCaseTongQuat.svg</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Biểu đồ ranh giới hệ thống, 3 tác nhân và các quan hệ include / extend.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Biểu đồ Use Case Tổng Quát Toàn Hệ Thống</div>
-            <div class="image-path-hint">Gợi ý file: diagram/UseCaseTongQuat.svg</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 6 -->
-      <div class="speaker-notes-drawer" id="notes-6">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Trần Văn Quý (1 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(6)">✕</button>
-        </div>
-        <p>"Trên màn hình là Biểu đồ Use Case tổng quát của hệ thống theo chuẩn UML 2.5: Hệ thống có 3 tác nhân chính: Staff (Nhân viên thu ngân/phục vụ), Manager (Quản lý cửa hàng) và Admin (Quản trị viên). Tất cả các Use Case nghiệp vụ chính đều bắt buộc <<include>> tới Use Case Xác thực đăng nhập để bảo mật hệ thống. Đặc biệt, hai quan hệ <<extend>> thể hiện nghiệp vụ thực tế rất rõ nét: Chức năng Áp dụng chiết khấu mở rộng cho Thanh toán hóa đơn (chỉ dành riêng cho Quản lý); và chức năng Cảnh báo tồn tối thiểu mở rộng cho luồng Tự động trừ kho khi nguyên liệu chạm ngưỡng an toàn."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 7: PHÂN HỆ POS & SƠ ĐỒ 10 BÀN        -->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="7">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">CHƯƠNG 5: PHÂN HỆ BÁN HÀNG</span>
-          <span class="speaker-pill speaker-quy">Trần Văn Quý (1 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 07 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">07.</span>
-        <span>Phân Hệ Bán Hàng POS & Sơ Đồ 10 Bàn Thời Gian Thực</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">🟩</div>
-            <div>
-              <strong>Sơ đồ 10 bàn trực quan:</strong> Đổi màu động theo trạng thái bàn. Viền xanh lá: <em>Bàn trống</em>. Viền đỏ: <em>Bàn có khách</em>. Bấm vào bàn đỏ để tải lại đơn tức thì.
-            </div>
-          </div>
-          <div class="bullet-item">
-            <div class="bullet-num">☕</div>
-            <div>
-              <strong>Thực đơn 20 món nước:</strong> Phân loại khoa học thành 4 nhóm (Cà phê, Trà, Đá xay, Nước ép) kèm thanh tìm kiếm tức thời.
-            </div>
-          </div>
-          <div class="bullet-item highlight-orange">
-            <div class="bullet-num">🛒</div>
-            <div>
-              <strong>Giỏ hàng thông minh:</strong> Tự động tính tiền, hỗ trợ ghi chú pha chế (<em>"ít đường", "không đá"</em>), lưu đơn tạm và giải phóng bàn khi in bill.
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 7 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT ẢNH GIAO DIỆN BÁN HÀNG POS</div>
-          <div class="image-container-frame">
-            <img src="screenshots/fixed_pos_screen.png" alt="Giao diện POS 10 bàn" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">🖥️</div>
-              <strong>Khung chèn fixed_pos_screen.png</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Ảnh chụp màn hình thực tế giao diện banhang.html với 10 bàn và menu.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Giao diện Phân hệ Bán hàng POS & 10 Bàn thời gian thực</div>
-            <div class="image-path-hint">Gợi ý file: screenshots/fixed_pos_screen.png</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 7 -->
-      <div class="speaker-notes-drawer" id="notes-7">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Trần Văn Quý (1 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(7)">✕</button>
-        </div>
-        <p>"Tiếp theo là Phân hệ Bán hàng POS – giao diện tương tác chính của thu ngân: Góc trên bên trái là Sơ đồ 10 bàn trực quan đổi màu theo thời gian thực: Bàn trống hiển thị viền xanh lá, bàn đang có khách phục vụ hiển thị viền đỏ kèm mã đơn hàng. Thu ngân chỉ cần bấm vào bàn đỏ là toàn bộ món đang gọi được tải lại tức thì. Góc dưới là thực đơn 20 món nước phân loại theo danh mục (Cà phê, Trà, Đá xay, Nước ép) có ô tìm kiếm nhanh. Cột bên phải là Giỏ hàng thông minh, hỗ trợ tăng giảm số lượng, nhập ghi chú pha chế như 'ít đường, không đá' và tự động tính tổng tiền."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 8: LUỒNG TẠO ĐƠN & THANH TOÁN IN BILL-->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="8">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">CHƯƠNG 5: QUY TRÌNH POS</span>
-          <span class="speaker-pill speaker-quy">Trần Văn Quý (1 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 08 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">08.</span>
-        <span>Quy Trình Gọi Món, Lưu Đơn & Thanh Toán Xuất Hóa Đơn</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item">
-            <div class="bullet-num">1</div>
-            <div>
-              <strong>Bước 1 - Lưu đơn (Price Snapshot):</strong> Tạo bản ghi <code>HoaDon</code> trạng thái <code>CHO_THANH_TOAN</code>. Chụp giá bán tại thời điểm gọi; bàn chuyển sang màu đỏ.
-            </div>
-          </div>
-          <div class="bullet-item highlight-orange">
-            <div class="bullet-num">2</div>
-            <div>
-              <strong>Bước 2 - Kiểm tra thanh toán (Validation):</strong> Modal chặn nếu tiền khách đưa &lt; tổng tiền. Tài khoản STAFF tự động bị khóa ô Chiết khấu để chống thất thoát.
-            </div>
-          </div>
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">3</div>
-            <div>
-              <strong>Bước 3 - Xuất hóa đơn in nhiệt:</strong> Cập nhật trạng thái <code>DA_THANH_TOAN</code>, in bill nhiệt chuẩn POS, tính tiền thối và bàn tự động về màu xanh.
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 8 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT BIỂU ĐỒ HOẠT ĐỘNG / HÓA ĐƠN</div>
-          <div class="image-container-frame">
-            <img src="screenshots/07_receipt_modal.png" alt="Hóa đơn nhiệt & Luồng POS" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">🧾</div>
-              <strong>Khung chèn Activity_POS.svg hoặc 07_receipt_modal.png</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Biểu đồ tuần tự thanh toán hoặc ảnh hóa đơn nhiệt COFFEE POS.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Modal Xác nhận thanh toán & Mẫu Hóa đơn nhiệt</div>
-            <div class="image-path-hint">Gợi ý file: screenshots/07_receipt_modal.png | diagram/Activity_POS.svg</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 8 -->
-      <div class="speaker-notes-drawer" id="notes-8">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Trần Văn Quý (1 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(8)">✕</button>
-        </div>
-        <p>"Quy trình nghiệp vụ bán hàng diễn ra chặt chẽ theo 3 bước: Bước 1 – Lưu đơn: Khi bấm Lưu đơn, máy chủ tạo bản ghi HoaDon ở trạng thái CHO_THANH_TOAN và chuyển bàn sang màu đỏ. Đơn giá tại thời điểm này được chụp lại (Price Snapshot) không bị ảnh hưởng nếu sau này menu đổi giá. Bước 2 – Kiểm tra thanh toán: Modal thanh toán kiểm tra nghiêm ngặt: nếu tiền khách đưa nhỏ hơn tổng tiền phải thu, hệ thống lập tức chặn lại và báo lỗi. Nếu là tài khoản Staff, ô chiết khấu tự động bị khóa để chống gian lận. Bước 3 – Xuất hóa đơn: Khi thanh toán đủ tiền, hệ thống xuất hóa đơn nhiệt COFFEE POS hoàn chỉnh, tính đúng tiền thối và giải phóng bàn về lại màu xanh trống. Và ngay sau đây, em xin phép chuyển sang màn hình ứng dụng để Demo trực tiếp luồng Bán hàng POS."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 9: [LIVE DEMO 1] BÁN HÀNG POS        -->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="9">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag" style="background:#dcfce7; color:#166534;">THỰC THI THỰC TẾ</span>
-          <span class="speaker-pill speaker-quy">Trần Văn Quý (1.5 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 09 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">09.</span>
-        <span>[LIVE DEMO PHẦN 1] Trình Diễn Luồng Bán Hàng POS Trực Tiếp</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="demo-card-banner">
-            <h4>▶ Kịch bản Demo trực tiếp trên trình duyệt Web</h4>
-            <p style="font-size: 13px; color: #cbd5e1;">URL: <code>http://localhost:8080/banhang.html</code> (Tài khoản: <code>staff1 / 123456</code>)</p>
-          </div>
-
-          <div class="demo-step-box">
-            <span class="demo-step-num">1</span>
-            <span>Đăng nhập <strong>staff1</strong>: Navbar tự động ẩn 2 tab Kho & Nhân sự.</span>
-          </div>
-          <div class="demo-step-box">
-            <span class="demo-step-num">2</span>
-            <span>Chọn <strong>Bàn 02 (màu xanh)</strong>, gọi Cà phê sữa (ghi chú: "ít đường") + Trà đào.</span>
-          </div>
-          <div class="demo-step-box">
-            <span class="demo-step-num">3</span>
-            <span>Bấm <strong>"Lưu đơn"</strong>: Sinh Đơn #4, Bàn 02 chuyển sang <strong>viền đỏ có khách</strong>.</span>
-          </div>
-          <div class="demo-step-box">
-            <span class="demo-step-num">4</span>
-            <span>Bấm <strong>"Thanh toán"</strong>: Nhập thử 50k bị chặn lỗi tiền thiếu; ô chiết khấu khóa disabled.</span>
-          </div>
-          <div class="demo-step-box">
-            <span class="demo-step-num">5</span>
-            <span>Nhập 100k: Hóa đơn nhiệt in ra, tiền thối 33.000 đ, Bàn 02 giải phóng về xanh trống.</span>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 9 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ KHUNG MÀN HÌNH DEMO BÁN HÀNG POS</div>
-          <div class="image-container-frame">
-            <img src="screenshots/04_cart_table2.png" alt="Màn hình Demo POS" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">🎬</div>
-              <strong>Khung Demo Trực Tiếp: Bán Hàng POS</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Hiển thị giao diện thao tác trực tiếp trên trình duyệt Chrome.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Trình chiếu thao tác Live Demo: Gọi món & In hóa đơn Bàn 02</div>
-            <div class="image-path-hint">Gợi ý file: screenshots/04_cart_table2.png | 07_receipt_modal.png</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 9 -->
-      <div class="speaker-notes-drawer" id="notes-9">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản thao tác Demo: Trần Văn Quý (1.5 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(9)">✕</button>
-        </div>
-        <p>"(Quý thao tác trực tiếp trên trình duyệt) Thưa Cô, em đăng nhập tài khoản staff1 / 123456. 1. Giao diện điều hướng vào banhang.html. Cô có thể thấy trên thanh Navbar, hai tab 'Kho' và 'Nhân sự' đã tự động ẩn hoàn toàn để bảo vệ phân quyền. 2. Em chọn Bàn 02 đang trống (màu xanh). Em gọi 1 ly Cà phê sữa đá, nhập ghi chú 'ít đường' và thêm 1 ly Trà đào cam sả. Tạm tính là 67.000 đ. 3. Em bấm 'Lưu đơn' -> Hệ thống lập tức sinh Đơn #4 và Bàn 02 chuyển sang viền đỏ có khách. 4. Bây giờ em bấm 'Thanh toán & Xuất hóa đơn'. Em thử nhập tiền khách đưa là 50.000 đ -> Modal báo lỗi đỏ chặn lại ngay: 'Tiền khách đưa chưa đủ'. Đồng thời ô chiết khấu bị khóa disabled. 5. Em nhập đúng 100.000 đ và bấm Xác nhận -> Popup hóa đơn nhiệt xuất hiện với đầy đủ thông tin thu ngân, tính đúng tiền thừa 33.000 đ và Bàn 02 đã tự động quay về màu xanh trống! Phần tiếp theo về Cơ sở dữ liệu và Nhân sự, em xin nhường lời cho bạn Lê Tấn Đạt."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 10: NFR & THIẾT KẾ CSDL 9 BẢNG (ERD) -->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="10">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">CHƯƠNG 6: DỮ LIỆU & NFR</span>
-          <span class="speaker-pill speaker-dat">Lê Tấn Đạt (1 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 10 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">10.</span>
-        <span>Yêu Cầu Phi Chức Năng (NFR) & Thiết Kế CSDL 9 Bảng (ERD)</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item">
-            <div class="bullet-num">⚡</div>
-            <div>
-              <strong>Chỉ số NFR định lượng:</strong> Phản hồi API &lt; 500ms; Toàn vẹn giao dịch ACID 100%; Không bao giờ rò rỉ mật khẩu người dùng trong JSON response.
-            </div>
-          </div>
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">9</div>
-            <div>
-              <strong>CSDL 9 bảng chuẩn hóa 3NF:</strong>
-              <div class="tags-row" style="margin-top: 6px;">
-                <span class="tag-chip active-tag">ban</span>
-                <span class="tag-chip active-tag">mon_nuoc</span>
-                <span class="tag-chip active-tag">hoa_don</span>
-                <span class="tag-chip active-tag">chi_tiet_hoa_don</span>
-                <span class="tag-chip active-tag">nguyen_lieu</span>
-                <span class="tag-chip active-tag">cong_thuc (BOM)</span>
-                <span class="tag-chip active-tag">nhan_vien</span>
-                <span class="tag-chip active-tag">ca_lam</span>
-                <span class="tag-chip active-tag">cham_cong</span>
-              </div>
-            </div>
-          </div>
-          <div class="bullet-item highlight-orange">
-            <div class="bullet-num">✓</div>
-            <div>
-              <strong>Chuẩn UTF-8mb4:</strong> Lưu trữ và hiển thị 100% tiếng Việt có dấu hoàn hảo; không xảy ra lỗi phông chữ hay vỡ font.
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 10 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ THỰC THỂ CSDL (ERD)</div>
-          <div class="image-container-frame">
-            <img src="diagram/ERD_DuLieu.svg" alt="Sơ đồ ERD CSDL 9 bảng" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">🗄️</div>
-              <strong>Khung chèn ERD_DuLieu.svg</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Biểu đồ ERD mô hình hóa 9 thực thể chuẩn 3NF và quan hệ Crow's Foot.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Mô hình Thực thể Liên kết ERD 9 Bảng (Crow's Foot Notation)</div>
-            <div class="image-path-hint">Gợi ý file: diagram/ERD_DuLieu.svg</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 10 -->
-      <div class="speaker-notes-drawer" id="notes-10">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Lê Tấn Đạt (1 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(10)">✕</button>
-        </div>
-        <p>"Em xin kính chào Cô và các bạn! Em tên là Lê Tấn Đạt. Về mặt yêu cầu phi chức năng (NFR), nhóm đặt ra các chỉ số định lượng khắt khe: thời gian phản hồi API dưới 500ms, tỷ lệ toàn vẹn giao dịch đạt 100%, và 0% rò rỉ mật khẩu trong JSON. Để đáp ứng các yêu cầu đó, CSDL của hệ thống được thiết kế gồm 9 bảng thực thể chuẩn hóa dạng chuẩn 3NF: Nhóm bán hàng gồm: ban, mon_nuoc, hoa_don, và chi_tiet_hoa_don (quan hệ hợp thành 1-N). Nhóm kho gồm: nguyen_lieu và bảng liên kết cong_thuc (BOM) giải quyết quan hệ nhiều - nhiều với món nước. Nhóm nhân sự gồm: nhan_vien, ca_lam và bảng ghi nhận cham_cong. Toàn bộ CSDL sử dụng bảng mã utf8mb4 hỗ trợ tiếng Việt có dấu hoàn hảo."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 11: PHÂN HỆ NHÂN SỰ & CHẤM CÔNG      -->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="11">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">CHƯƠNG 7: PHÂN HỆ NHÂN SỰ</span>
-          <span class="speaker-pill speaker-dat">Lê Tấn Đạt (1 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 11 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">11.</span>
-        <span>Phân Hệ Quản Lý Nhân Sự & Chấm Công Thời Gian Thực</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">🕒</div>
-            <div>
-              <strong>Đồng hồ số thời gian thực:</strong> Đồng bộ từng giây với máy chủ backend, đảm bảo tính khách quan minh bạch.
-            </div>
-          </div>
-          <div class="bullet-item">
-            <div class="bullet-num">⚡</div>
-            <div>
-              <strong>Tự động nhận diện đi trễ:</strong>
-              <div style="margin-top: 6px;">
-                • Đi trễ ≤ 15 phút: Tự động ghi nhận nhãn xanh <strong>"ĐÚNG GIỜ"</strong>.<br>
-                • Đi trễ &gt; 15 phút: Tự động gắn nhãn đỏ cảnh báo <strong>"ĐI TRỄ"</strong>.
-              </div>
-            </div>
-          </div>
-          <div class="bullet-item highlight-purple">
-            <div class="bullet-num">👥</div>
-            <div>
-              <strong>Quản lý hồ sơ & Phân ca:</strong> Hỗ trợ Check-out tan ca tính giờ công và modal thêm mới hồ sơ nhân sự phân quyền linh hoạt.
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 11 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT ẢNH GIAO DIỆN CHẤM CÔNG</div>
-          <div class="image-container-frame">
-            <img src="screenshots/fixed_nhansu_screen.png" alt="Giao diện Chấm công Nhân sự" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">⏱️</div>
-              <strong>Khung chèn fixed_nhansu_screen.png hoặc Activity_ChamCong.svg</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Ảnh chụp màn hình thực tế trang nhansu.html và bảng chấm công.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Giao diện Quản lý Nhân sự & Bảng đối soát Chấm công</div>
-            <div class="image-path-hint">Gợi ý file: screenshots/fixed_nhansu_screen.png | diagram/Activity_ChamCong.svg</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 11 -->
-      <div class="speaker-notes-drawer" id="notes-11">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Lê Tấn Đạt (1 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(11)">✕</button>
-        </div>
-        <p>"Điểm đặc sắc của Phân hệ Nhân sự là cơ chế Chấm công thời gian thực: Trên giao diện trang bị một đồng hồ bấm giờ kỹ thuật số đồng bộ thời gian thực của máy chủ. Khi nhân viên chọn ca và bấm Check-in, hệ thống lấy giờ thực tế trừ đi giờ bắt đầu ca: Nếu đi trễ trong vòng 15 phút, hệ thống tự động ghi nhận nhãn xanh 'Đúng giờ'; nếu trễ quá 15 phút, hệ thống tự động gắn nhãn đỏ 'Đi trễ'. Cung cấp nút Check-out khi tan ca và modal thêm mới hồ sơ nhân sự phân quyền. Và sau đây, em xin phép Demo trực tiếp Phân hệ Chấm công."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 12: [LIVE DEMO 2] CHẤM CÔNG NHÂN SỰ  -->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="12">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag" style="background:#dcfce7; color:#166534;">THỰC THI THỰC TẾ</span>
-          <span class="speaker-pill speaker-dat">Lê Tấn Đạt (1.5 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 12 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">12.</span>
-        <span>[LIVE DEMO PHẦN 2] Trình Diễn Chấm Công Nhân Sự Trực Tiếp</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="demo-card-banner">
-            <h4>▶ Kịch bản Demo trực tiếp Phân hệ Nhân sự</h4>
-            <p style="font-size: 13px; color: #cbd5e1;">URL: <code>http://localhost:8080/nhansu.html</code> (Tài khoản: <code>manager / 123456</code>)</p>
-          </div>
-
-          <div class="demo-step-box">
-            <span class="demo-step-num">1</span>
-            <span>Đăng nhập <strong>manager</strong> vào trang <code>nhansu.html</code>; đồng hồ số chạy từng giây.</span>
-          </div>
-          <div class="demo-step-box">
-            <span class="demo-step-num">2</span>
-            <span>Chọn nhân viên <strong>Lê Tấn Đạt</strong> và chọn <strong>Ca Chiều (12:00 - 17:00)</strong>.</span>
-          </div>
-          <div class="demo-step-box">
-            <span class="demo-step-num">3</span>
-            <span>Bấm <strong>"Check-in Vào Ca"</strong>: Toast xanh xuất hiện, tự động ghi nhận nhãn <strong>"ĐI TRỄ"</strong>.</span>
-          </div>
-          <div class="demo-step-box">
-            <span class="demo-step-num">4</span>
-            <span>Dòng chấm công mới nạp ngay vào bảng Lịch sử kèm nút <strong>Check-out</strong> sẵn sàng khi tan ca.</span>
-          </div>
-          <div class="demo-step-box">
-            <span class="demo-step-num">5</span>
-            <span>Mở modal <strong>"Thêm Nhân Viên"</strong>: Nhập hồ sơ nhân viên mới nhanh chóng.</span>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 12 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ KHUNG MÀN HÌNH DEMO CHẤM CÔNG</div>
-          <div class="image-container-frame">
-            <img src="screenshots/13_attendance_checked_in.png" alt="Màn hình Demo Chấm công" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">🎬</div>
-              <strong>Khung Demo Trực Tiếp: Chấm Công Nhân Sự</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Hiển thị giao diện Chấm công và Toast thông báo đi trễ.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Trình chiếu thao tác Live Demo: Check-in thời gian thực & Báo trễ</div>
-            <div class="image-path-hint">Gợi ý file: screenshots/13_attendance_checked_in.png</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 12 -->
-      <div class="speaker-notes-drawer" id="notes-12">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản thao tác Demo: Lê Tấn Đạt (1.5 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(12)">✕</button>
-        </div>
-        <p>"(Đạt thao tác trực tiếp trên trình duyệt) Thưa Cô, em đăng nhập tài khoản manager / 123456 và vào trang nhansu.html: 1. Đồng hồ thời gian thực tế đang chạy chính xác từng giây. 2. Tại khối Chấm công, em chọn nhân viên Lê Tấn Đạt và chọn Ca Chiều (12:00 - 17:00). 3. Em bấm 'Check-in Vào Ca' -> Toast thông báo xanh xuất hiện ngay ở góc phải: 'Check-in thành công! Trạng thái: ĐI TRỄ' (do hiện tại là buổi chiều sau 12:15). 4. Dòng chấm công mới lập tức được nạp vào bảng Lịch sử bên phải kèm nút Check-out sẵn sàng khi tan ca. 5. Cột bên trái hiển thị danh sách 5 nhân viên; em mở modal 'Thêm Nhân Viên' để thêm nhân viên mới nhanh chóng. Tiếp theo, em xin trân trọng kính mời Trưởng nhóm Nguyễn Văn Duy trình bày nghiệp vụ lõi về Kho và Giao dịch trừ kho."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 13: PHÂN HỆ KHO & ĐỊNH MỨC BOM       -->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="13">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">CHƯƠNG 8: QUẢN TRỊ KHO</span>
-          <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (1 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 13 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">13.</span>
-        <span>Phân Hệ Quản Trị Kho & Định Mức Công Thức Pha Chế (BOM)</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item">
-            <div class="bullet-num">🍵</div>
-            <div>
-              <strong>Bảng định mức công thức (BOM - Recipe):</strong> Mỗi món nước được số hóa định mức hao phí chính xác (Ví dụ: <em>1 ly Cà phê sữa = 25ml Cốt cà phê + 30ml Sữa đặc</em>).
-            </div>
-          </div>
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">📊</div>
-            <div>
-              <strong>Thẻ KPI Dashboard:</strong> Giám sát tức thì Doanh thu trong ngày, Tổng số đơn hoàn thành, và Tổng số mặt hàng sắp hết.
-            </div>
-          </div>
-          <div class="bullet-item highlight-orange">
-            <div class="bullet-num">⚠️</div>
-            <div>
-              <strong>Cơ chế Cảnh báo tồn đỏ (Minimum Threshold):</strong> Khi tồn kho ≤ Ngưỡng an toàn, kích hoạt nhãn nhấp nháy <strong>"SẮP HẾT HÀNG"</strong> để chủ động nhập thêm.
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 13 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT ẢNH GIAO DIỆN KHO & ĐỊNH MỨC BOM</div>
-          <div class="image-container-frame">
-            <img src="screenshots/fixed_kho_screen.png" alt="Giao diện Kho & Định mức BOM" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">📦</div>
-              <strong>Khung chèn fixed_kho_screen.png hoặc 09_recipe_modal.png</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Ảnh chụp màn hình thực tế trang kho.html với bảng tồn kho và nút Công thức.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Giao diện Phân hệ Quản trị Kho & Modal Định mức BOM</div>
-            <div class="image-path-hint">Gợi ý file: screenshots/fixed_kho_screen.png | 09_recipe_modal.png</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 13 -->
-      <div class="speaker-notes-drawer" id="notes-13">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (1 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(13)">✕</button>
-        </div>
-        <p>"Kính thưa Cô, em xin tiếp tục với Phân hệ Quản trị Kho – trọng tâm kỹ thuật do em trực tiếp thiết kế và lập trình: Bảng định mức công thức (BOM - Recipe): Mỗi món nước được số hóa định lượng hao phí chính xác. Ví dụ: 1 ly Cà phê sữa đá cần đúng 25 ml Cốt cà phê Robusta và 30 ml Sữa đặc Ngôi Sao. Thẻ KPI Dashboard: Tự động tính tổng doanh thu ngày, tổng số đơn đã hoàn thành và số mặt hàng sắp hết. Cơ chế Cảnh báo tồn đỏ: Mỗi nguyên liệu có một ngưỡng an toàn (Minimum Threshold). Khi tồn kho giảm xuống <= ngưỡng này, hệ thống tự động kích hoạt nhãn đỏ 'SẮP HẾT HÀNG' kèm hiệu ứng nhấp nháy để thủ kho chủ động nhập thêm."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 14: LUỒNG TRỪ KHO & KHÓA CHỐNG ÂM KHO-->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="14">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">CHƯƠNG 8: GIAO DỊCH CONCURRENCY</span>
-          <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (1 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 14 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">14.</span>
-        <span>Luồng Trừ Kho Tự Động @Transactional & Khóa Chống Bán Khống</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">🔒</div>
-            <div>
-              <strong>Giao dịch nguyên tử ACID:</strong> Luồng thanh toán bọc trong <code>@Transactional(rollbackFor = Exception.class)</code> đảm bảo tính toàn vẹn tuyệt đối.
-            </div>
-          </div>
-          <div class="bullet-item">
-            <div class="bullet-num">⚡</div>
-            <div>
-              <strong>Khóa bi quan (Pessimistic Locking):</strong> Thực thi <code>SELECT ... FOR UPDATE</code> theo thứ tự ID tăng dần, triệt tiêu Deadlock và ngăn chặn Overselling khi 2 thu ngân thanh toán cùng lúc.
-            </div>
-          </div>
-          <div class="bullet-item highlight-orange">
-            <div class="bullet-num">↩️</div>
-            <div>
-              <strong>Rollback 100%:</strong> Nếu tồn kho thiếu dù chỉ 1ml, giao dịch lập tức bị hủy hoàn toàn: hóa đơn giữ nguyên chờ thanh toán, bàn vẫn đỏ, kho không bị trừ âm.
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 14 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT BIỂU ĐỒ TUẦN TỰ TRỪ KHO</div>
-          <div class="image-container-frame">
-            <img src="diagram/Sequence_TruKho.svg" alt="Biểu đồ Tuần tự Trừ kho" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">🔄</div>
-              <strong>Khung chèn Sequence_TruKho.svg</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Biểu đồ tuần tự thể hiện Controller, Service, khóa Lock và Rollback.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Biểu đồ Tuần tự Giao dịch Trừ kho Tự động (@Transactional)</div>
-            <div class="image-path-hint">Gợi ý file: diagram/Sequence_TruKho.svg</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 14 -->
-      <div class="speaker-notes-drawer" id="notes-14">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (1 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(14)">✕</button>
-        </div>
-        <p>"Đây là bài toán kỹ thuật phức tạp nhất mà em đã giải quyết: Toàn bộ luồng thanh toán và trừ kho được bọc trong annotation @Transactional(rollbackFor = Exception.class). Khi duyệt qua các nguyên liệu trong công thức, hệ thống thực thi khóa bi quan SELECT ... FOR UPDATE theo thứ tự ID tăng dần để triệt tiêu Deadlock và ngăn chặn hoàn toàn nguy cơ 2 đơn cùng tranh chấp gây âm kho (chống bán khống Overselling). Nếu kho không đủ dù chỉ 1 ml, hệ thống lập tức ném ngoại lệ và Rollback 100%: hóa đơn giữ nguyên chờ thanh toán, bàn vẫn đỏ có khách, kho giữ nguyên an toàn. Sau đây, em xin phép Demo trực tiếp cơ chế Trừ kho tự động và Cảnh báo đỏ."</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 15: [LIVE DEMO 3] TRỪ KHO & CẢNH BÁO -->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="15">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag" style="background:#dcfce7; color:#166534;">THỰC THI THỰC TẾ</span>
-          <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (1.5 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 15 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">15.</span>
-        <span>[LIVE DEMO PHẦN 3] Trình Diễn Trừ Kho & Cảnh Báo Tồn Đỏ</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="demo-card-banner">
-            <h4>▶ Kịch bản Demo trực tiếp Phân hệ Quản trị Kho</h4>
-            <p style="font-size: 13px; color: #cbd5e1;">URL: <code>http://localhost:8080/kho.html</code> (Tài khoản: <code>admin / 123456</code>)</p>
-          </div>
-
-          <div class="demo-step-box">
-            <span class="demo-step-num">1</span>
-            <span>Mở <code>kho.html</code>: Sữa đặc Ngôi Sao tự động trừ 30ml (còn <strong>90ml</strong> sau khi bán Đơn #4).</span>
-          </div>
-          <div class="demo-step-box">
-            <span class="demo-step-num">2</span>
-            <span>Vì 90ml ≤ ngưỡng 100ml: Hệ thống tự bật nhãn đỏ nhấp nháy <strong>"SẮP HẾT HÀNG"</strong>.</span>
-          </div>
-          <div class="demo-step-box">
-            <span class="demo-step-num">3</span>
-            <span>Thẻ KPI báo động đỏ: <strong>Nguyên liệu sắp hết: 1</strong>.</span>
-          </div>
-          <div class="demo-step-box">
-            <span class="demo-step-num">4</span>
-            <span>Bấm <strong>"Nhập kho"</strong> thêm <strong>500ml</strong>: Tồn kho cập nhật lên <strong>590ml</strong>; phục hồi nhãn xanh <strong>"Đủ hàng"</strong> ngay lập tức.</span>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 15 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ KHUNG MÀN HÌNH DEMO KHO</div>
-          <div class="image-container-frame">
-            <img src="screenshots/08_kho_alert_kpi.png" alt="Màn hình Demo Kho cảnh báo đỏ" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">🎬</div>
-              <strong>Khung Demo Trực Tiếp: Kho & Cảnh Báo Tồn Đỏ</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Hiển thị giao diện kho.html với nhãn đỏ và modal nhập kho.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Trình chiếu thao tác Live Demo: Trừ kho tự động & Nhập bổ sung nguyên liệu</div>
-            <div class="image-path-hint">Gợi ý file: screenshots/08_kho_alert_kpi.png | 10_nhapkho_modal.png</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 15 -->
-      <div class="speaker-notes-drawer" id="notes-15">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản thao tác Demo: Nguyễn Văn Duy (1.5 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(15)">✕</button>
-        </div>
-        <p>"(Duy thao tác trực tiếp trên trình duyệt) Thưa Cô, em mở trang kho.html: 1. Kính mời Cô quan sát dòng nguyên liệu số 2: 'Sữa đặc Ngôi Sao'. Trước khi bạn Quý bán hàng, tồn kho là 120ml. Sau khi bạn Quý thanh toán Đơn #4 (chứa 1 ly Cà phê sữa đá có định mức 30ml sữa), hệ thống đã tự động trừ ngầm đúng 30ml, tồn kho hiện tại chỉ còn đúng 90ml! 2. Vì ngưỡng tối thiểu là 100ml, mà 90ml <= 100ml, nên hệ thống đã tự động bật nhãn đỏ cảnh báo nhấp nháy 'SẮP HẾT HÀNG' và thẻ KPI báo động đỏ 'Nguyên liệu sắp hết: 1'. 3. Bây giờ em bấm vào nút 'Nhập kho' tại dòng Sữa đặc, em nhập thêm 500 ml và bấm Xác nhận. 4. Tồn kho lập tức cập nhật lên 590 ml, nhãn cảnh báo đỏ biến mất và khôi phục nhãn xanh 'Đủ hàng' ngay lập tức mà không cần tải lại trang!"</p>
-      </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- SLIDE 16: KẾT QUẢ TEST & CHUYỂN GIAO & Q&A -->
-    <!-- ========================================== -->
-    <div class="slide-page" data-slide="16">
-      <div class="spiral-spine">
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-        <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
-      </div>
-      <div class="washi-tape"></div>
-
-      <div class="slide-header">
-        <div class="slide-meta-left">
-          <span class="chapter-tag">CHƯƠNG 9: TỔNG KẾT & CHUYỂN GIAO</span>
-          <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (1 phút)</span>
-        </div>
-        <div class="slide-index-counter">Trang 16 / 16</div>
-      </div>
-
-      <div class="slide-title">
-        <span class="title-number">16.</span>
-        <span>Kết Quả Kiểm Thử (100% Pass), Chuyển Giao & Lời Cảm Ơn</span>
-      </div>
-
-      <div class="slide-body">
-        <div class="slide-text-content">
-          <div class="bullet-item highlight-green">
-            <div class="bullet-num">✓</div>
-            <div>
-              <strong>Kết quả kiểm thử tự động xuất sắc:</strong>
-              <div style="margin-top: 6px;">
-                • Backend Test (<code>DonHangIntegrationTest.java</code>): <strong>14/14 Tests PASS (100%)</strong>.<br>
-                • Web E2E Test (Chrome Automation): <strong>16/16 Scenarios PASS (100%)</strong>.<br>
-                • Khắc phục triệt để 6 lỗi kỹ thuật từ phân quyền đến font tiếng Việt.
-              </div>
-            </div>
-          </div>
-          <div class="bullet-item">
-            <div class="bullet-num">🚀</div>
-            <div>
-              <strong>Chiến lược chuyển giao:</strong> Áp dụng phương pháp Chuyển đổi trực tiếp đầu tuần (<strong>Direct Cutover on Monday</strong>) với chi phí thấp và hiệu quả cao.
-            </div>
-          </div>
-          <div class="bullet-item highlight-purple">
-            <div class="bullet-num">🤝</div>
-            <div>
-              <strong>KẾT LUẬN & Q&A:</strong> Nhóm chân thành cảm ơn TS. Hồ Thị Linh đã tận tình hướng dẫn! Kính mời Cô đặt câu hỏi phản biện.
-            </div>
-          </div>
-        </div>
-
-        <!-- Note chèn ảnh Slide 16 -->
-        <div class="image-placeholder-box">
-          <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT BẢNG KẾT QUẢ TEST & CẢM ƠN</div>
-          <div class="image-container-frame">
-            <img src="screenshots/15_manager_discount_receipt.png" alt="Bảng kết quả Test" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-            <div class="image-fallback-notice">
-              <div class="image-fallback-icon">🏆</div>
-              <strong>Khung chèn Bảng Nghiệm Thu Đồ Án (100% PASS)</strong>
-              <p style="font-size: 12px; margin-top: 6px;">Ảnh chụp bảng kết quả kiểm thử 14/14 Backend & 16/16 Web E2E.</p>
-            </div>
-          </div>
-          <div class="image-caption-bar">
-            <div class="image-caption-title">Bảng tổng hợp Kiểm thử nghiệm thu & Lời cảm ơn bảo vệ</div>
-            <div class="image-path-hint">Gợi ý file: screenshots/15_manager_discount_receipt.png</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Lời thoại Slide 16 -->
-      <div class="speaker-notes-drawer" id="notes-16">
-        <div class="notes-header">
-          <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (1 phút)</span>
-          <button class="notes-close-btn" onclick="toggleNotes(16)">✕</button>
-        </div>
-        <p>"Kính thưa Cô, để bảo chứng cho độ tin cậy của phần mềm: Hệ thống đã vượt qua xuất sắc 14/14 ca kiểm thử tích hợp tự động Backend (DonHangIntegrationTest.java) đạt 100% trên H2 In-Memory tách biệt. Vượt qua 16/16 kịch bản kiểm thử hộp đen E2E tự động trên trình duyệt Chrome đạt 100%. Khắc phục triệt để 6 lỗi kỹ thuật từ phân quyền đến bảng mã tiếng Việt có dấu. Nhóm đề xuất chiến lược chuyển giao trực tiếp vào đầu tuần (Direct Cutover on Monday) để đưa phần mềm vào vận hành thực tế tại các quán cà phê vừa và nhỏ. Bài thuyết trình của nhóm đến đây là kết thúc. Chúng em xin chân thành cảm ơn Cô đã chú ý lắng nghe và nhóm chúng em rất mong nhận được những câu hỏi phản biện và đóng góp quý báu từ Cô ạ!"</p>
-      </div>
-    </div>
-
-  </div> <!-- End Presentation Stage -->
-
-
-  <!-- Floating Interactive Control Deck (Bottom Center) -->
-  <div class="control-deck">
-    <button class="deck-btn" id="prevBtn" title="Slide trước (Phím Mũi tên Trái)">
-      ◀ Trước
-    </button>
-    
-    <div class="deck-counter">
-      <span id="currentSlideNum">1</span> / 16
-    </div>
-
-    <button class="deck-btn primary" id="nextBtn" title="Slide tiếp theo (Phím Mũi tên Phải hoặc Phím Space)">
-      Tiếp ▶
-    </button>
-
-    <button class="deck-btn notes-toggle-btn" id="notesBtn" title="Bật/Tắt Kịch bản Lời thoại (Phím N)">
-      📜 Lời thoại
-    </button>
-
-    <button class="deck-btn" id="overviewBtn" title="Mục lục 16 Slide (Phím O)">
-      ☰ Mục lục
-    </button>
-
-    <button class="deck-btn" id="fullscreenBtn" title="Toàn màn hình (Phím F)">
-      ⛶ Toàn màn hình
-    </button>
-  </div>
-
-
-  <!-- Overview Modal (Grid of all 16 slides for quick jumping) -->
-  <div class="overview-modal" id="overviewModal">
-    <div class="overview-header">
-      <h3>📑 Mục lục 16 Trang Slide Thuyết Trình</h3>
-      <button class="deck-btn" id="closeOverviewBtn" style="background: rgba(255,255,255,0.2);">Đóng (Esc)</button>
-    </div>
-    <div class="overview-grid" id="overviewGrid">
-      <!-- Generated dynamically by JS -->
-    </div>
-  </div>
-
-
-  <!-- Interactive Presentation Script Engine -->
-  <script>
-    const totalSlides = 16;
-    let currentSlide = 1;
-
-    const slides = document.querySelectorAll('.slide-page');
-    const progressBar = document.getElementById('progressBar');
-    const currentSlideNum = document.getElementById('currentSlideNum');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const notesBtn = document.getElementById('notesBtn');
-    const overviewBtn = document.getElementById('overviewBtn');
-    const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const overviewModal = document.getElementById('overviewModal');
-    const closeOverviewBtn = document.getElementById('closeOverviewBtn');
-    const overviewGrid = document.getElementById('overviewGrid');
-
-    // Slide Titles and Speakers for Overview Grid
-    const slideMeta = [
-      { num: 1, title: "Tiêu đề & Giới thiệu nhóm", speaker: "Duy (30s)", color: "var(--badge-duy)" },
-      { num: 2, title: "Bối cảnh & 3 Điểm nghẽn", speaker: "Duy (1m)", color: "var(--badge-duy)" },
-      { num: 3, title: "Mục tiêu & Phạm vi In/Out", speaker: "Duy (45s)", color: "var(--badge-duy)" },
-      { num: 4, title: "Kiến trúc phân tầng 3-Tier", speaker: "Duy (45s)", color: "var(--badge-duy)" },
-      { num: 5, title: "15 FRs & Ma trận MoSCoW", speaker: "Quý (1m)", color: "var(--badge-quy)" },
-      { num: 6, title: "Biểu đồ Use Case tổng quát", speaker: "Quý (1m)", color: "var(--badge-quy)" },
-      { num: 7, title: "Phân hệ Bán hàng & 10 Bàn", speaker: "Quý (1m)", color: "var(--badge-quy)" },
-      { num: 8, title: "Quy trình Tạo đơn & Xuất hóa đơn", speaker: "Quý (1m)", color: "var(--badge-quy)" },
-      { num: 9, title: "[DEMO 1] Bán hàng POS trực tiếp", speaker: "Quý (1.5m)", color: "var(--badge-quy)" },
-      { num: 10, title: "Chỉ số NFR & CSDL 9 bảng ERD", speaker: "Đạt (1m)", color: "var(--badge-dat)" },
-      { num: 11, title: "Phân hệ Nhân sự & Chấm công", speaker: "Đạt (1m)", color: "var(--badge-dat)" },
-      { num: 12, title: "[DEMO 2] Chấm công thời gian thực", speaker: "Đạt (1.5m)", color: "var(--badge-dat)" },
-      { num: 13, title: "Phân hệ Kho & Định mức BOM", speaker: "Duy (1m)", color: "var(--badge-duy)" },
-      { num: 14, title: "Luồng trừ kho & Khóa chống âm kho", speaker: "Duy (1m)", color: "var(--badge-duy)" },
-      { num: 15, title: "[DEMO 3] Trừ kho ngầm & Báo tồn đỏ", speaker: "Duy (1.5m)", color: "var(--badge-duy)" },
-      { num: 16, title: "Kiểm thử (100% Pass) & Q&A", speaker: "Duy (1m)", color: "var(--badge-duy)" }
-    ];
-
-    // Build Overview Grid Cards
-    function buildOverview() {
-      overviewGrid.innerHTML = '';
-      slideMeta.forEach(item => {
-        const card = document.createElement('div');
-        card.className = `overview-card ${item.num === currentSlide ? 'current' : ''}`;
-        card.innerHTML = `
-          <div>
-            <div class="ov-num">TRANG ${item.num < 10 ? '0' + item.num : item.num} / 16</div>
-            <div class="ov-title">${item.title}</div>
-          </div>
-          <span class="ov-speaker" style="background-color: ${item.color}">${item.speaker}</span>
-        `;
-        card.addEventListener('click', () => {
-          goToSlide(item.num);
-          overviewModal.classList.remove('open');
-        });
-        overviewGrid.appendChild(card);
-      });
-    }
-
-    // Update UI on Slide Change
-    function goToSlide(n) {
-      if (n < 1) n = 1;
-      if (n > totalSlides) n = totalSlides;
-      currentSlide = n;
-
-      slides.forEach((slide, idx) => {
-        if (idx + 1 === currentSlide) {
-          slide.classList.add('active');
-        } else {
-          slide.classList.remove('active');
-          // Hide notes drawer when moving away
-          const notes = slide.querySelector('.speaker-notes-drawer');
-          if (notes) notes.classList.remove('open');
-        }
-      });
-
-      // Update counter and progress bar
-      currentSlideNum.textContent = currentSlide;
-      const progressPercent = (currentSlide / totalSlides) * 100;
-      progressBar.style.width = `${progressPercent}%`;
-
-      // Update Button states
-      prevBtn.style.opacity = currentSlide === 1 ? '0.4' : '1';
-      prevBtn.style.pointerEvents = currentSlide === 1 ? 'none' : 'auto';
-      nextBtn.textContent = currentSlide === totalSlides ? 'Kết thúc 🏁' : 'Tiếp ▶';
-
-      buildOverview();
-    }
-
-    function nextSlide() {
-      if (currentSlide < totalSlides) {
-        goToSlide(currentSlide + 1);
-      }
-    }
-
-    function prevSlide() {
-      if (currentSlide > 1) {
-        goToSlide(currentSlide - 1);
-      }
-    }
-
-    // Toggle Speaker Notes on Current Slide
-    function toggleCurrentNotes() {
-      const activeSlide = document.querySelector('.slide-page.active');
-      if (activeSlide) {
-        const notes = activeSlide.querySelector('.speaker-notes-drawer');
-        if (notes) {
-          notes.classList.toggle('open');
-        }
-      }
-    }
-
-    function toggleNotes(slideId) {
-      const notes = document.getElementById(`notes-${slideId}`);
-      if (notes) {
-        notes.classList.toggle('open');
-      }
-    }
-
-    // Event Listeners for Bottom Deck
-    nextBtn.addEventListener('click', nextSlide);
-    prevBtn.addEventListener('click', prevSlide);
-    notesBtn.addEventListener('click', toggleCurrentNotes);
-
-    overviewBtn.addEventListener('click', () => {
-      overviewModal.classList.add('open');
-    });
-
-    closeOverviewBtn.addEventListener('click', () => {
-      overviewModal.classList.remove('open');
-    });
-
-    fullscreenBtn.addEventListener('click', () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-          console.warn(`Error attempting to enable full-screen: ${err.message}`);
-        });
-      } else {
-        document.exitFullscreen();
-      }
-    });
-
-    // Keyboard Shortcuts
-    document.addEventListener('keydown', (e) => {
-      if (overviewModal.classList.contains('open')) {
-        if (e.key === 'Escape') {
-          overviewModal.classList.remove('open');
-        }
-        return;
-      }
-
-      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
-        e.preventDefault();
-        nextSlide();
-      } else if (e.key === 'ArrowLeft' || e.key === 'Backspace' || e.key === 'PageUp') {
-        e.preventDefault();
-        prevSlide();
-      } else if (e.key === 'Home') {
-        e.preventDefault();
-        goToSlide(1);
-      } else if (e.key === 'End') {
-        e.preventDefault();
-        goToSlide(totalSlides);
-      } else if (e.key === 'f' || e.key === 'F') {
-        e.preventDefault();
-        fullscreenBtn.click();
-      } else if (e.key === 'o' || e.key === 'O') {
-        e.preventDefault();
-        overviewModal.classList.toggle('open');
-      } else if (e.key === 'n' || e.key === 'N') {
-        e.preventDefault();
-        toggleCurrentNotes();
-      }
-    });
-
-    // Initial setup
-    goToSlide(1);
-  </script>
+ <!-- Top Real-time Progress Bar -->
+ <div class="progress-bar-container">
+ <div class="progress-bar-fill" id="progressBar"></div>
+ </div>
+
+ <!-- Main Presentation Stage (16:9 Aspect Ratio Container) -->
+ <div class="presentation-stage" id="presentationStage">
+
+ <!-- ========================================== -->
+ <!-- SLIDE 1: TRANG TIÊU ĐỀ & GIỚI THIỆU NHÓM -->
+ <!-- ========================================== -->
+ <div class="slide-page active" data-slide="1">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">ĐỒ ÁN CUỐI KỲ</span>
+ <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (30s)</span>
+ </div>
+ <div class="slide-index-counter">Trang 01 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">01.</span>
+ <span>Hệ Thống Quản Lý Quán Cà Phê – Sangrimar Cafe & Lounge</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item">
+ <div class="bullet-num">1</div>
+ <div>
+ <strong>Học phần:</strong> Phân tích và Thiết kế Yêu cầu (Mã môn: <code>502050</code>)<br>
+ <span class="text-muted">Khoa Công nghệ Thông tin – Trường Đại học Tôn Đức Thắng</span>
+ </div>
+ </div>
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">2</div>
+ <div>
+ <strong>Giảng viên hướng dẫn:</strong> TS. Hồ Thị Linh<br>
+ <span class="text-muted">Đánh giá đồ án phân tích kỹ nghệ yêu cầu, thiết kế hệ thống và nguyên mẫu phần mềm</span>
+ </div>
+ </div>
+ <div class="bullet-item highlight-orange">
+ <div class="bullet-num">3</div>
+ <div>
+ <strong>Nhóm sinh viên thực hiện:</strong>
+ <div class="tags-row" style="margin-top: 8px;">
+ <span class="tag-chip active-tag">Nguyễn Văn Duy (52400010 – Nhóm trưởng – 34%)</span>
+ <span class="tag-chip active-tag">Trần Văn Quý (52400007 – Thành viên – 33%)</span>
+ <span class="tag-chip active-tag">Lê Tấn Đạt (52400105 – Thành viên – 33%)</span>
+ </div>
+ </div>
+ </div>
+ <div class="bullet-item highlight-purple">
+ <div class="bullet-num">4</div>
+ <div>
+ <strong>Thời lượng báo cáo:</strong> 12 – 15 phút (Thuyết trình ~8 phút | 3 Live Demos ~5 phút | Q&A Phản biện)
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT LOGO / KIẾN TRÚC TỔNG QUAN</div>
+ <div class="image-container-frame">
+ <img src="diagram/KienTrucTongThe.svg" alt="Kiến trúc tổng thể hệ thống" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">☕</div>
+ <strong>Kiến Trúc Tổng Thể Sangrimar Cafe & Lounge</strong>
+ <p style="font-size: 12px; margin-top: 6px;">Mô hình Modular Monolith 3 tầng All-in-one phục vụ F&B hiện đại.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Kiến Trúc Tổng Thể Hệ Thống</div>
+ <div class="image-path-hint">Gợi ý file: diagram/KienTrucTongThe.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-1">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (30 giây)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(1)">✕</button>
+ </div>
+ <p>"Kính thưa Cô TS. Hồ Thị Linh và toàn thể các bạn sinh viên đang có mặt trong buổi báo cáo bảo vệ đồ án hôm nay! Em tên là Nguyễn Văn Duy – Trưởng nhóm thực hiện. Nhóm chúng em gồm 3 thành viên: em – Nguyễn Văn Duy, bạn Trần Văn Quý và bạn Lê Tấn Đạt. Hôm nay, nhóm chúng em rất vinh dự được đại diện báo cáo đồ án môn học Phân tích và Thiết kế Yêu cầu với đề tài: 'Hệ Thống Quản Lý Quán Cà Phê – Sangrimar Cafe & Lounge'. Toàn bộ giải pháp tập trung giải quyết triệt để các bài toán luồng nghiệp vụ thực tế từ Bán hàng POS, Quản trị Kho định mức BOM đến Chấm công phân ca nhân sự tự động. Sau đây, em xin phép bắt đầu phần trình bày."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 2: BỐI CẢNH & 4 ĐIỂM NGHẼN THỰC TẾ -->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="2">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 1: BỐI CẢNH & KHẢO SÁT</span>
+ <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (1 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 02 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">02.</span>
+ <span>Bối Cảnh Thực Tế & 4 "Điểm Nghẽn" Vận Hành Quán Cà Phê & Lounge</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item highlight-blue">
+ <div class="bullet-num">1</div>
+ <div>
+ <strong>Bán khống & Sai lệch Order:</strong> Nhân viên nhận món không nắm tồn quầy Bar $\rightarrow$ khách đợi 15 phút mới xin lỗi đổi món, vỡ trận giờ cao điểm.
+ </div>
+ </div>
+ <div class="bullet-item highlight-orange">
+ <div class="bullet-num">2</div>
+ <div>
+ <strong>Thất thoát tiền mặt & Gian lận:</strong> Thu ngân tự ý áp chiết khấu giảm giá hoặc hủy hóa đơn tiền mặt $\rightarrow$ chênh lệch két tiền không bằng chứng truy vết.
+ </div>
+ </div>
+ <div class="bullet-item highlight-purple">
+ <div class="bullet-num">3</div>
+ <div>
+ <strong>Kho mù mờ & Âm kho ngầm:</strong> Không tính được giá vốn WAC khi giá nhập biến động $\rightarrow$ không đo lường được COGS, không kiểm soát hao hụt đổ vỡ, nhiều thu ngân cùng trừ kho gây Deadlock.
+ </div>
+ </div>
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">4</div>
+ <div>
+ <strong>Gian lận chấm công & Lệch ca:</strong> Chấm công hộ, đi trễ về sớm tranh cãi bảng lương $\rightarrow$ Ca trực thiếu Thu ngân/Quản lý dẫn đến rủi ro đình trệ thu tiền.
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ CHUYỂN TRẠNG THÁI / PAIN POINTS</div>
+ <div class="image-container-frame">
+ <img src="diagram/StateMachine_TrangThai.svg" alt="Sơ đồ chuyển trạng thái hệ thống" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">⚠️</div>
+ <strong>4 Điểm Nghẽn Vận Hành F&B Thực Tế</strong>
+ <p style="font-size: 12px; margin-top: 6px;">Bán khống, thất thoát tiền mặt, kho mù mờ và gian lận chấm công.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Máy Trạng Thái (State Machine Diagram)</div>
+ <div class="image-path-hint">Gợi ý file: diagram/StateMachine_TrangThai.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-2">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (1 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(2)">✕</button>
+ </div>
+ <p>"Thưa Cô, xuất phát từ việc khảo sát thực tế tại mô hình quán cà phê kết hợp Lounge, nhóm nhận diện 4 điểm nghẽn nghiệp vụ chí mạng: Thứ nhất: Nhân viên nhận order theo cảm tính, không nắm được nguyên liệu quầy Bar còn hay hết, dẫn đến tình trạng bán khống, khách đợi 15 phút mới xin lỗi đổi món. Thứ hai: Nguy cơ thất thoát doanh thu tại quầy thu ngân, nhân viên có thể tự ý áp chiết khấu hoặc cấu kết hủy đơn tiền mặt bỏ túi riêng. Thứ ba: Kho nguyên vật liệu quản lý mù mờ, không đo lường được giá vốn hàng bán WAC, không truy vết được nguyên nhân hao hụt đổ vỡ và nguy cơ Deadlock khi nhiều order thanh toán cùng lúc. Thứ tư: Bất công trong chấm công và thiếu hụt nhân sự trong ca, nhân viên đi trễ về sớm, quên bấm thẻ và ca trực thiếu thu ngân. Đây chính là bài toán thực tiễn nhóm quyết tâm giải quyết triệt để."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 3: MỤC TIÊU VÀ PHẠM VI (IN/OUT SCOPE)-->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="3">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 2: MỤC TIÊU & PHẠM VI</span>
+ <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (45s)</span>
+ </div>
+ <div class="slide-index-counter">Trang 03 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">03.</span>
+ <span>Mục Tiêu To-Be & Ma Trận Ranh Giới Hệ Thống (In-Scope vs Out-of-Scope)</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">🎯</div>
+ <div>
+ <strong>Mục tiêu To-Be:</strong> Chuẩn hóa quy trình phục vụ tại bàn SOP 9 bước, tự động hóa khấu trừ nguyên vật liệu theo định mức BOM, tính giá vốn WAC, phân ca cân bằng và chấm công 7 quy tắc BR-CC.
+ </div>
+ </div>
+ <div class="bullet-item highlight-blue">
+ <div class="bullet-num">✓</div>
+ <div>
+ <strong>Ranh giới Nội vi (In-Scope):</strong>
+ <div style="margin-top: 4px; font-size: 13.5px;">
+ • POS sơ đồ bàn 3 màu viền, Soft Reservation, In Bar Delta, Phiếu Tạm Tính VietQR, Đóng bàn.<br>
+ • Kho BOM 12 món, Trừ kho chống Deadlock TreeMap, Sổ nhật ký <code>lich_su_kho</code>, Nhập kho WAC.<br>
+ • Nhân sự 7 BR-CC, Window 30p, Lưới phân ca cảnh báo thiếu Thu ngân.
+ </div>
+ </div>
+ </div>
+ <div class="bullet-item highlight-orange">
+ <div class="bullet-num">✗</div>
+ <div>
+ <strong>Ranh giới Ngoại vi (Out-of-Scope):</strong> Không xuất hóa đơn đỏ VAT điện tử (e-invoice cơ quan thuế); Không tích hợp máy quẹt thẻ POS ngân hàng cứng (EDC); Không quản lý chuỗi nhượng quyền đa chi nhánh.
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ TRIỂN KHAI / RANH GIỚI HỆ THỐNG</div>
+ <div class="image-container-frame">
+ <img src="diagram/TrienKhai.svg" alt="Sơ đồ triển khai hệ thống" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">🌐</div>
+ <strong>Sơ Đồ Triển Khai Hệ Thống (Deployment Diagram)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">Phân định ranh giới giữa phần mềm nội bộ quán và dịch vụ bên ngoài.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Triển Khai Hệ Thống (Deployment Diagram)</div>
+ <div class="image-path-hint">Gợi ý file: diagram/TrienKhai.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-3">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (45 giây)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(3)">✕</button>
+ </div>
+ <p>"Về mục tiêu hệ thống (To-Be), nhóm hướng tới tự động hóa khép kín 3 trụ cột vận hành F&B: Bán hàng POS chuẩn SOP 9 bước, Quản trị Kho định mức BOM tính giá vốn WAC chống Deadlock, và Nhân sự chấm công thời gian thực với 7 quy tắc BR-CC. Để dự án đạt tính khả thi cao nhất, nhóm phân định ranh giới rõ ràng: Hệ thống tập trung toàn bộ vào nghiệp vụ nội bộ quán (In-Scope). Các nghiệp vụ liên quan đến cơ quan thuế như xuất hóa đơn đỏ VAT điện tử, tích hợp thiết bị quẹt thẻ POS ngân hàng cứng, hoặc mô hình chuỗi đa chi nhánh được đưa vào Out-of-Scope trong phạm vi đề tài này."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 4: KIẾN TRÚC PHÂN TẦNG (3-TIER) -->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="4">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 2: KIẾN TRÚC HỆ THỐNG</span>
+ <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (45s)</span>
+ </div>
+ <div class="slide-index-counter">Trang 04 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">04.</span>
+ <span>Kiến Trúc 3 Tầng Modular Monolith & An Ninh Phân Quyền RBAC</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item highlight-blue">
+ <div class="bullet-num">1</div>
+ <div>
+ <strong>Tầng Trình Diễn (Presentation Tier):</strong> Web SPA HTML5/CSS3/Vanilla JS, phong cách Notebook hiện đại, tối ưu in nhiệt <code>@media print</code>, thời gian tải trang dưới $50\text{ms}$.
+ </div>
+ </div>
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">2</div>
+ <div>
+ <strong>Tầng Nghiệp Vụ (Application Tier):</strong> Spring Boot 3.2.5 với 9 REST Controllers, giao dịch nguyên tử <code>@Transactional(isolation = READ_COMMITTED)</code>, scheduler <code>@Scheduled</code> 03:00 AM chốt ca tự động, Spring Bean <code>java.time.Clock</code> kiểm soát thời gian.
+ </div>
+ </div>
+ <div class="bullet-item highlight-orange">
+ <div class="bullet-num">3</div>
+ <div>
+ <strong>Tầng Dữ Liệu (Database Tier):</strong> MySQL 8.0 chuẩn 3NF gồm 11 bảng quan hệ toàn vẹn ACID, bổ sung Sổ nhật ký biến động <code>lich_su_kho</code>.
+ </div>
+ </div>
+ <div class="bullet-item highlight-purple">
+ <div class="bullet-num">4</div>
+ <div>
+ <strong>Phân quyền RBAC 3 cấp:</strong> <code>PHUC_VU</code> $\subset$ <code>THU_NGAN</code> $\subset$ <code>QUAN_LY</code> bảo vệ dòng tiền mặt và an toàn dữ liệu.
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT CẤU TRÚC GÓI SPRING BOOT</div>
+ <div class="image-container-frame">
+ <img src="diagram/Package_SpringBoot.svg" alt="Kiến trúc phân tầng và cấu trúc gói Spring Boot" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">🏗️</div>
+ <strong>Sơ Đồ Phân Tầng Gói Ứng Dụng (Package Diagram)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">Phân tầng Controller - Service - Repository - Entity chuẩn Enterprise.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Cấu Trúc Gói Spring Boot 3.2.5</div>
+ <div class="image-path-hint">Gợi ý file: diagram/Package_SpringBoot.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-4">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (45 giây)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(4)">✕</button>
+ </div>
+ <p>"Về mặt kiến trúc kỹ thuật, hệ thống được thiết kế theo mô hình All-in-One Modular Monolith 3 tầng chuẩn mực: Tầng Client là Web SPA thuần tông sáng, tải cực nhanh dưới 50ms và tối ưu in nhiệt. Tầng Ứng dụng là máy chủ Spring Boot 3.2.5 với 9 REST Controllers, giao dịch nguyên tử @Transactional chống Deadlock và tiêm Spring Bean java.time.Clock hỗ trợ kiểm thử tự động 100%. Tầng Dữ liệu là MySQL 8.0 chuẩn 3NF gồm 11 bảng thực thể. Hệ thống thiết lập ma trận phân quyền 3 cấp chặt chẽ: Phục vụ thuộc tập con Thu ngân, và Thu ngân thuộc tập con Quản lý. Sau đây, em xin kính mời bạn Trần Văn Quý trình bày về phân hệ Bán hàng POS và trực tiếp Demo."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 5: 15 FRS & MA TRẬN MOSCOW -->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="5">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 3: YÊU CẦU CHỨC NĂNG</span>
+ <span class="speaker-pill speaker-quy">Trần Văn Quý (1 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 05 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">05.</span>
+ <span>Danh Mục 15 Yêu Cầu Chức Năng (FRs) & Bảng Phân Cấp MoSCoW</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">M</div>
+ <div>
+ <strong>Must Have (8 FRs cốt lõi):</strong> Mở bàn gọi món, In Bar Delta, Phiếu Tạm Tính VietQR, Thanh toán đóng bàn, Trừ kho BOM chống Deadlock, Nhập kho WAC, Chấm công cá nhân, Phân ca cân bằng vai trò.
+ </div>
+ </div>
+ <div class="bullet-item highlight-blue">
+ <div class="bullet-num">S</div>
+ <div>
+ <strong>Should Have (4 FRs quan trọng):</strong> Thực đơn Soft Reservation / Bottleneck, Cảnh báo tồn kho đỏ, Quản lý duyệt điều chỉnh công có lý do, Executive KPI Dashboard.
+ </div>
+ </div>
+ <div class="bullet-item highlight-orange">
+ <div class="bullet-num">C</div>
+ <div>
+ <strong>Could Have (2 FRs tiện ích):</strong> In lại hóa đơn lịch sử, Bộ lọc thời gian KPI đa chu kỳ (Hôm nay, 7 ngày, Tháng, Toàn thời gian).
+ </div>
+ </div>
+ <div class="bullet-item highlight-purple">
+ <div class="bullet-num">W</div>
+ <div>
+ <strong>Won't Have (Giai đoạn này):</strong> Đặt bàn trực tuyến từ xa, Tích điểm thành viên CRM, Xuất hóa đơn đỏ VAT điện tử.
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT LUỒNG ĐIỀU HƯỚNG GIAO DIỆN</div>
+ <div class="image-container-frame">
+ <img src="02_SourceCode_WebJava_Prototype/BanGiao_UML/UI_Navigation_Flow.svg" alt="Sơ đồ điều hướng giao diện" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">🗺️</div>
+ <strong>Luồng Điều Hướng Giao Diện (UI Navigation Flow)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">Sơ đồ luồng chuyển màn hình POS - Kho - Nhân sự theo vai trò.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Luồng Điều Hướng Giao Diện Người Dùng</div>
+ <div class="image-path-hint">Gợi ý file: 02_SourceCode_WebJava_Prototype/BanGiao_UML/UI_Navigation_Flow.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-5">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Trần Văn Quý (1 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(5)">✕</button>
+ </div>
+ <p>"Em xin chào Cô và các bạn! Em tên là Trần Văn Quý. Em xin phép trình bày về Danh mục 15 Yêu cầu chức năng được nhóm phân cấp chặt chẽ theo ma trận MoSCoW: Nhóm ưu tiên tuyệt đối nhóm Must Have gồm 8 chức năng sống còn: từ mở bàn, in bar delta, in tạm tính VietQR, thu tiền đóng bàn, trừ kho BOM chống Deadlock, nhập kho WAC đến chấm công và phân ca cân bằng. Nhóm Should Have gồm 4 chức năng nâng cao trải nghiệm và kiểm soát: tính số ly có thể làm theo Soft Reservation, cảnh báo tồn đỏ, duyệt điều chỉnh công và Executive KPI Dashboard. Nhóm Could Have gồm các tiện ích tra cứu in lại hóa đơn và lọc thời gian. Cuối cùng là Won't Have cho giai đoạn hiện tại như đặt bàn online hay hóa đơn VAT điện tử."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 6: USE CASE TỔNG QUÁT -->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="6">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 3: MÔ HÌNH HÓA USE CASE</span>
+ <span class="speaker-pill speaker-quy">Trần Văn Quý (1 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 06 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">06.</span>
+ <span>Biểu Đồ Use Case Tổng Quát (30 Ca Sử Dụng) & Phân Cấp 3 Vai Trò</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item highlight-blue">
+ <div class="bullet-num">1</div>
+ <div>
+ <strong>Actor Phục vụ (<code>PHUC_VU</code> – 10 UCs):</strong> Xem sơ đồ bàn, mở bàn, chọn món, in Bar ticket, gọi thêm món (in delta), yêu cầu tính tiền, xem lịch phân ca, tự chấm công.
+ </div>
+ </div>
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">2</div>
+ <div>
+ <strong>Actor Thu ngân (<code>THU_NGAN</code> – Kế thừa Phục vụ + 8 UCs):</strong> In Phiếu Tạm Tính kèm VietQR động, nhận tiền khách, tính tiền thối, xác nhận thanh toán & đóng bàn, in Hóa đơn bán hàng nhiệt.
+ </div>
+ </div>
+ <div class="bullet-item highlight-purple">
+ <div class="bullet-num">3</div>
+ <div>
+ <strong>Actor Quản lý (<code>QUAN_LY</code> – Kế thừa Thu ngân + 12 UCs):</strong> Toàn quyền nhập kho WAC, kiểm kê hao hụt, thiết lập BOM, phân ca tuần kiểm soát cân bằng, duyệt điều chỉnh công, áp chiết khấu giảm giá, xem KPI tài chính.
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT BIỂU ĐỒ USE CASE TỔNG QUÁT</div>
+ <div class="image-container-frame">
+ <img src="diagram/UseCaseTongQuat.svg" alt="Biểu đồ Use Case tổng quát" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">👥</div>
+ <strong>Biểu Đồ Use Case Tổng Quát (UML 2.5)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">30 Ca sử dụng và 3 tác tử kế thừa quyền hạn phân tầng.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Biểu đồ Use Case Tổng Quát (30 Ca Sử Dụng)</div>
+ <div class="image-path-hint">Gợi ý file: diagram/UseCaseTongQuat.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-6">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Trần Văn Quý (1 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(6)">✕</button>
+ </div>
+ <p>"Trên màn hình là Biểu đồ Use Case tổng quát gồm 30 ca sử dụng chuẩn hóa UML 2.5 với 3 tác tử chính: Nhân viên Phục vụ sở hữu 10 ca sử dụng tác nghiệp bàn và tự chấm công. Thu ngân kế thừa toàn bộ quyền của Phục vụ, được bổ sung 8 ca sử dụng quản lý dòng tiền: in tạm tính VietQR, nhận tiền, đóng bàn và in hóa đơn bán hàng. Cuối cùng, Quản lý kế thừa toàn bộ quyền của Thu ngân và nắm độc quyền 12 ca sử dụng quản trị cấp cao: nhập kho WAC, kiểm kê hao hụt, phân ca tuần, duyệt sửa công, xem KPI và đặc biệt là áp dụng chiết khấu giảm giá. Phân cấp kế thừa này bảo đảm tính toàn vẹn và an toàn tuyệt đối cho hệ thống."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 7: PHÂN HỆ POS & SƠ ĐỒ BÀN 3 MÀU -->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="7">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 4: NGHIỆP VỤ BÁN HÀNG POS</span>
+ <span class="speaker-pill speaker-quy">Trần Văn Quý (1 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 07 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">07.</span>
+ <span>Nghiệp Vụ POS: Sơ Đồ Bàn 3 Màu Viền & Cơ Chế Soft Reservation</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item highlight-blue">
+ <div class="bullet-num">1</div>
+ <div>
+ <strong>Sơ đồ bàn thời gian thực (3 màu viền chuẩn mực):</strong>
+ <div style="margin-top: 6px; font-size: 13.5px;">
+ • <strong style="color: #2563eb;">Viền Xanh dương (<code>TRONG</code>):</strong> Bàn trống sẵn sàng đón khách.<br>
+ • <strong style="color: #16a34a;">Viền Xanh lá (<code>DANG_DUNG_NUOC</code>):</strong> Đang phục vụ, hiển thị tiền tạm tính.<br>
+ • <strong style="color: #d97706;">Viền Vàng (<code>CHO_THANH_TOAN</code>):</strong> Khách xin tính tiền $\rightarrow$ <strong>KHÓA SỬA MÓN</strong>, phục vụ không thể thêm/bớt món.
+ </div>
+ </div>
+ </div>
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">2</div>
+ <div>
+ <strong>Cơ chế Soft Reservation & Thắt cổ chai nguyên liệu:</strong>
+ <div style="margin-top: 4px; font-size: 13.5px;">
+ • Tự động tính: $\text{soLyCoTheLam} = \min_{nl} \lfloor (\text{Ton} - \text{Giu}) / \text{BOM} \rfloor$.<br>
+ • <strong>Che giấu tồn gốc:</strong> Chỉ hiện nhãn Xanh (> 5 ly), Vàng (1-5 ly), Đỏ (Hết món - Khóa nút thêm). Triệt tiêu $100\%$ bán khống!
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT ẢNH GIAO DIỆN SƠ ĐỒ BÀN POS</div>
+ <div class="image-container-frame">
+ <img src="screenshots/02_pos_phuc_vu_so_do_ban.png" alt="Sơ đồ bàn và thực đơn Soft Reservation" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">🪑</div>
+ <strong>Giao Diện Sơ Đồ Bàn POS (3 Màu Viền & Soft Reservation)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">Trực quan hóa trạng thái bàn và số ly có thể làm theo nguyên lý thắt cổ chai.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Giao Diện POS Sơ Đồ Bàn & Thực Đơn Khả Dụng</div>
+ <div class="image-path-hint">Gợi ý file: screenshots/02_pos_phuc_vu_so_do_ban.png</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-7">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Trần Văn Quý (1 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(7)">✕</button>
+ </div>
+ <p>"Tiếp theo là Phân hệ Bán hàng POS – trái tim tác nghiệp của quán: Sơ đồ bàn trực quan hóa 3 trạng thái màu sắc viền chuẩn mực: Viền Xanh dương là Bàn trống. Khi mở bàn, chuyển sang viền Xanh lá báo đang dùng nước kèm tổng tiền tạm tính. Khi khách xin bill, bàn chuyển viền Vàng hổ phách Chờ thanh toán. Lúc này, quyền sửa món bị khóa chặt để tránh sai lệch đối soát. Điểm đột phá của thực đơn POS là cơ chế Giữ chỗ mềm (Soft Reservation) và tính 'Số ly có thể làm' theo nguyên lý thắt cổ chai nguyên liệu. Hệ thống che giấu tồn gốc với nhân viên, chỉ trả về số ly khả dụng: Xanh là trên 5 ly, Vàng là 1 đến 5 ly, và Đỏ là Hết món tự khóa nút thêm. Nhờ vậy, nhân viên không bao giờ bán khống món đã hết nguyên liệu!"</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 8: LUỒNG TẠO ĐƠN & BỘ 3 PHIẾU IN -->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="8">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 4: QUY TRÌNH PHỤC VỤ TẠI BÀN</span>
+ <span class="speaker-pill speaker-quy">Trần Văn Quý (1 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 08 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">08.</span>
+ <span>Chu Trình SOP 9 Bước, Cơ Chế In Bar Delta & Bộ 3 Phiếu In Nghiệp Vụ</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item highlight-blue">
+ <div class="bullet-num">1</div>
+ <div>
+ <strong>Chu trình SOP 9 bước phục vụ tại bàn:</strong> Khách vào $\rightarrow$ Mở bàn $\rightarrow$ Chọn món Soft Reservation $\rightarrow$ In Bar Ticket $\rightarrow$ Khách gọi thêm $\rightarrow$ In Bar Delta $\rightarrow$ Yêu cầu tính tiền $\rightarrow$ In Tạm Tính VietQR $\rightarrow$ Thu ngân đóng bàn & Trừ kho.
+ </div>
+ </div>
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">2</div>
+ <div>
+ <strong>Cơ chế In Bar Delta ($\Delta$):</strong> Bảng <code>chi_tiet_hoa_don</code> có cột <code>so_luong_da_in_bar</code>. Khi gọi thêm, lệnh in Bar chỉ lấy phần chênh lệch $\text{soLuong} - \text{soLuongDaIn} > 0$. Triệt tiêu $100\%$ quầy Bar pha chế trùng lặp!
+ </div>
+ </div>
+ <div class="bullet-item highlight-orange">
+ <div class="bullet-num">3</div>
+ <div>
+ <strong>Bộ 3 mẫu phiếu in chuẩn hóa:</strong>
+ <div style="margin-top: 4px; font-size: 13.5px;">
+ • <strong>Phiếu Pha Chế (Bar Ticket):</strong> Bàn, Món, SL, Ghi chú (<strong>KHÔNG hiện giá</strong>).<br>
+ • <strong>Phiếu Tạm Tính (Proforma Bill):</strong> Chi tiết món, Đơn giá snapshot, VietQR động.<br>
+ • <strong>Hóa Đơn Bán Hàng:</strong> Đầy đủ mã HĐ, chiết khấu, tiền khách đưa, tiền thối, đóng bàn.
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ TUẦN TỰ POS / MẪU PHIẾU IN</div>
+ <div class="image-container-frame">
+ <img src="diagram/Sequence_POS.svg" alt="Sơ đồ tuần tự bán hàng POS" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">🧾</div>
+ <strong>Sơ Đồ Tuần Tự Bán Hàng POS (Sequence Diagram)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">Luồng tương tác giữa Phục vụ, Thu ngân, Hệ thống và Quầy Bar.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Tuần Tự Chu Trình Bán Hàng POS</div>
+ <div class="image-path-hint">Gợi ý file: diagram/Sequence_POS.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-8">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Trần Văn Quý (1 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(8)">✕</button>
+ </div>
+ <p>"Quy trình nghiệp vụ bán hàng diễn ra chặt chẽ theo chu trình chuẩn SOP 9 bước: Khách vào chọn bàn, phục vụ mở bàn chọn món theo thực đơn khả dụng, bấm In Bar gửi phiếu pha chế xuống quầy Bar. Đặc biệt, khi khách gọi thêm món, nhờ cơ chế In Bar Delta, hệ thống chỉ in đúng các món mới phát sinh, hoàn toàn không in lại các món đã pha trước đó, tránh lãng phí nguyên liệu. Khi khách báo tính tiền, phục vụ bấm Yêu cầu thanh toán để khóa bàn. Thu ngân in Phiếu Tạm Tính kèm VietQR động mang ra cho khách đối soát. Sau khi nhận tiền, Thu ngân bấm Xác nhận thanh toán & Đóng bàn: hệ thống xuất hóa đơn nhiệt, kích hoạt trừ kho BOM ngầm và giải phóng bàn về trạng thái Trống."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 9: [LIVE DEMO 1] BÁN HÀNG POS -->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="9">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 4: THỰC THI & DEMO POS</span>
+ <span class="speaker-pill speaker-quy">Trần Văn Quý (1.5 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 09 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">09.</span>
+ <span>[LIVE DEMO 1] Bán Hàng POS: Mở Bàn, In Bar Delta & Đóng Bàn</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="demo-card-banner">
+ <h4>🎬 TRỰC QUAN HÓA THAO TÁC DEMO THỰC TẾ (banhang.html)</h4>
+ <p style="font-size: 13px; color: #cbd5e1;">Mô phỏng trọn vẹn luồng phục vụ khách tại Bàn 03 qua 2 vai trò Phục vụ & Thu ngân:</p>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">1</div>
+ <div><strong>Đăng nhập Phục vụ:</strong> Chọn Bàn 03 (Xanh dương) $\rightarrow$ Xem Menu Soft Reservation còn 8 ly Cà phê Muối, 5 ly Caffe Latte.</div>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">2</div>
+ <div><strong>Mở bàn & Gọi món:</strong> Gọi 1 Cà phê Muối, 1 Caffe Latte (Ít đường, sữa nóng) $\rightarrow$ Bàn chuyển <strong>Viền Xanh lá (<code>DANG_DUNG_NUOC</code>)</strong>.</div>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">3</div>
+ <div><strong>In Bar & Gọi thêm Delta:</strong> In Bar lần 1 $\rightarrow$ Gọi thêm 1 Trà Đào $\rightarrow$ In Bar lần 2 $\rightarrow$ <strong>Chỉ in đúng 1 ly Trà Đào</strong>!</div>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">4</div>
+ <div><strong>Yêu cầu tính tiền:</strong> Bàn chuyển <strong>Viền Vàng hổ phách (<code>CHO_THANH_TOAN</code>)</strong> $\rightarrow$ Khóa sửa món bảo đảm số liệu.</div>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">5</div>
+ <div><strong>Thu ngân đóng bàn:</strong> Đăng nhập <code>thungan</code> $\rightarrow$ In Tạm Tính VietQR $\rightarrow$ Khách trả 150k, thối 35k $\rightarrow$ Đóng bàn, trừ kho ngầm, Bàn 03 về Xanh dương.</div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ HOẠT ĐỘNG POS DEMO</div>
+ <div class="image-container-frame">
+ <img src="diagram/Activity_POS.svg" alt="Sơ đồ hoạt động POS Demo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">☕</div>
+ <strong>Sơ Đồ Hoạt Động Bán Hàng POS (Activity Diagram)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">Minh họa các bước rẽ nhánh từ mở bàn đến in bill và đóng bàn.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Hoạt Động Bán Hàng POS (Activity Diagram)</div>
+ <div class="image-path-hint">Gợi ý file: diagram/Activity_POS.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-9">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Trần Văn Quý (1.5 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(9)">✕</button>
+ </div>
+ <p>"(Quý thao tác trực tiếp trên trình duyệt) Thưa Cô, tại trang đăng nhập index.html, em dùng nút điền nhanh 'Phục vụ' để đăng nhập 1 chạm. Hệ thống vào thẳng banhang.html. Em chọn Bàn 03 đang trống (viền Xanh dương). Món Cà phê Muối báo còn 8 ly, Caffe Latte còn 5 ly. Em gọi 1 ly Cà phê Muối, 1 ly Caffe Latte ghi chú 'Ít đường, sữa nóng', tạm tính là 77.000 đ. Em bấm 'Mở bàn & Tạo đơn' -> Bàn 03 chuyển ngay sang viền Xanh lá ĐANG_DUNG_NUOC. Em bấm 'In Bar' xuất phiếu pha chế. Khách gọi thêm 1 Trà Đào Cam Sả, em bấm thêm vào giỏ. Bấm 'In Bar' lần 2: phiếu in chỉ xuất đúng 1 ly Trà Đào vừa gọi, không hề in lại 2 ly trước! Khách xin tính tiền, em bấm 'Yêu cầu thanh toán' -> Bàn 03 chuyển viền Vàng CHO_THANH_TOAN và khóa sửa món. Bây giờ em chuyển sang tài khoản Thu ngân: bấm 'In Tạm Tính' có VietQR động, nhập khách đưa 150.000 đ, hệ thống tính tiền thối 35.000 đ. Ô chiết khấu bị khóa disabled hoàn toàn. Em bấm 'Xác nhận thanh toán & Đóng bàn' -> Hóa đơn bán hàng xuất hiện, hệ thống trừ kho ngầm, và Bàn 03 trở về màu Xanh dương Trống sẵn sàng đón khách! Phần tiếp theo, em xin nhường lời cho bạn Lê Tấn Đạt."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 10: NFR & THIẾT KẾ CSDL 11 BẢNG (ERD)-->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="10">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 5: THIẾT KẾ DỮ LIỆU & NFR</span>
+ <span class="speaker-pill speaker-dat">Lê Tấn Đạt (1 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 10 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">10.</span>
+ <span>Yêu Cầu Phi Chức Năng (NFR) & Thiết Kế CSDL 11 Bảng Chuẩn 3NF</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item highlight-blue">
+ <div class="bullet-num">1</div>
+ <div>
+ <strong>4 Chỉ số NFR cốt lõi:</strong> Phản hồi API $< 200\text{ms}$, Tải trang $< 50\text{ms}$, Khả dụng $99.9\%$, Toàn vẹn dữ liệu ACID $100\%$.
+ </div>
+ </div>
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">2</div>
+ <div>
+ <strong>11 Bảng CSDL Chuẩn 3NF:</strong>
+ <div style="margin-top: 4px; font-size: 13.5px;">
+ • <strong>Bán hàng (4):</strong> <code>ban_ca_phe</code>, <code>mon_nuoc</code>, <code>hoa_don</code>, <code>chi_tiet_hoa_don</code>.<br>
+ • <strong>Kho (3):</strong> <code>nguyen_lieu</code>, <code>dinh_muc_mon</code>, <code>lich_su_kho</code> (Sổ cái kiểm toán biến động).<br>
+ • <strong>Nhân sự (4):</strong> <code>nhan_vien</code>, <code>ca_lam_viec</code>, <code>phan_ca</code>, <code>cham_cong</code>.
+ </div>
+ </div>
+ </div>
+ <div class="bullet-item highlight-orange">
+ <div class="bullet-num">3</div>
+ <div>
+ <strong>Kỹ thuật chống lỗi nghiệp vụ:</strong>
+ <div style="margin-top: 4px; font-size: 13.5px;">
+ • <code>don_gia_luc_ban</code>: <strong>Price Snapshot</strong> bảo vệ tính bất biến chứng từ lịch sử.<br>
+ • <code>so_luong_da_in_bar</code>: Kiểm soát in Delta không lặp lại.<br>
+ • <code>@Version</code>: Khóa lạc quan chống ghi đè hóa đơn song song.
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ THỰC THỂ LIÊN KẾT ERD</div>
+ <div class="image-container-frame">
+ <img src="diagram/ERD_DuLieu.svg" alt="Sơ đồ thực thể liên kết ERD 11 bảng" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">🗄️</div>
+ <strong>Sơ Đồ Thực Thể Liên Kết (ERD 11 Bảng Chuẩn 3NF)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">11 bảng quan hệ ACID và Sổ cái biến động kho lich_su_kho.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Thực Thể Liên Kết CSDL (11 Bảng Chuẩn 3NF)</div>
+ <div class="image-path-hint">Gợi ý file: diagram/ERD_DuLieu.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-10">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Lê Tấn Đạt (1 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(10)">✕</button>
+ </div>
+ <p>"Em xin kính chào Cô và các bạn! Em tên là Lê Tấn Đạt. Về mặt phi chức năng NFR, hệ thống đạt hiệu năng phản hồi API dưới 200ms, tải trang cực nhẹ dưới 50ms và bảo đảm toàn vẹn dữ liệu ACID 100%. Về thiết kế CSDL, hệ thống gồm 11 bảng chuẩn hóa 3NF chia làm 3 phân hệ: Bán hàng 4 bảng, Kho 3 bảng và Nhân sự 4 bảng. Bảng thứ 11 mới bổ sung là lich_su_kho – đóng vai trò cuốn Sổ cái điện tử ghi nhận biến động 3 loại giao dịch: NHAP_KHO, XUAT_BAN_HANG và KIEM_KE_HAO_HUT. Đặc biệt, nhóm áp dụng kỹ thuật Price Snapshot lưu don_gia_luc_ban trong chi tiết hóa đơn: nếu sau này giá món thay đổi, doanh thu lịch sử cũ vẫn giữ nguyên tính bất biến vĩnh viễn, kèm so_luong_da_in_bar để in delta và @Version chống ghi đè song song."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 11: PHÂN HỆ NHÂN SỰ & 7 QUY TẮC BR-CC-->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="11">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 6: NGHIỆP VỤ NHÂN SỰ & CHẤM CÔNG</span>
+ <span class="speaker-pill speaker-dat">Lê Tấn Đạt (1 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 11 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">11.</span>
+ <span>Nghiệp Vụ Nhân Sự: Phân Ca Cân Bằng & 7 Quy Tắc Chấm Công BR-CC</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item highlight-blue">
+ <div class="bullet-num">1</div>
+ <div>
+ <strong>Lưới phân ca kiểm soát cân bằng vai trò (<code>BR-CC-07</code>):</strong> Bắt buộc mỗi ca trực phải có ít nhất 1 Thu ngân hoặc 1 Quản lý. Nếu ca chỉ có Phục vụ $\rightarrow$ <strong>Bật cảnh báo viền cam nét đứt</strong> <code>thieuThuNgan = true</code>.
+ </div>
+ </div>
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">2</div>
+ <div>
+ <strong>7 Quy tắc Chấm công chuẩn mực (BR-CC-01..07):</strong>
+ <div style="margin-top: 4px; font-size: 13px;">
+ • <strong>BR-CC-01, 02:</strong> Ràng buộc 1:1 phân ca; Cửa sổ check-in $[\text{start} - 30p, \text{end})$.<br>
+ • <strong>BR-CC-03, 04:</strong> Du di 15p: trễ $\le 15p$ tính đúng giờ, $> 15p$ đi trễ; Clamped giờ thực tế, cảnh báo về sớm $> 15p$, nhân hệ số đêm 1.2.<br>
+ • <strong>BR-CC-05:</strong> <code>@Scheduled</code> 03:00 AM tự động chốt <code>VANG</code> / <code>QUEN_CHECK_OUT</code>.<br>
+ • <strong>BR-CC-06:</strong> Quản lý điều chỉnh bắt buộc nhập lý do, lưu vết kiểm toán.
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ HOẠT ĐỘNG CHẤM CÔNG</div>
+ <div class="image-container-frame">
+ <img src="diagram/Activity_ChamCong.svg" alt="Sơ đồ hoạt động chấm công nhân sự" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">⏰</div>
+ <strong>Sơ Đồ Hoạt Động Chấm Công (Activity Diagram)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">7 Quy tắc BR-CC kiểm soát chặt chẽ giờ công và cân bằng nhân sự ca.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Hoạt Động Chấm Công Nhân Sự (7 Quy Tắc BR-CC)</div>
+ <div class="image-path-hint">Gợi ý file: diagram/Activity_ChamCong.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-11">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Lê Tấn Đạt (1 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(11)">✕</button>
+ </div>
+ <p>"Điểm sáng tạo của Phân hệ Nhân sự là cơ chế kiểm soát cân bằng ca và 7 Quy tắc Chấm công chuẩn hóa BR-CC: Trên Lưới phân ca tuần, hệ thống áp dụng Quy tắc BR-CC-07: Bắt buộc mỗi ca trực phải có ít nhất 1 Thu ngân hoặc 1 Quản lý. Nếu ca chỉ có Phục vụ, ô ca lập tức bật viền cam nét đứt và nhãn cảnh báo 'THIẾU THU NGÂN / QUẢN LÝ' để tránh vỡ trận thu tiền. Về chấm công, hệ thống kiểm soát qua 6 quy tắc nghiêm ngặt: check-in trong cửa sổ 30 phút, áp dụng du di 15 phút chống phạt oan nhân viên, tính giờ clamped không cộng dồn giờ ảo khi đến sớm, nhân hệ số ca tối 1.2, scheduler 03:00 sáng tự động chốt vắng hoặc quên checkout, và Quản lý điều chỉnh công bắt buộc nhập lý do có lưu vết kiểm toán minh bạch 100%."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 12: [LIVE DEMO 2] CHẤM CÔNG NHÂN SỰ -->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="12">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 6: THỰC THI & DEMO NHÂN SỰ</span>
+ <span class="speaker-pill speaker-dat">Lê Tấn Đạt (1.5 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 12 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">12.</span>
+ <span>[LIVE DEMO 2] Chấm Công Cá Nhân & Phân Ca Cân Bằng Vai Trò</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="demo-card-banner">
+ <h4>🎬 TRỰC QUAN HÓA THAO TÁC DEMO THỰC TẾ (nhansu.html)</h4>
+ <p style="font-size: 13px; color: #cbd5e1;">Minh chứng chấm công thời gian thực & kiểm soát cân bằng nhân sự:</p>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">1</div>
+ <div><strong>Chế độ Cá nhân (<code>phucvu</code>):</strong> Đồng hồ chạy thời gian thực $\rightarrow$ Bấm "Check-in Ca Lam" (Ca Sáng 07:00-12:00) $\rightarrow$ Quá 07:15 ghi nhận <strong><code>DI_TRE</code></strong> kèm số phút trễ $\rightarrow$ Nút đổi thành "Check-out".</div>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">2</div>
+ <div><strong>Lưới Phân Ca Quản Trị (<code>quanly</code>):</strong> Quan sát Ca Tối Thứ Tư chỉ có Phục vụ $\rightarrow$ Ô ca bật <strong>viền cam nét đứt + badge CẢNH BÁO: THIẾU THU NGÂN</strong> $\rightarrow$ Phân thêm Thu ngân $\rightarrow$ Cảnh báo biến mất!</div>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">3</div>
+ <div><strong>Quản lý Duyệt Điều Chỉnh Công:</strong> Bấm "Điều chỉnh" ca quên check-out $\rightarrow$ Nhập giờ ra và lý do: <em>"Dọn quầy, camera xác nhận 12:15"</em> $\rightarrow$ Lưu vết kiểm toán người sửa, giờ sửa minh bạch.</div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ TUẦN TỰ CHẤM CÔNG</div>
+ <div class="image-container-frame">
+ <img src="diagram/Sequence_ChamCong.svg" alt="Sơ đồ tuần tự chấm công nhân sự" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">📋</div>
+ <strong>Sơ Đồ Tuần Tự Chấm Công (Sequence Diagram)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">Tương tác giữa Nhân viên, Quản lý, Service và CSDL.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Tuần Tự Chấm Công & Quản Lý Ca Trực</div>
+ <div class="image-path-hint">Gợi ý file: diagram/Sequence_ChamCong.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-12">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Lê Tấn Đạt (1.5 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(12)">✕</button>
+ </div>
+ <p>"(Đạt thao tác trực tiếp trên trình duyệt) Thưa Cô, em đăng nhập tài khoản phucvu truy cập nhansu.html: Phục vụ chỉ thấy Chế độ Cá nhân với lịch ca của mình và đồng hồ số chạy thời gian thực. Em được xếp Ca Sáng (07:00 - 12:00). Em bấm 'Check-in Ca Lam' -> Vì hiện tại đã quá 07:15, hệ thống lập tức ghi nhận trạng thái 'DI_TRE' và hiển thị rõ số phút trễ. Nút bấm tự động đổi thành 'Check-out Ca Lam'. Bây giờ em đăng nhập tài khoản Quản lý: màn hình mở khóa thêm Chế độ Quản trị. Tại Lưới Phân Ca Tuần, kính mời Cô quan sát ô Ca Tối Thứ Tư: nhóm em chỉ xếp 1 Phục vụ. Lập tức Quy tắc BR-CC-07 được kích hoạt: ô ca hiển thị viền cam nét đứt kèm huy hiệu cảnh báo 'CẢNH BÁO: THIẾU THU NGÂN / QUẢN LÝ'. Em phân công thêm bạn Trần Văn Quý (Thu ngân) vào ca -> Cảnh báo cam lập tức biến mất! Tại bảng Lịch sử Chấm công, Quản lý bấm 'Điều chỉnh' ca quên checkout, nhập giờ ra và lý do giải trình. Sau khi lưu, hệ thống tính lại giờ công quy đổi và ghi nhận vết người sửa rõ ràng. Tiếp theo, em xin mời Trưởng nhóm Nguyễn Văn Duy trình bày Phân hệ Kho và Live Demo Trừ kho tự động."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 13: PHÂN HỆ KHO & ĐỊNH MỨC BOM -->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="13">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 7: ĐỊNH MỨC KHO & GIÁ VỐN</span>
+ <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (1 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 13 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">13.</span>
+ <span>Nghiệp Vụ Kho: Định Mức BOM 12 Món & Công Thức Giá Vốn WAC</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item highlight-blue">
+ <div class="bullet-num">1</div>
+ <div>
+ <strong>13 Nguyên vật liệu thực tế $100\%$ cấu thành 34 dòng BOM cho 12 món:</strong>
+ <div style="margin-top: 4px; font-size: 13px;">
+ • Cà phê Robusta ($15\text{g}$), Arabica ($10\text{g}$), Sữa tươi tiệt trùng ($150\text{ml}$), Sữa đặc Ngôi Sao ($25\text{ml}$), Kem béo Rich's ($30\text{ml}$),...
+ </div>
+ </div>
+ </div>
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">2</div>
+ <div>
+ <strong>Công thức Giá vốn Bình quân Gia quyền (WAC – Weighted Average Cost):</strong>
+ <div style="margin-top: 4px; font-size: 13.5px;">
+ • $\text{WAC}_{\text{mới}} = \frac{(\text{Tồn cũ} \times \text{Đơn giá cũ}) + (\text{SL nhập} \times \text{Đơn giá nhập})}{\text{Tồn cũ} + \text{SL nhập}}$.<br>
+ • Tự động tính toán lại giá vốn hàng bán (COGS) chuẩn xác theo biến động giá thị trường.
+ </div>
+ </div>
+ </div>
+ <div class="bullet-item highlight-orange">
+ <div class="bullet-num">3</div>
+ <div>
+ <strong>Ngưỡng an toàn & Cảnh báo tồn đỏ:</strong> Tồn kho $\le$ Ngưỡng tối thiểu $\r\rightarrow$ Bật nhãn đỏ nhấp nháy <strong>"SẮP HẾT HÀNG"</strong>, tự động kéo tụt <code>soLyCoTheLam</code> trên POS.
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ LỚP MIỀN BOM & WAC</div>
+ <div class="image-container-frame">
+ <img src="diagram/ClassDiagram.svg" alt="Sơ đồ lớp miền định mức BOM và WAC" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">📦</div>
+ <strong>Sơ Đồ Lớp Miền Định Mức BOM (Class Diagram)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">Mô hình quan hệ Món nước - Định mức BOM - Nguyên liệu và Giá vốn WAC.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Lớp Miền (Class Diagram) Phân Hệ Kho & BOM</div>
+ <div class="image-path-hint">Gợi ý file: diagram/ClassDiagram.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-13">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (1 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(13)">✕</button>
+ </div>
+ <p>"Kính thưa Cô, em xin tiếp tục với Phân hệ Quản trị Kho – hạt nhân kỹ thuật kiểm soát tài chính của Sangrimar Cafe & Lounge: Hệ thống chuẩn hóa 13 nguyên vật liệu thực tế cấu thành 34 dòng định mức BOM cho 12 món nước Sangrimar. Mỗi khi nhập hàng, hệ thống áp dụng phương pháp Giá vốn Bình quân Gia quyền liên hoàn (WAC): đơn giá vốn được tính toán lại tự động theo tỷ trọng khối lượng và giá mới, bảo đảm báo cáo giá vốn hàng bán COGS luôn phản ánh trung thực biến động thị trường. Đồng thời, hệ thống thiết lập ngưỡng an toàn cho từng nguyên liệu: khi tồn kho chạm ngưỡng tối thiểu, hệ thống lập tức bật nhãn đỏ nhấp nháy 'SẮP HẾT HÀNG' và tự động khóa món tương ứng trên thực đơn POS."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 14: LUỒNG TRỪ KHO & CHỐNG DEADLOCK -->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="14">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 7: THUẬT TOÁN KHO & KIỂM TOÁN</span>
+ <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (1 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 14 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">14.</span>
+ <span>Nghiệp Vụ Kho: Thuật Toán Trừ Kho Chống Deadlock & Kiểm Kê Hao Hụt</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item highlight-blue">
+ <div class="bullet-num">1</div>
+ <div>
+ <strong>Bài toán Deadlock giờ cao điểm:</strong> Nhiều bàn cùng thanh toán các món dùng chung nguyên liệu (Sữa tươi, Robusta) $\rightarrow$ Khóa chéo gây tê liệt quầy thu ngân.
+ </div>
+ </div>
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">2</div>
+ <div>
+ <strong>Thuật toán Sangrimar:</strong>
+ <div style="margin-top: 4px; font-size: 13.5px;">
+ • Dùng <code>TreeMap&lt;Long, Double&gt;</code> gom nguyên liệu và sắp xếp tăng dần theo <code>ma_nl</code> ($1 \r\rightarrow 2 \r\rightarrow 3$).<br>
+ • Khóa bi quan <code>SELECT ... FOR UPDATE</code> theo đúng thứ tự tăng dần trong <code>@Transactional(isolation = READ_COMMITTED)</code>.<br>
+ • Triệt tiêu $100\%$ điều kiện Circular Wait, chống âm kho tuyệt đối!
+ </div>
+ </div>
+ </div>
+ <div class="bullet-item highlight-orange">
+ <div class="bullet-num">3</div>
+ <div>
+ <strong>Sổ Nhật ký <code>lich_su_kho</code> & Kiểm kê hao hụt:</strong> Lưu vết vĩnh viễn <code>NHAP_KHO</code>, <code>XUAT_BAN_HANG</code>, <code>KIEM_KE_HAO_HUT</code>. Kiểm kê định kỳ ghi nhận tổn thất tài chính (Shrinkage) minh bạch.
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ TUẦN TỰ TRỪ KHO CHỐNG DEADLOCK</div>
+ <div class="image-container-frame">
+ <img src="diagram/Sequence_TruKho.svg" alt="Sơ đồ tuần tự trừ kho chống Deadlock" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">🔒</div>
+ <strong>Sơ Đồ Tuần Tự Trừ Kho (Sequence Diagram)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">Thuật toán khóa TreeMap theo thứ tự ID tăng dần triệt tiêu Deadlock.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Tuần Tự Trừ Kho Tự Động Chống Deadlock</div>
+ <div class="image-path-hint">Gợi ý file: diagram/Sequence_TruKho.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-14">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (1 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(14)">✕</button>
+ </div>
+ <p>"Đây là bài toán kỹ thuật phức tạp nhất mà em đã giải quyết: Trong giờ cao điểm F&B, hàng chục bàn cùng gọi món có chung Sữa tươi và Cà phê Robusta. Nếu hai thu ngân bấm thanh toán cùng lúc, giao dịch A khóa Sữa rồi chờ Cà phê, trong khi giao dịch B khóa Cà phê rồi chờ Sữa -> gây Deadlock chết cứng hệ thống! Nhóm giải quyết bằng cách: Toàn bộ quá trình bọc trong @Transactional với mức cô lập READ_COMMITTED. Hệ thống sử dụng cấu trúc TreeMap để gom tổng định mức và tự động sắp xếp danh sách mã nguyên liệu theo thứ tự ID tăng dần trước khi thực thi khóa bi quan SELECT FOR UPDATE. Nhờ cùng xếp hàng lấy khóa theo một trật tự duy nhất, hệ thống triệt tiêu 100% điều kiện Circular Wait, vừa không bao giờ bị Deadlock, vừa không bao giờ bán âm kho! Đồng thời, mọi biến động đều được ghi vào Sổ nhật ký lich_su_kho để phục vụ kiểm kê hao hụt cuối ngày."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 15: [LIVE DEMO 3] TRỪ KHO & CẢNH BÁO -->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="15">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 7: THỰC THI & DEMO KHO & KPI</span>
+ <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (1.5 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 15 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">15.</span>
+ <span>[LIVE DEMO 3] Trừ Kho BOM, Sổ Nhật Ký, Nhập Kho WAC & KPI Dashboard</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="demo-card-banner">
+ <h4>🎬 TRỰC QUAN HÓA THAO TÁC DEMO THỰC TẾ (kho.html)</h4>
+ <p style="font-size: 13px; color: #cbd5e1;">Minh chứng khấu trừ kho tự động, sổ nhật ký, WAC và Executive KPI:</p>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">1</div>
+ <div><strong>Minh chứng Trừ kho tự động:</strong> Sau Demo 1, Hạt Robusta trừ đúng $25\text{ g}$, Sữa tươi trừ $180\text{ ml}$, Siro Đào trừ $25\text{ ml}$ ngay tức thì.</div>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">2</div>
+ <div><strong>Sổ Nhật ký Biến động kho:</strong> 3 dòng <code>XUAT_BAN_HANG</code> ghi rõ mã Hóa đơn Bàn 03, tên Thu ngân, tồn trước/tồn sau khớp $100\%$.</div>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">3</div>
+ <div><strong>Nhập kho tính WAC & Báo đỏ:</strong> Bột Matcha Uji tồn $80\text{ g} \le 100\text{ g}$ báo đỏ $\r\rightarrow$ Nhập kho $+500\text{ g}$ $\r\rightarrow$ WAC tính lại, báo đỏ chuyển xanh "Đủ hàng".</div>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">4</div>
+ <div><strong>Kiểm kê hao hụt:</strong> Nhập hao hụt $50\text{ ml}$ Siro Đào do vỡ nắp chai $\r\rightarrow$ Ghi dòng <code>KIEM_KE_HAO_HUT</code>, tính giá trị tổn thất vào báo cáo.</div>
+ </div>
+ <div class="demo-step-box">
+ <div class="demo-step-num">5</div>
+ <div><strong>Executive KPI Dashboard:</strong> 6 thẻ KPI (Doanh thu thuần, COGS, Lợi nhuận gộp $79\%$, Đối soát Tiền mặt vs QR, Top 5 món bán chạy nhất).</div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT SƠ ĐỒ HOẠT ĐỘNG KHO DEMO</div>
+ <div class="image-container-frame">
+ <img src="diagram/Activity_TruKho.svg" alt="Sơ đồ hoạt động trừ kho và quản trị KPI" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">📊</div>
+ <strong>Sơ Đồ Hoạt Động Trừ Kho & Quản Trị Kho (Activity Diagram)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">Quy trình trừ kho BOM ngầm, nhập kho WAC và cập nhật KPI Dashboard.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Sơ đồ Hoạt Động Trừ Kho & Quản Trị Kho (Activity Diagram)</div>
+ <div class="image-path-hint">Gợi ý file: diagram/Activity_TruKho.svg</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-15">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (1.5 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(15)">✕</button>
+ </div>
+ <p>"(Duy thao tác trực tiếp trên trình duyệt) Thưa Cô, em mở trang kho.html trên tài khoản Quản lý: 1. Tại Tab Tồn kho, sau khi bạn Quý thanh toán Bàn 03, Hạt cà phê Robusta đã tự động trừ đúng 25g, Sữa tươi trừ đúng 180ml, Siro Đào trừ đúng 25ml ngay tức thì mà thủ kho không cần gõ tay bất kỳ dòng nào! 2. Chuyển sang Tab 3 'Nhật ký biến động kho', 3 dòng giao dịch XUAT_BAN_HANG xuất hiện rõ ràng, gắn liền mã hóa đơn Bàn 03, tên Thu ngân, tồn trước và tồn sau khớp 100%. 3. Tại dòng Bột Matcha Uji, tồn kho chỉ còn 80g nhỏ hơn ngưỡng an toàn 100g, hệ thống đang bật nhãn đỏ cảnh báo 'SẮP HẾT HÀNG'. Em bấm 'Nhập kho', dùng nút preset nhập nhanh +500g với đơn giá mới -> Tồn kho cập nhật lên 580g, đơn giá vốn được tính lại theo WAC, nhãn đỏ biến mất và khôi phục nhãn xanh 'Đủ hàng'. 4. Cuối ca kiểm kê, thấy Siro Đào bị đổ vỡ 50ml, em bấm 'Kiểm kê' nhập lý do vỡ nắp chai -> Hệ thống ghi nhận dòng KIEM_KE_HAO_HUT và tính giá trị thiệt hại tài chính. 5. Phía trên là 6 thẻ KPI Dashboard: Doanh thu thuần, COGS, Lợi nhuận gộp 79%, đối soát Tiền mặt vs QR và Top 5 món bán chạy nhất với Cà phê Muối dẫn đầu."</p>
+ </div>
+ </div>
+
+ <!-- ========================================== -->
+ <!-- SLIDE 16: KẾT QUẢ TEST & CHUYỂN GIAO & Q&A -->
+ <!-- ========================================== -->
+ <div class="slide-page" data-slide="16">
+ <div class="spiral-spine">
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ <div class="spiral-ring"></div><div class="spiral-ring"></div><div class="spiral-ring"></div>
+ </div>
+ <div class="washi-tape"></div>
+
+ <div class="slide-header">
+ <div class="slide-meta-left">
+ <span class="chapter-tag">CHƯƠNG 9: TỔNG KẾT & CHUYỂN GIAO</span>
+ <span class="speaker-pill speaker-duy">Nguyễn Văn Duy (1 phút)</span>
+ </div>
+ <div class="slide-index-counter">Trang 16 / 16</div>
+ </div>
+
+ <div class="slide-title">
+ <span class="title-number">16.</span>
+ <span>Tổng Kết Kiểm Thử (19/19 Tests Pass), Đánh Giá Thực Tiễn & Q&A</span>
+ </div>
+
+ <div class="slide-body">
+ <div class="slide-text-content">
+ <div class="bullet-item highlight-green">
+ <div class="bullet-num">✓</div>
+ <div>
+ <strong>Kết quả kiểm thử tự động toàn diện:</strong>
+ <div style="margin-top: 6px; font-size: 13.5px;">
+ • Backend Integration Test: <strong>19/19 Tests PASS (100% BUILD SUCCESS)</strong> trên H2 In-Memory tách biệt (5 ca POS & Soft Reservation, 6 ca Kho WAC & Deadlock, 8 ca Chấm công & Scheduler).<br>
+ • Web E2E Test (Chrome Automation): <strong>16/16 Scenarios PASS (100%)</strong>.<br>
+ • Khắc phục triệt để các lỗi phân quyền, deadlock và font tiếng Việt.
+ </div>
+ </div>
+ </div>
+ <div class="bullet-item highlight-blue">
+ <div class="bullet-num">🚀</div>
+ <div>
+ <strong>Chiến lược chuyển giao:</strong> Áp dụng phương pháp Chuyển đổi trực tiếp đầu tuần (<strong>Direct Cutover on Monday</strong>) với chi phí thấp, dữ liệu ban đầu tinh gọn và vận hành ngay.
+ </div>
+ </div>
+ <div class="bullet-item highlight-purple">
+ <div class="bullet-num">🤝</div>
+ <div>
+ <strong>KẾT LUẬN & Q&A:</strong> Nhóm chân thành cảm ơn TS. Hồ Thị Linh đã tận tình hướng dẫn! Kính mời Cô và Hội đồng đặt câu hỏi phản biện.
+ </div>
+ </div>
+ </div>
+
+ <div class="image-placeholder-box">
+ <div class="placeholder-badge">📌 NOTE: VỊ TRÍ ĐẶT BẢNG KẾT QUẢ TEST & CẢM ƠN</div>
+ <div class="image-container-frame">
+ <img src="screenshots/01_dang_nhap.png" alt="Bảng kết quả kiểm thử và nghiệm thu" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+ <div class="image-fallback-notice">
+ <div class="image-fallback-icon">🏆</div>
+ <strong>Khung chèn Bảng Nghiệm Thu Đồ Án (100% PASS)</strong>
+ <p style="font-size: 12px; margin-top: 6px;">19/19 Ca kiểm thử Backend & 16/16 Kịch bản Web E2E hoàn thành xuất sắc.</p>
+ </div>
+ </div>
+ <div class="image-caption-bar">
+ <div class="image-caption-title">Bảng Tổng Hợp Kiểm Thử Nghiệm Thu & Lời Cảm Ơn</div>
+ <div class="image-path-hint">Gợi ý file: screenshots/01_dang_nhap.png</div>
+ </div>
+ </div>
+ </div>
+
+ <div class="speaker-notes-drawer" id="notes-16">
+ <div class="notes-header">
+ <span>🗣️ Kịch bản lời thoại: Nguyễn Văn Duy (1 phút)</span>
+ <button class="notes-close-btn" onclick="toggleNotes(16)">✕</button>
+ </div>
+ <p>"Kính thưa Cô, để bảo chứng cho độ tin cậy của phần mềm: Toàn bộ mã nguồn đã vượt qua xuất sắc 19/19 ca kiểm thử tích hợp tự động Backend đạt 100% BUILD SUCCESS chạy trên môi trường H2 In-Memory độc lập: gồm 5 ca kiểm thử POS Soft Reservation, 6 ca kiểm thử Kho WAC chống Deadlock, và 8 ca kiểm thử Chấm công du di 15 phút cùng scheduler chốt ca quá hạn. Đồng thời vượt qua 16/16 kịch bản kiểm thử hộp đen E2E tự động trên trình duyệt Chrome. Nhóm đề xuất chiến lược chuyển giao trực tiếp vào đầu tuần (Direct Cutover on Monday) để đưa phần mềm vào vận hành thực tế. Hệ thống đã hoàn thiện trọn vẹn cả về mặt học thuật Kỹ nghệ yêu cầu lẫn giá trị ứng dụng thực tiễn cho ngành F&B. Bài thuyết trình của nhóm đến đây là kết thúc. Chúng em xin chân thành cảm ơn Cô và kính mời Cô đặt câu hỏi phản biện cho nhóm ạ!"</p>
+ </div>
+ </div>
+
+ </div> <!-- End Presentation Stage -->
+
+
+ <!-- Floating Interactive Control Deck (Bottom Center) -->
+ <div class="control-deck">
+ <button class="deck-btn" id="prevBtn" title="Slide trước (Phím Mũi tên Trái)">
+ ◀ Trước
+ </button>
+ 
+ <div class="deck-counter">
+ <span id="currentSlideNum">1</span> / 16
+ </div>
+
+ <button class="deck-btn primary" id="nextBtn" title="Slide tiếp theo (Phím Mũi tên Phải hoặc Phím Space)">
+ Tiếp ▶
+ </button>
+
+ <button class="deck-btn notes-toggle-btn" id="notesBtn" title="Bật/Tắt Kịch bản Lời thoại (Phím N)">
+ 📜 Lời thoại
+ </button>
+
+ <button class="deck-btn" id="overviewBtn" title="Mục lục 16 Slide (Phím O)">
+ ☰ Mục lục
+ </button>
+
+ <button class="deck-btn" id="fullscreenBtn" title="Toàn màn hình (Phím F)">
+ ⛶ Toàn màn hình
+ </button>
+ </div>
+
+
+ <!-- Overview Modal (Grid of all 16 slides for quick jumping) -->
+ <div class="overview-modal" id="overviewModal">
+ <div class="overview-header">
+ <h3>📑 Mục lục 16 Trang Slide Thuyết Trình</h3>
+ <button class="deck-btn" id="closeOverviewBtn" style="background: rgba(255,255,255,0.2);">Đóng (Esc)</button>
+ </div>
+ <div class="overview-grid" id="overviewGrid">
+ <!-- Generated dynamically by JS -->
+ </div>
+ </div>
+
+
+ <!-- Interactive Presentation Script Engine -->
+ <script>
+ const totalSlides = 16;
+ let currentSlide = 1;
+
+ const slides = document.querySelectorAll('.slide-page');
+ const progressBar = document.getElementById('progressBar');
+ const currentSlideNum = document.getElementById('currentSlideNum');
+ const prevBtn = document.getElementById('prevBtn');
+ const nextBtn = document.getElementById('nextBtn');
+ const notesBtn = document.getElementById('notesBtn');
+ const overviewBtn = document.getElementById('overviewBtn');
+ const fullscreenBtn = document.getElementById('fullscreenBtn');
+ const overviewModal = document.getElementById('overviewModal');
+ const closeOverviewBtn = document.getElementById('closeOverviewBtn');
+ const overviewGrid = document.getElementById('overviewGrid');
+
+ // Slide Titles and Speakers for Overview Grid
+ const slideMeta = [
+ { num: 1, title: "Tiêu đề & Giới thiệu nhóm", speaker: "Duy (30s)", color: "var(--badge-duy)" },
+ { num: 2, title: "Bối cảnh & 4 Điểm nghẽn F&B", speaker: "Duy (1m)", color: "var(--badge-duy)" },
+ { num: 3, title: "Mục tiêu To-Be & Ma trận In/Out", speaker: "Duy (45s)", color: "var(--badge-duy)" },
+ { num: 4, title: "Kiến trúc 3 tầng & Phân quyền RBAC", speaker: "Duy (45s)", color: "var(--badge-duy)" },
+ { num: 5, title: "15 FRs & Bảng phân cấp MoSCoW", speaker: "Quý (1m)", color: "var(--badge-quy)" },
+ { num: 6, title: "Use Case tổng quát & 3 vai trò", speaker: "Quý (1m)", color: "var(--badge-quy)" },
+ { num: 7, title: "Sơ đồ bàn 3 màu viền & Soft Reservation", speaker: "Quý (1m)", color: "var(--badge-quy)" },
+ { num: 8, title: "SOP 9 bước, In Bar Delta & 3 Phiếu in", speaker: "Quý (1m)", color: "var(--badge-quy)" },
+ { num: 9, title: "[LIVE DEMO 1] Bán hàng POS & Đóng bàn", speaker: "Quý (1.5m)", color: "var(--badge-quy)" },
+ { num: 10, title: "NFR & CSDL 11 bảng chuẩn 3NF", speaker: "Đạt (1m)", color: "var(--badge-dat)" },
+ { num: 11, title: "Lưới phân ca & 7 Quy tắc BR-CC", speaker: "Đạt (1m)", color: "var(--badge-dat)" },
+ { num: 12, title: "[LIVE DEMO 2] Chấm công & Phân ca cân bằng", speaker: "Đạt (1.5m)", color: "var(--badge-dat)" },
+ { num: 13, title: "Định mức BOM 12 món & Giá vốn WAC", speaker: "Duy (1m)", color: "var(--badge-duy)" },
+ { num: 14, title: "Trừ kho chống Deadlock & Kiểm kê", speaker: "Duy (1m)", color: "var(--badge-duy)" },
+ { num: 15, title: "[LIVE DEMO 3] Trừ kho ngầm, Sổ cái & KPI", speaker: "Duy (1.5m)", color: "var(--badge-duy)" },
+ { num: 16, title: "Kiểm thử (19/19 Pass), Kết luận & Q&A", speaker: "Duy (1m)", color: "var(--badge-duy)" }
+ ];
+
+ // Build Overview Grid Cards
+ function buildOverview() {
+ overviewGrid.innerHTML = '';
+ slideMeta.forEach(item => {
+ const card = document.createElement('div');
+ card.className = `overview-card ${item.num === currentSlide ? 'current' : ''}`;
+ card.innerHTML = `
+ <div>
+ <div class="ov-num">TRANG ${item.num < 10 ? '0' + item.num : item.num} / 16</div>
+ <div class="ov-title">${item.title}</div>
+ </div>
+ <span class="ov-speaker" style="background-color: ${item.color}">${item.speaker}</span>
+ `;
+ card.addEventListener('click', () => {
+ goToSlide(item.num);
+ overviewModal.classList.remove('open');
+ });
+ overviewGrid.appendChild(card);
+ });
+ }
+
+ // Update UI on Slide Change
+ function goToSlide(n) {
+ if (n < 1) n = 1;
+ if (n > totalSlides) n = totalSlides;
+ currentSlide = n;
+
+ slides.forEach((slide, idx) => {
+ if (idx + 1 === currentSlide) {
+ slide.classList.add('active');
+ } else {
+ slide.classList.remove('active');
+ // Hide notes drawer when moving away
+ const notes = slide.querySelector('.speaker-notes-drawer');
+ if (notes) notes.classList.remove('open');
+ }
+ });
+
+ // Update counter and progress bar
+ currentSlideNum.textContent = currentSlide;
+ const progressPercent = (currentSlide / totalSlides) * 100;
+ progressBar.style.width = `${progressPercent}%`;
+
+ // Update Button states
+ prevBtn.style.opacity = currentSlide === 1 ? '0.4' : '1';
+ prevBtn.style.pointerEvents = currentSlide === 1 ? 'none' : 'auto';
+ nextBtn.textContent = currentSlide === totalSlides ? 'Kết thúc 🏁' : 'Tiếp ▶';
+
+ buildOverview();
+ }
+
+ function nextSlide() {
+ if (currentSlide < totalSlides) {
+ goToSlide(currentSlide + 1);
+ }
+ }
+
+ function prevSlide() {
+ if (currentSlide > 1) {
+ goToSlide(currentSlide - 1);
+ }
+ }
+
+ // Toggle Speaker Notes on Current Slide
+ function toggleCurrentNotes() {
+ const activeSlide = document.querySelector('.slide-page.active');
+ if (activeSlide) {
+ const notes = activeSlide.querySelector('.speaker-notes-drawer');
+ if (notes) {
+ notes.classList.toggle('open');
+ }
+ }
+ }
+
+ function toggleNotes(slideId) {
+ const notes = document.getElementById(`notes-${slideId}`);
+ if (notes) {
+ notes.classList.toggle('open');
+ }
+ }
+
+ // Event Listeners for Bottom Deck
+ nextBtn.addEventListener('click', nextSlide);
+ prevBtn.addEventListener('click', prevSlide);
+ notesBtn.addEventListener('click', toggleCurrentNotes);
+
+ overviewBtn.addEventListener('click', () => {
+ overviewModal.classList.add('open');
+ });
+
+ closeOverviewBtn.addEventListener('click', () => {
+ overviewModal.classList.remove('open');
+ });
+
+ fullscreenBtn.addEventListener('click', () => {
+ if (!document.fullscreenElement) {
+ document.documentElement.requestFullscreen().catch(err => {
+ console.warn(`Error attempting to enable full-screen: ${err.message}`);
+ });
+ } else {
+ document.exitFullscreen();
+ }
+ });
+
+ // Keyboard Shortcuts
+ document.addEventListener('keydown', (e) => {
+ if (overviewModal.classList.contains('open')) {
+ if (e.key === 'Escape') {
+ overviewModal.classList.remove('open');
+ }
+ return;
+ }
+
+ if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+ e.preventDefault();
+ nextSlide();
+ } else if (e.key === 'ArrowLeft' || e.key === 'Backspace' || e.key === 'PageUp') {
+ e.preventDefault();
+ prevSlide();
+ } else if (e.key === 'Home') {
+ e.preventDefault();
+ goToSlide(1);
+ } else if (e.key === 'End') {
+ e.preventDefault();
+ goToSlide(totalSlides);
+ } else if (e.key === 'f' || e.key === 'F') {
+ e.preventDefault();
+ fullscreenBtn.click();
+ } else if (e.key === 'o' || e.key === 'O') {
+ e.preventDefault();
+ overviewModal.classList.toggle('open');
+ } else if (e.key === 'n' || e.key === 'N') {
+ e.preventDefault();
+ toggleCurrentNotes();
+ }
+ });
+
+ // Initial setup
+ goToSlide(1);
+ </script>
 </body>
 </html>
