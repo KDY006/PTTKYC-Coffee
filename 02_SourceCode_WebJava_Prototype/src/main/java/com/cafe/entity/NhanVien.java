@@ -25,10 +25,10 @@ public class NhanVien implements Serializable {
     private String matKhau;
 
     @Column(name = "vai_tro", nullable = false, length = 20)
-    private String vaiTro; // ADMIN, MANAGER, STAFF
+    private String vaiTro;
 
     @Column(name = "trang_thai", nullable = false, length = 20)
-    private String trangThai; // DANG_LAM, DA_NGHI
+    private String trangThai;
 
     public NhanVien() {
     }

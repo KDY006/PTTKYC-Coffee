@@ -54,7 +54,7 @@ public class ChamCong implements Serializable {
     private Double gioCongQuyDoi = 0.0;
 
     @Column(name = "trang_thai", nullable = false, length = 30)
-    private String trangThai; // DUNG_GIO, DI_TRE, VE_SOM, DI_TRE_VE_SOM, VANG, QUEN_CHECK_OUT
+    private String trangThai;
 
     @Column(name = "ghi_chu", length = 255)
     private String ghiChu;

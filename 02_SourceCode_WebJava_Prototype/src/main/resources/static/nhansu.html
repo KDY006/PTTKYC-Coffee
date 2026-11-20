@@ -48,16 +48,11 @@
       <div id="app-topbar-root"></div>
 
       <main class="p-3 p-sm-4 mx-auto w-100 d-flex flex-column gap-3" style="max-width:1440px;">
-        <!-- Thông báo hệ thống -->
-        <div id="hr-notice" class="alert alert-success py-2 px-3 mb-0 rounded-3 d-none d-flex align-items-center justify-content-between" style="font-size:0.85rem;"></div>
+                <div id="hr-notice" class="alert alert-success py-2 px-3 mb-0 rounded-3 d-none d-flex align-items-center justify-content-between" style="font-size:0.85rem;"></div>
         <div id="hr-error" class="alert alert-danger py-2 px-3 mb-0 rounded-3 d-none d-flex align-items-center justify-content-between" style="font-size:0.85rem;"></div>
 
-        <!-- =================================================================== -->
-        <!-- 1. CHẾ ĐỘ CÁ NHÂN (DÀNH CHO PHỤC VỤ VÀ THU NGÂN)                    -->
-        <!-- =================================================================== -->
-        <div id="personal-mode-container" class="d-none d-flex flex-column gap-4">
-          <!-- Khối 1: Thẻ Chấm công Ca hôm nay & Đồng hồ thực tế -->
-          <section class="moss-card p-3 p-sm-4">
+                                <div id="personal-mode-container" class="d-none d-flex flex-column gap-4">
+                    <section class="moss-card p-3 p-sm-4">
             <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 pb-3 border-bottom" style="border-color:var(--border-subtle) !important;">
               <div>
                 <div class="fw-semibold text-uppercase" style="font-size:0.75rem;letter-spacing:0.04em;color:var(--accent-primary);">Chế độ Cá nhân · Sangrimar Cafe &amp; Lounge</div>
@@ -73,8 +68,7 @@
               </div>
             </div>
 
-            <!-- Danh sách suất ca hôm nay của nhân viên -->
-            <div class="mt-3">
+                        <div class="mt-3">
               <h3 class="fw-semibold mb-3" style="font-size:0.95rem;">Suất ca được phân hôm nay:</h3>
               <div id="personal-today-shifts-list" class="row g-3">
                 <div class="col-12 text-muted py-3">Đang tải lịch ca hôm nay...</div>
@@ -82,8 +76,7 @@
             </div>
           </section>
 
-          <!-- Khối 2: Lịch ca tuần của tôi -->
-          <section class="moss-card p-3 p-sm-4">
+                    <section class="moss-card p-3 p-sm-4">
             <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom" style="border-color:var(--border-subtle) !important;">
               <div>
                 <h3 class="font-display fw-bold mb-1" style="font-size:1.15rem;">Lịch ca tuần của tôi</h3>
@@ -96,16 +89,14 @@
             <div id="personal-week-grid" class="row g-2"></div>
           </section>
 
-          <!-- Khối 3: Bảng công & Lịch sử chấm công cá nhân -->
-          <section class="moss-card p-3 p-sm-4">
+                    <section class="moss-card p-3 p-sm-4">
             <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mb-3 pb-2 border-bottom" style="border-color:var(--border-subtle) !important;">
               <div>
                 <h3 class="font-display fw-bold mb-1" style="font-size:1.15rem;">Bảng công &amp; Lịch sử chấm công cá nhân</h3>
                 <p class="mb-0 text-muted" style="font-size:0.8rem;">Tổng hợp giờ làm thực tế và giờ công quy đổi theo hệ số lương ca kíp.</p>
               </div>
             </div>
-            <!-- Strip thống kê cá nhân -->
-            <div id="personal-kpi-strip" class="row g-3 mb-4"></div>
+                        <div id="personal-kpi-strip" class="row g-3 mb-4"></div>
 
             <div class="table-responsive">
               <table class="table table-hover align-middle mb-0" style="font-size:0.85rem;">
@@ -128,30 +119,24 @@
           </section>
         </div>
 
-        <!-- =================================================================== -->
-        <!-- 2. CHẾ ĐỘ QUẢN TRỊ (DÀNH CHO QUẢN LÝ / ADMIN)                      -->
-        <!-- =================================================================== -->
-        <div id="manager-mode-container" class="d-none d-flex flex-column gap-3">
-          <!-- Sub-tab Navigation (4 Tab con) -->
-          <div class="d-flex flex-wrap gap-2 p-1 rounded-3 bg-white border" style="border-color:var(--border-subtle) !important;">
+                                <div id="manager-mode-container" class="d-none d-flex flex-column gap-3">
+                    <div class="d-flex flex-wrap gap-2 p-1 rounded-3 bg-white border" style="border-color:var(--border-subtle) !important;">
             <button class="btn btn-sm fw-semibold px-3 py-2 rounded-2 tab-nav-btn active" data-tab="tab-supervision" style="font-size:0.82rem;">
-              <i class="bi bi-clock-history me-1"></i> 1. Chấm công &amp; Giám sát ca
+              <i class="bi bi-clock-history me-1"></i> Chấm công &amp; Giám sát ca
             </button>
             <button class="btn btn-sm fw-semibold px-3 py-2 rounded-2 tab-nav-btn" data-tab="tab-schedule" style="font-size:0.82rem;">
-              <i class="bi bi-calendar-week me-1"></i> 2. Lịch phân ca tuần &amp; Đổi ca
+              <i class="bi bi-calendar-week me-1"></i> Lịch phân ca tuần &amp; Đổi ca
             </button>
             <button class="btn btn-sm fw-semibold px-3 py-2 rounded-2 tab-nav-btn" data-tab="tab-timesheet" style="font-size:0.82rem;">
-              <i class="bi bi-bar-chart-line me-1"></i> 3. Bảng tổng hợp công theo kỳ
+              <i class="bi bi-bar-chart-line me-1"></i> Bảng tổng hợp công theo kỳ
             </button>
             <button class="btn btn-sm fw-semibold px-3 py-2 rounded-2 tab-nav-btn" data-tab="tab-directory" style="font-size:0.82rem;">
-              <i class="bi bi-person-lines-fill me-1"></i> 4. Danh bạ Nhân sự (CRUD)
+              <i class="bi bi-person-lines-fill me-1"></i> Danh bạ nhân sự
             </button>
           </div>
 
-          <!-- TAB 1: Chấm công & Giám sát ca -->
-          <div id="tab-supervision" class="tab-content-panel d-flex flex-column gap-3">
-            <!-- Thẻ tự chấm công cho Quản lý & Đồng hồ -->
-            <section class="moss-card p-3 p-sm-4">
+                    <div id="tab-supervision" class="tab-content-panel d-flex flex-column gap-3">
+                        <section class="moss-card p-3 p-sm-4">
               <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 pb-3 border-bottom" style="border-color:var(--border-subtle) !important;">
                 <div>
                   <div class="fw-semibold text-uppercase" style="font-size:0.75rem;letter-spacing:0.04em;color:var(--accent-primary);">Quản lý cửa hàng · Sangrimar Cafe &amp; Lounge</div>
@@ -161,7 +146,7 @@
                 <div class="d-flex align-items-center gap-3">
                   <button id="btn-chot-ca-btn" type="button" class="btn btn-outline-warning d-flex align-items-center gap-2 px-3" style="height:44px;font-size:0.85rem;" title="Quét và chốt vắng/quên check-out cho các ca quá hạn 30 phút">
                     <i class="bi bi-clock-history"></i>
-                    <span>Chốt ca quá hạn (BR-CC-05)</span>
+                    <span>Chốt ca quá hạn</span>
                   </button>
                   <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3 border bg-light flex-shrink-0" style="height:44px;">
                     <i class="bi bi-clock-fill" style="color:var(--accent-primary);"></i>
@@ -170,8 +155,7 @@
                 </div>
               </div>
 
-              <!-- Suất ca của chính Quản lý hôm nay (nếu có) -->
-              <div class="mt-3">
+                            <div class="mt-3">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                   <span class="fw-semibold" style="font-size:0.85rem;">Ca trực của Quản lý hôm nay:</span>
                 </div>
@@ -179,11 +163,9 @@
               </div>
             </section>
 
-            <!-- 4 Strip KPI Giám sát -->
-            <section id="manager-kpi-strip" class="row g-3"></section>
+                        <section id="manager-kpi-strip" class="row g-3"></section>
 
-            <!-- Bảng giám sát Chấm công toàn quán -->
-            <section class="moss-card p-3 p-sm-4">
+                        <section class="moss-card p-3 p-sm-4">
               <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3 pb-2 border-bottom" style="border-color:var(--border-subtle) !important;">
                 <div>
                   <h3 class="font-display fw-bold mb-1" style="font-size:1.15rem;">Nhật ký Chấm công toàn cửa hàng</h3>
@@ -229,13 +211,12 @@
             </section>
           </div>
 
-          <!-- TAB 2: Lịch phân ca tuần & Đổi ca -->
-          <div id="tab-schedule" class="tab-content-panel d-none d-flex flex-column gap-3">
+                    <div id="tab-schedule" class="tab-content-panel d-none d-flex flex-column gap-3">
             <section class="moss-card p-3 p-sm-4">
               <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3 pb-2 border-bottom" style="border-color:var(--border-subtle) !important;">
                 <div>
-                  <h3 class="font-display fw-bold mb-1" style="font-size:1.15rem;">Lịch phân ca tuần &amp; Cân bằng vai trò (7 ngày &times; 3 ca)</h3>
-                  <p class="mb-0 text-muted" style="font-size:0.8rem;">Quy tắc `BR-CC-07`: Hệ thống tự động cảnh báo <span class="badge badge-amber-warning">Thiếu Thu ngân</span> nếu ca làm việc thiếu nhân sự chốt quầy.</p>
+                  <h3 class="font-display fw-bold mb-1" style="font-size:1.15rem;">Lịch phân ca tuần</h3>
+                  <p class="mb-0 text-muted" style="font-size:0.8rem;">Hệ thống tự động cảnh báo <span class="badge badge-amber-warning">Thiếu Thu ngân</span> nếu ca làm việc chưa có nhân sự chốt quầy.</p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                   <button id="btn-prev-week" class="btn btn-sm btn-outline-secondary"><i class="bi bi-chevron-left"></i></button>
@@ -247,8 +228,7 @@
                 </div>
               </div>
 
-              <!-- Lưới Lịch 7 Cột x 3 Ca -->
-              <div class="table-responsive">
+                            <div class="table-responsive">
                 <table class="table table-bordered mb-0" style="min-width:980px;">
                   <thead class="table-light text-center" style="font-size:0.82rem;">
                     <tr>
@@ -268,13 +248,12 @@
             </section>
           </div>
 
-          <!-- TAB 3: Bảng tổng hợp công theo kỳ -->
-          <div id="tab-timesheet" class="tab-content-panel d-none d-flex flex-column gap-3">
+                    <div id="tab-timesheet" class="tab-content-panel d-none d-flex flex-column gap-3">
             <section class="moss-card p-3 p-sm-4">
               <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3 pb-2 border-bottom" style="border-color:var(--border-subtle) !important;">
                 <div>
-                  <h3 class="font-display fw-bold mb-1" style="font-size:1.15rem;">Bảng tổng hợp công theo kỳ quy đổi hệ số lương</h3>
-                  <p class="mb-0 text-muted" style="font-size:0.8rem;">Công thức: $\text{gio\_cong\_quy\_doi} = \text{so\_gio\_lam} \times \text{he\_so\_luong}$ (Ca Tối nhân hệ số 1.2).</p>
+                  <h3 class="font-display fw-bold mb-1" style="font-size:1.15rem;">Bảng tổng hợp công theo kỳ</h3>
+                  <p class="mb-0 text-muted" style="font-size:0.8rem;">Tổng hợp giờ làm thực tế và giờ công quy đổi theo hệ số lương ca làm việc.</p>
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-2">
                   <div class="btn-group btn-group-sm">
@@ -290,11 +269,9 @@
                 </div>
               </div>
 
-              <!-- Strip Tổng hợp công -->
-              <div id="timesheet-kpi-strip" class="row g-3 mb-4"></div>
+                            <div id="timesheet-kpi-strip" class="row g-3 mb-4"></div>
 
-              <!-- Bảng Timesheet -->
-              <div class="table-responsive">
+                            <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0" style="font-size:0.85rem;">
                   <thead class="table-light">
                     <tr style="font-size:0.75rem;color:var(--text-secondary);">
@@ -318,13 +295,12 @@
             </section>
           </div>
 
-          <!-- TAB 4: Danh bạ Nhân sự (CRUD) -->
-          <div id="tab-directory" class="tab-content-panel d-none d-flex flex-column gap-3">
+                    <div id="tab-directory" class="tab-content-panel d-none d-flex flex-column gap-3">
             <section class="moss-card p-3 p-sm-4">
               <div class="d-flex align-items-center justify-content-between gap-3 mb-3 pb-2 border-bottom" style="border-color:var(--border-subtle) !important;">
                 <div>
                   <h3 class="font-display fw-bold mb-1" style="font-size:1.15rem;">Danh sách nhân sự &amp; phân quyền vai trò</h3>
-                  <p class="mb-0 text-muted" style="font-size:0.8rem;">Quản trị tài khoản, gán vai trò (`QUAN_LY`, `THU_NGAN`, `PHUC_VU`). Hệ thống tự động bảo vệ không cho tự khóa Quản lý cuối cùng.</p>
+                  <p class="mb-0 text-muted" style="font-size:0.8rem;">Quản lý danh sách nhân sự và phân quyền vai trò làm việc trong hệ thống.</p>
                 </div>
                 <button id="btn-open-add-staff" type="button" class="btn btn-forest btn-sm px-3 d-flex align-items-center gap-2" style="height:36px;font-size:0.82rem;">
                   <i class="bi bi-person-plus"></i><span>Thêm nhân viên</span>
@@ -354,17 +330,13 @@
     </div>
   </div>
 
-  <!-- =================================================================== -->
-  <!-- MODALS QUẢN TRỊ                                                     -->
-  <!-- =================================================================== -->
-
-  <!-- 1. Modal Điều chỉnh Ngoại lệ Chấm công (BR-CC-06) -->
-  <div class="modal fade" id="adjustModal" tabindex="-1" aria-hidden="true">
+      
+    <div class="modal fade" id="adjustModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <form id="adjust-form" class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title font-display fw-bold" style="font-size:1.05rem;">
-            <i class="bi bi-pencil-square me-1 text-warning"></i> Điều chỉnh Ngoại lệ Chấm công (BR-CC-06)
+            <i class="bi bi-pencil-square me-1 text-warning"></i> Điều chỉnh chấm công
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
         </div>
@@ -399,13 +371,12 @@
     </div>
   </div>
 
-  <!-- 2. Modal Đổi ca đột xuất (BR-CC-07) -->
-  <div class="modal fade" id="swapShiftModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="swapShiftModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <form id="swap-shift-form" class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title font-display fw-bold" style="font-size:1.05rem;">
-            <i class="bi bi-arrow-left-right me-1 text-primary"></i> Đổi ca đột xuất (BR-CC-07)
+            <i class="bi bi-arrow-left-right me-1 text-primary"></i> Đổi ca làm việc
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
         </div>
@@ -433,8 +404,7 @@
     </div>
   </div>
 
-  <!-- 3. Modal Phân ca làm việc mới -->
-  <div class="modal fade" id="scheduleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="scheduleModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <form id="schedule-form" class="modal-content">
         <div class="modal-header">
@@ -472,8 +442,7 @@
     </div>
   </div>
 
-  <!-- 4. Modal Thêm nhân viên mới -->
-  <div class="modal fade" id="addStaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="addStaffModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <form id="add-staff-form" class="modal-content">
         <div class="modal-header">
@@ -517,8 +486,7 @@
     </div>
   </div>
 
-  <!-- 5. Modal Cập nhật nhân viên -->
-  <div class="modal fade" id="editStaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="editStaffModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <form id="edit-staff-form" class="modal-content">
         <div class="modal-header">

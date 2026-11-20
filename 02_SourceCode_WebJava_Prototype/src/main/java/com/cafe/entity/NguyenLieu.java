@@ -16,7 +16,7 @@ public class NguyenLieu implements Serializable {
     private String tenNL;
 
     @Column(name = "don_vi_tinh", nullable = false, length = 20)
-    private String donViTinh; // ml, g, quả, hộp, túi
+    private String donViTinh;
 
     @Column(name = "so_luong_ton", nullable = false)
     private Double soLuongTon = 0.0;

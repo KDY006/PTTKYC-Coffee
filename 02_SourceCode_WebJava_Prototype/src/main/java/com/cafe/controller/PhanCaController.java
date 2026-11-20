@@ -14,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/phan-ca")
+/** Điều khiển API phân ca làm việc */
 public class PhanCaController {
 
     private final NhanSuService nhanSuService;
@@ -29,19 +30,12 @@ public class PhanCaController {
         return "QUAN_LY".equals(role) || "MANAGER".equals(role) || "ADMIN".equals(role);
     }
 
-    /**
-     * Thêm phân ca làm việc (Chỉ Quản lý)
-     */
     @PostMapping
     public ResponseEntity<PhanCa> phanCa(@RequestBody PhanCaDTO dto, HttpSession session) {
         access.requireQuanLy(session);
         return ResponseEntity.status(201).body(nhanSuService.phanCa(dto));
     }
 
-    /**
-     * Xem lịch tuần kèm cảnh báo thiếu Thu ngân (BR-CC-07)
-     * Nhân viên chỉ thấy lịch của mình; Quản lý xem toàn bộ
-     */
     @GetMapping("/tuan")
     public List<PhanCaTuanItemDTO> lichTuan(
             @RequestParam(required = false) LocalDate ngayBatDau,
@@ -52,9 +46,6 @@ public class PhanCaController {
         return nhanSuService.layLichTuan(userId, isQuanLy(session), targetDate);
     }
 
-    /**
-     * Đổi ca đột xuất cho suất phân ca chưa chấm công (BR-CC-07) - Chỉ Quản lý
-     */
     @PutMapping("/{maPhanCa}/doi-ca")
     public PhanCa doiCa(
             @PathVariable Integer maPhanCa,
@@ -64,9 +55,6 @@ public class PhanCaController {
         return nhanSuService.doiCa(maPhanCa, dto);
     }
 
-    /**
-     * Xóa suất phân ca (Chỉ Quản lý)
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> xoaPhanCa(@PathVariable Integer id, HttpSession session) {
         access.requireQuanLy(session);

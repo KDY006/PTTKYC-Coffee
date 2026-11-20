@@ -5,6 +5,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
+/** Tự động quét và chốt ca làm việc quá hạn */
 public class ChotCaTuDongScheduler {
 
     private final NhanSuService nhanSuService;
@@ -13,11 +14,6 @@ public class ChotCaTuDongScheduler {
         this.nhanSuService = nhanSuService;
     }
 
-    /**
-     * Tự động quét và chốt ca quá hạn mỗi 15 phút (BR-CC-05):
-     * - Suất phân ca không check-in sau cuối ca + 30 phút -> Đánh dấu VANG
-     * - Bản ghi chấm công quên check-out sau cuối ca + 30 phút -> Chuyển QUEN_CHECK_OUT
-     */
     @Scheduled(cron = "0 */15 * * * *")
     public void runAutoChotCa() {
         try {

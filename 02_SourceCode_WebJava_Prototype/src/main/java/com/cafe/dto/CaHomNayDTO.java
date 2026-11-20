@@ -11,7 +11,7 @@ public class CaHomNayDTO {
     private LocalTime gioBatDau;
     private LocalTime gioKetThuc;
     private Double heSoLuong;
-    private String trangThai; // CHUA_CHECK_IN, DUNG_GIO, DI_TRE, VE_SOM, DI_TRE_VE_SOM, QUEN_CHECK_OUT, VANG
+    private String trangThai;
     private LocalDateTime gioCheckIn;
     private LocalDateTime gioCheckOut;
     private Integer soPhutTre;

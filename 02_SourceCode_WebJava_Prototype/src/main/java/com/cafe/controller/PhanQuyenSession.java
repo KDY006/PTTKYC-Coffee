@@ -35,22 +35,22 @@ public class PhanQuyenSession {
         return userId(session);
     }
 
-    // 1. Mọi vai trò đã đăng nhập (Phục vụ, Thu ngân, Quản lý)
+    
     public Integer requireDangNhap(HttpSession session) {
         return userId(session);
     }
 
-    // 2. Yêu cầu Thu ngân hoặc Quản lý (In bill tạm tính, Xác nhận thanh toán & Đóng bàn, Hủy đơn)
+    
     public Integer requireThuNganHoacQuanLy(HttpSession session) {
         return requireAny(session, THU_NGAN, QUAN_LY, "MANAGER", "ADMIN");
     }
 
-    // 3. Yêu cầu Quản lý (Kho, BOM, Chiết khấu, Nhân sự CRUD, Phân ca, KPI)
+    
     public Integer requireQuanLy(HttpSession session) {
         return requireAny(session, QUAN_LY, "MANAGER", "ADMIN");
     }
 
-    // Tương thích ngược
+    
     public Integer requireManager(HttpSession session) {
         return requireQuanLy(session);
     }

@@ -21,7 +21,7 @@ public class CongThuc implements Serializable {
     private NguyenLieu nguyenLieu;
 
     @Column(name = "dinh_muc", nullable = false)
-    private Double dinhMuc; // Lượng nguyên liệu (g hoặc ml) cho 1 ly đồ uống
+    private Double dinhMuc;
 
     @Column(name = "ghi_chu", length = 255)
     private String ghiChu;

@@ -35,7 +35,7 @@ public class ChiTietHoaDon implements Serializable {
     private Double thanhTien;
 
     @Column(name = "ghi_chu", length = 255)
-    private String ghiChu; // ít đá, không đường, nóng...
+    private String ghiChu;
 
     public ChiTietHoaDon() {
     }

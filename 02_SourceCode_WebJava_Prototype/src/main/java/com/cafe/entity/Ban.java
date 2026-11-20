@@ -13,16 +13,16 @@ public class Ban implements Serializable {
     private Integer maBan;
 
     @Column(name = "ten_ban", nullable = false, length = 50)
-    private String tenBan; // Bàn 01, Bàn 02, ...
+    private String tenBan;
 
     @Column(name = "vi_tri", length = 50)
-    private String viTri; // Tầng 1, Tầng 2, Ngoài trời
+    private String viTri;
 
     @Column(name = "so_ghe", nullable = false)
     private Integer soGhe = 4;
 
     @Column(name = "trang_thai", nullable = false, length = 20)
-    private String trangThai = "TRONG"; // TRONG (Xanh dương), DANG_DUNG_NUOC (Xanh lá), CHO_THANH_TOAN (Vàng)
+    private String trangThai = "TRONG";
 
     public Ban() {
     }

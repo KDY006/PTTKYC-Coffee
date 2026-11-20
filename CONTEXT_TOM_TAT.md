@@ -148,3 +148,19 @@
      - Bổ sung `SET FOREIGN_KEY_CHECKS = 0;` ở đầu file và `SET FOREIGN_KEY_CHECKS = 1;` ở cuối file `database_mau.sql` để chống lỗi khóa ngoại khi nạp qua phpMyAdmin/CLI.
      - Xóa cấu hình `hibernate.dialect=org.hibernate.dialect.MySQLDialect` trong `application.properties` để Hibernate 6 tự động tối ưu hóa dialect theo MariaDB 10.4.
      - Khởi động lại Spring Boot Application: `BUILD SUCCESS`, kết nối DB thành công, toàn bộ API phản hồi chuẩn HTTP 200.
+
+---
+
+## 6. Tinh chỉnh Giao diện Thực tế & Clean Code Toàn diện (20/11/2026)
+1. **Tinh chỉnh nội dung UI (UI Text) theo chuẩn sản phẩm POS thực thụ:**
+   - **Xóa toàn bộ chú thích màu thừa:** Loại bỏ `(Xanh dương)`, `(Xanh lá)`, `(Vàng)` tại phần chú thích trạng thái bàn ở `banhang.html` và các câu chữ hướng dẫn thừa trên các thông báo `info(...)` trong `banhang-page.js`.
+   - **Xóa mã đặc tả kỹ thuật hiển thị trên UI:** Loại bỏ mã quy tắc như `(BR-CC-05)`, `(BR-CC-06)`, `(BR-CC-07)`, `(CRUD)`, công thức LaTeX trên `nhansu.html`; loại bỏ mã ENUM dạng `(NHAP_KHO)`, `(XUAT_BAN_HANG)`, `(KIEM_KE_HAO_HUT)` trên `kho.html`.
+   - **Chuẩn hóa Icon & Sửa lỗi vỡ bố cục Bàn 03:**
+     - 100% icon sử dụng Bootstrap Icons CSS chuẩn (`bi-cup-hot-fill`, `bi-cash-stack`, `bi-circle`, v.v.), không dùng emoji text.
+     - Cập nhật `.pos-table-btn` với `min-height: 92px`, `justify-content: space-between`, và `.table-amount` dùng `font-size: 0.78rem; white-space: nowrap;`, loại bỏ hoàn toàn hiện tượng tràn dòng làm vỡ chiều cao ô Bàn 03 khi có doanh thu tạm tính.
+   - **Trang đăng nhập chuyên nghiệp:** Thay thế khối thông tin tài khoản demo dài dòng bằng ghi chú bản quyền vận hành gọn gàng.
+2. **Dọn dẹp mã nguồn & Clean Code:**
+   - Xóa bỏ toàn bộ comment thừa do AI sinh ra trong HTML (`<!-- -->`), JavaScript (`//`), CSS (`/* */`) và toàn bộ các file Java Backend (`Controller`, `Service`, `Entity`, `DTO`, `Repository`, `Scheduler`). Chỉ giữ lại header ngắn gọn định danh module ở đầu file.
+   - Xóa file script kiểm thử tạm thời `chay_kiem_thu_chup_anh.js`.
+   - Chạy lệnh `./mvnw clean compile`: Hoàn tất biên dịch sạch lỗi 100% (`BUILD SUCCESS`).
+   - Khởi động lại dịch vụ Spring Boot và kiểm tra cả 4 trang giao diện đều phản hồi `HTTP 200 OK`.

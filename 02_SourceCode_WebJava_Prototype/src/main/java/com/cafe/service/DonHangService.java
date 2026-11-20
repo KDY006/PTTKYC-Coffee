@@ -34,17 +34,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Nghiệp vụ Bán hàng & Quản lý Đơn hàng POS (v2.0):
- * - Sơ đồ bàn 3 trạng thái: TRONG, DANG_DUNG_NUOC, CHO_THANH_TOAN.
- * - Hóa đơn 4 trạng thái: DANG_PHUC_VU, CHO_THANH_TOAN, DA_THANH_TOAN, DA_HUY.
- * - Liên kết POS - Kho: Tính toán số ly có thể làm (soLyCoTheLam) theo Soft Reservation.
- * - Chống đặt vượt quá tồn kho nguyên liệu khả dụng trong cùng một giỏ hàng.
- * - Theo dõi số lượng đã in quầy bar (soLuongDaInBar).
- * - Sử dụng giao dịch nguyên tử @Transactional và khóa chống Deadlock.
- */
 @Service
 @Transactional(readOnly = true)
+/** Dịch vụ bán hàng và quản lý đơn hàng POS */
 public class DonHangService {
 
     public static final String TRANG_THAI_BAN_TRONG = "TRONG";
@@ -137,12 +129,6 @@ public class DonHangService {
                 .toList();
     }
 
-    /**
-     * Lấy danh sách món nước hiển thị trên POS kèm số ly có thể làm (soLyCoTheLam).
-     * Áp dụng nguyên tắc Soft Reservation & Bottleneck Calculation:
-     * TonKhaDung(i) = max(0, so_luong_ton(i) - sum_{hd in Đơn đang mở} sum_{ct in hd} ct.so_luong * dinh_muc(ct.ma_mon, i))
-     * soLyCoTheLam(M) = min_{i in BOM(M)} floor(TonKhaDung(i) / dinh_muc(M, i))
-     */
     public List<MonNuocPosDTO> layDanhSachMonNuocPos(String danhMuc, String q, Integer boQuaHoaDonId) {
         String search = (q == null) ? "" : q.strip().toLowerCase(Locale.ROOT);
         List<MonNuoc> list = monNuocRepository.findByTrangThai("DANG_BAN").stream()
@@ -150,7 +136,7 @@ public class DonHangService {
                 .filter(m -> m.getTenMon().toLowerCase(Locale.ROOT).contains(search))
                 .toList();
 
-        // 1. Tính toán lượng nguyên liệu đã được giữ chỗ (Soft Reservation) bởi các đơn đang mở
+        
         Map<Integer, Double> daGiuCho = new HashMap<>();
         List<HoaDon> openOrders = hoaDonRepository.findAll().stream()
                 .filter(hd -> OPEN_STATUSES.contains(hd.getTrangThai()))
@@ -169,7 +155,7 @@ public class DonHangService {
             }
         }
 
-        // 2. Lấy danh sách nguyên liệu và tính Tồn Khả Dụng: TonKhaDung(i) = max(0, ton(i) - daGiuCho(i))
+        
         List<NguyenLieu> nguyenLieus = nguyenLieuRepository.findAll();
         Map<Integer, Double> tonKhaDungMap = new HashMap<>();
         for (NguyenLieu nl : nguyenLieus) {
@@ -178,13 +164,13 @@ public class DonHangService {
             tonKhaDungMap.put(nl.getMaNL(), Math.max(0.0, ton - reserved));
         }
 
-        // 3. Với mỗi món M, tính soLyCoTheLam(M) = min_{i in BOM(M)} floor(TonKhaDung(i) / dinhMuc(M, i))
+        
         List<MonNuocPosDTO> result = new ArrayList<>();
         for (MonNuoc m : list) {
             List<CongThuc> boms = congThucRepository.findByMonNuoc(m);
             int soLy;
             if (boms.isEmpty()) {
-                soLy = 0; // Nếu món chưa có định mức trong cong_thuc -> trả về 0
+                soLy = 0; 
             } else {
                 int minLy = Integer.MAX_VALUE;
                 for (CongThuc bm : boms) {
@@ -222,7 +208,7 @@ public class DonHangService {
     public HoaDon layHoaDonTheoId(Integer id) {
         HoaDon h = hoaDonRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hóa đơn"));
-        h.getDanhSachChiTiet().size(); // Trigger Lazy Load
+        h.getDanhSachChiTiet().size(); 
         return h;
     }
 
@@ -305,10 +291,6 @@ public class DonHangService {
         return out;
     }
 
-    /**
-     * Kiểm tra khả năng phục vụ của kho nguyên liệu:
-     * Cộng gộp nhu cầu của giỏ hàng hiện tại + các đơn đang mở khác so với so_luong_ton.
-     */
     private void kiemTraNhuCauNguyenLieu(List<ChiTietHoaDon> items, Integer boQuaHoaDonId) {
         Map<Integer, Double> incoming = new HashMap<>();
         for (ChiTietHoaDon ct : items) {
@@ -435,7 +417,7 @@ public class DonHangService {
             throw bad("Không đổi bàn/loại đơn khi cập nhật món");
         }
 
-        // Lấy số lượng đã in bar trước đó
+        
         Map<Integer, Integer> daInBarMap = new HashMap<>();
         for (ChiTietHoaDon ct : h.getDanhSachChiTiet()) {
             if (ct.getMonNuoc() != null) {
@@ -446,7 +428,7 @@ public class DonHangService {
         List<ChiTietHoaDon> lines = chuanBiMon(dto, h);
         kiemTraNhuCauNguyenLieu(lines, id);
 
-        // Tính phiếu in bar bổ sung: chỉ in phần chênh lệch (delta = soLuongMoi - soLuongDaInBar > 0)
+        
         List<ChiTietHoaDon> boSung = new ArrayList<>();
         for (ChiTietHoaDon line : lines) {
             int prevPrinted = daInBarMap.getOrDefault(line.getMonNuoc().getMaMon(), 0);
@@ -550,12 +532,12 @@ public class DonHangService {
             throw bad("Phương thức thanh toán không hợp lệ");
         }
 
-        // Ghi nhận nhân viên thu ngân chốt đơn
+        
         if (maNVThuNgan != null) {
             nhanVienRepository.findById(maNVThuNgan).ifPresent(h::setNhanVienThuNgan);
         }
 
-        // Trừ kho nguyên liệu theo công thức BOM (ACID Transaction) và ghi nhận nhật ký xuất bán
+        
         khoService.truKhoTuDong(h, h.getNhanVienThuNgan());
 
         h.setChietKhau(discount.doubleValue());

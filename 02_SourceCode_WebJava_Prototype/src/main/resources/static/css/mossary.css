@@ -1,6 +1,8 @@
+/** Giao diện hệ thống Sangrimar Cafe & Lounge */
+
 :root {
   color-scheme: light;
-  /* Nền sáng tối ưu in ấn A4 */
+  
   --bg-page: #F8F9FA;
   --bg-surface: #FFFFFF;
   --bg-surface-subtle: #F1F5F9;
@@ -11,17 +13,17 @@
   --bg-sidebar: #FFFFFF;
   --bg-header: #FFFFFF;
 
-  /* Chữ tương phản cao (không dùng xám quá nhạt) */
+  
   --text-primary: #111827;
   --text-secondary: #374151;
   --text-muted: #4B5563;
 
-  /* Viền phân khối rõ nét thay vì phụ thuộc box-shadow */
+  
   --border-default: #CBD5E1;
   --border-strong: #94A3B8;
   --border-subtle: #CBD5E1;
 
-  /* Nhận diện thương hiệu Sangrimar Cafe & Lounge */
+  
   --brand-primary: #5D4037;
   --brand-accent: #8D6E63;
   --brand-tint: #FBF8F4;
@@ -35,15 +37,15 @@
   --btn-dark-hover: #2E1C18;
   --btn-dark-text: #FFFFFF;
 
-  /* 3 màu viền Sơ đồ Bàn (dày 2.5px) */
-  --table-empty-border: #0D6EFD;     /* TRONG: Xanh dương */
+  
+  --table-empty-border: #0D6EFD;     
   --table-empty-bg: #EFF6FF;
-  --table-serving-border: #198754;   /* DANG_DUNG_NUOC: Xanh lá cây */
+  --table-serving-border: #198754;   
   --table-serving-bg: #ECFDF5;
-  --table-paying-border: #D97706;    /* CHO_THANH_TOAN: Vàng hổ phách */
+  --table-paying-border: #D97706;    
   --table-paying-bg: #FFFBEB;
 
-  /* Nhãn trạng thái số ly còn lại trên thẻ Món POS */
+  
   --stock-ok-text: #15803D;
   --stock-ok-bg: #F0FDF4;
   --stock-low-text: #B45309;
@@ -84,7 +86,6 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Brand Icon & Buttons */
 .brand-badge {
   width: 34px;
   height: 34px;
@@ -128,7 +129,6 @@ body {
   color: var(--btn-dark-text);
 }
 
-/* Surface Cards */
 .moss-card {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -152,7 +152,6 @@ body {
   color: var(--text-primary);
 }
 
-/* Login Showcase Bright Background */
 .login-header {
   position: relative;
   z-index: 20;
@@ -200,7 +199,6 @@ body {
   box-shadow: 0 24px 60px rgba(17, 30, 23, 0.18);
 }
 
-/* App Shell - Modern Top Navigation (Unified POS Header) */
 .app-layout {
   display: flex;
   flex-direction: column;
@@ -248,7 +246,6 @@ body {
   font-weight: 700;
 }
 
-/* Segmented Tabs */
 .moss-tabs {
   display: inline-flex;
   gap: 4px;
@@ -283,7 +280,6 @@ body {
   box-shadow: 0 1px 2px rgba(17, 30, 23, 0.08);
 }
 
-/* Table Buttons in POS (v2.0 - 3 Trạng thái chuẩn hóa, viền dày 2.5px) */
 .pos-table-btn {
   width: 100%;
   min-height: 88px;
@@ -306,7 +302,6 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* 1. Bàn trống: Viền Xanh dương */
 .pos-table-btn.status-trong {
   border: 2.5px solid var(--table-empty-border) !important;
   background-color: var(--table-empty-bg) !important;
@@ -320,7 +315,6 @@ body {
   font-weight: 600;
 }
 
-/* 2. Đang dùng nước: Viền Xanh lá cây */
 .pos-table-btn.status-dang-dung-nuoc {
   border: 2.5px solid var(--table-serving-border) !important;
   background-color: var(--table-serving-bg) !important;
@@ -334,7 +328,6 @@ body {
   font-weight: 600;
 }
 
-/* 3. Chờ thanh toán hoàn tất: Viền Vàng hổ phách */
 .pos-table-btn.status-cho-thanh-toan {
   border: 2.5px solid var(--table-paying-border) !important;
   background-color: var(--table-paying-bg) !important;
@@ -348,18 +341,17 @@ body {
   font-weight: 600;
 }
 
-/* Hiển thị số tiền trên thẻ bàn */
 .table-amount {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: #111827;
   font-family: var(--font-mono);
+  white-space: nowrap;
 }
 
-/* Nhãn trạng thái tồn kho khả dụng POS v2.0 */
 .stock-badge-ok {
   background-color: var(--stock-ok-bg);
   color: var(--stock-ok-text);
@@ -395,7 +387,6 @@ body {
   filter: grayscale(40%);
 }
 
-/* Hiệu ứng khi bàn đang được click chọn */
 .pos-table-btn.selected {
   transform: translateY(-2px);
   box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.35), 0 6px 16px rgba(15, 23, 42, 0.12);
@@ -407,7 +398,6 @@ body {
   box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.45), 0 6px 16px rgba(15, 23, 42, 0.12);
 }
 
-/* Thẻ đơn Mang đi */
 .pos-table-btn.takeaway-card {
   border-color: #334155;
   background-color: #1e293b;
@@ -425,7 +415,6 @@ body {
   box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.5), 0 6px 16px rgba(15, 23, 42, 0.25);
 }
 
-/* Menu Product Cards */
 .menu-card {
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
@@ -471,7 +460,6 @@ body {
   color: #ffffff;
 }
 
-/* Sticky Order Ticket */
 .pos-ticket {
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
@@ -494,7 +482,6 @@ body {
   border-top: 1px dashed var(--border-strong);
 }
 
-/* Status Badges */
 .badge-low-stock {
   display: inline-flex;
   align-items: center;
@@ -563,12 +550,6 @@ body {
   color: var(--text-primary);
 }
 
-/* ==========================================================================
-   BỘ 3 MẪU PHIẾU IN CHUẨN THƯƠNG HIỆU SANGRIMAR CAFE & LOUNGE (@media print)
-   - Tối ưu in ấn A4 và máy in nhiệt POS 80mm
-   - Ẩn toàn bộ thanh điều hướng, topbar, sidebar và nút thao tác
-   - In sắc nét tương phản cao, định dạng phiếu chuyên nghiệp
-   ========================================================================== */
 @media print {
   @page {
     size: auto;
@@ -583,7 +564,7 @@ body {
     print-color-adjust: exact !important;
   }
 
-  /* Ẩn giao diện nền hệ thống và các thành phần không thuộc phiếu in */
+  
   .app-layout,
   #app-sidebar-root,
   #app-topbar-root,
@@ -594,7 +575,7 @@ body {
     display: none !important;
   }
 
-  /* Chỉ hiển thị Modal đang active */
+  
   .modal {
     position: static !important;
     display: block !important;
@@ -628,7 +609,7 @@ body {
     color: #000000 !important;
   }
 
-  /* Bảng món in sắc nét */
+  
   table {
     width: 100% !important;
     border-collapse: collapse !important;

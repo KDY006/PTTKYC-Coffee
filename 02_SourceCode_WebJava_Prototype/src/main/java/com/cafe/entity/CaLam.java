@@ -14,7 +14,7 @@ public class CaLam implements Serializable {
     private Integer maCa;
 
     @Column(name = "ten_ca", nullable = false, length = 50)
-    private String tenCa; // Ca Sáng, Ca Chiều, Ca Tối
+    private String tenCa;
 
     @Column(name = "gio_bat_dau", nullable = false)
     private LocalTime gioBatDau;

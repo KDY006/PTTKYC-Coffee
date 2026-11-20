@@ -26,7 +26,7 @@ public class XacThucController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody DangNhapDTO dto, HttpSession session) {
-        // Kiểm tra xem session có đang bị tạm khóa do nhập sai liên tiếp không
+        
         Long khoaDen = (Long) session.getAttribute("khoaDangNhapDen");
         if (khoaDen != null) {
             long conLaiMs = khoaDen - System.currentTimeMillis();
@@ -46,7 +46,7 @@ public class XacThucController {
                 throw new RuntimeException("Tài khoản đã ngừng làm việc");
             }
 
-            // Đăng nhập thành công -> Xóa bộ đếm sai và lưu phiên
+            
             session.removeAttribute("soLanDangNhapSai");
             session.removeAttribute("khoaDangNhapDen");
 
@@ -64,7 +64,7 @@ public class XacThucController {
             soLanSai++;
 
             if (soLanSai >= 5) {
-                session.setAttribute("khoaDangNhapDen", System.currentTimeMillis() + 60_000L); // Khóa 60 giây
+                session.setAttribute("khoaDangNhapDen", System.currentTimeMillis() + 60_000L); 
                 session.removeAttribute("soLanDangNhapSai");
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                         .body(Map.of("error", "Đăng nhập sai 5 lần liên tiếp. Tài khoản bị tạm khóa trong 60 giây."));

@@ -35,11 +35,11 @@ public class HoaDon implements Serializable {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ma_nv", nullable = false)
-    private NhanVien nhanVien; // Phục vụ / Thu ngân tạo đơn
+    private NhanVien nhanVien;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ma_nv_thu_ngan", nullable = true)
-    private NhanVien nhanVienThuNgan; // Thu ngân / Quản lý xác nhận thanh toán
+    private NhanVien nhanVienThuNgan;
 
     @Column(name = "thoi_gian_tao", nullable = false)
     private LocalDateTime thoiGianTao = LocalDateTime.now();
@@ -51,7 +51,7 @@ public class HoaDon implements Serializable {
     private LocalDateTime thoiGianThanhToan = null;
 
     @Column(name = "loai_don", nullable = false, length = 20)
-    private String loaiDon = "TAI_BAN"; // TAI_BAN, MANG_DI
+    private String loaiDon = "TAI_BAN";
 
     @Column(name = "tong_tien_goc", nullable = false)
     private Double tongTienGoc = 0.0;
@@ -69,7 +69,7 @@ public class HoaDon implements Serializable {
     private Double tienThua = 0.0;
 
     @Column(name = "phuong_thuc_tt", length = 20)
-    private String phuongThucTT = "TIEN_MAT"; // TIEN_MAT, CHUYEN_KHOAN
+    private String phuongThucTT = "TIEN_MAT";
 
     @Column(name = "ma_tham_chieu", length = 100, unique = true)
     private String maThamChieu = null;
@@ -78,7 +78,7 @@ public class HoaDon implements Serializable {
     private String minhChungChuyenKhoan = null;
 
     @Column(name = "trang_thai", nullable = false, length = 20)
-    private String trangThai = "DANG_PHUC_VU"; // DANG_PHUC_VU, CHO_THANH_TOAN, DA_THANH_TOAN, DA_HUY
+    private String trangThai = "DANG_PHUC_VU";
 
     @Column(name = "yeu_cau_tao", length = 36, unique = true)
     private String yeuCauTao = null;

@@ -1,3 +1,4 @@
+/** Module Bán hàng & Quầy POS (Sangrimar Cafe & Lounge) */
 (function () {
   'use strict';
 
@@ -12,7 +13,6 @@
   var discount = 0;
   var carts = MocAn.loadTableCarts();
 
-  // Bootstrap Modals
   var barModal = null;
   var precheckModal = null;
   var checkoutModal = null;
@@ -128,7 +128,6 @@
     return user && user.vaiTro === 'PHUC_VU';
   }
 
-  // Load all initial data (Không gọi /api/kho/** cho PHUC_VU & THU_NGAN để đảm bảo Information Hiding)
   async function load() {
     try {
       user = await MocAn.loadSessionUser();
@@ -146,7 +145,6 @@
       state.orders = r[2] || [];
       state.ingredients = r[3] || [];
 
-      // Ensure valid selected table
       if (!allTables().some(function (t) { return t.key === selected; })) {
         selected = state.tables.length ? String(state.tables[0].maBan) : 'takeaway';
       }
@@ -162,7 +160,6 @@
     }
   }
 
-  // Fetch open order for selected table
   async function syncSelectedTableOrder() {
     var t = currentTable();
     currentOrder = null;
@@ -171,7 +168,6 @@
         var res = await fetch('/api/order/theo-ban/' + t.id, { credentials: 'same-origin' });
         if (res.status === 200) {
           currentOrder = await res.json();
-          // Populate cart from server order if local cart is empty or desynced
           carts[selected] = itemsFromOrder(currentOrder);
           MocAn.saveTableCarts(carts);
         }
@@ -183,7 +179,6 @@
     }
   }
 
-  // Render Area & Category Tabs
   function renderTabs() {
     var areas = ['Tất cả'].concat(Array.from(new Set(allTables().map(function (x) { return x.area; }))));
     document.getElementById('area-tabs').innerHTML = areas.map(function (x) {
@@ -196,7 +191,6 @@
     }).join('');
   }
 
-  // Render 3-State Tables Grid with colored borders and amounts (Master Spec v2.0 - Khong hien thi so ghe)
   function renderTables() {
     var filtered = allTables().filter(function (x) {
       return area === 'Tất cả' || x.area === area;
@@ -213,14 +207,14 @@
         statusBadgeText = 'Đang dùng nước';
         statusIcon = '<i class="bi bi-cup-hot-fill me-1 text-success"></i>';
         if (t.tongTienTamTinh > 0) {
-          amountHtml = '<div class="table-amount text-success"><i class="bi bi-cash-stack"></i>' + MocAn.formatVnd(t.tongTienTamTinh) + '</div>';
+          amountHtml = '<span class="table-amount text-success"><i class="bi bi-cash-stack me-1"></i>' + MocAn.formatVnd(t.tongTienTamTinh) + '</span>';
         }
       } else if (t.status === 'CHO_THANH_TOAN') {
         statusClass = 'status-cho-thanh-toan';
         statusBadgeText = 'Chờ thanh toán';
         statusIcon = '<i class="bi bi-cash-coin me-1" style="color:#d97706;"></i>';
         if (t.tongTienTamTinh > 0) {
-          amountHtml = '<div class="table-amount" style="color:#d97706;"><i class="bi bi-cash-coin"></i>' + MocAn.formatVnd(t.tongTienTamTinh) + '</div>';
+          amountHtml = '<span class="table-amount" style="color:#d97706;"><i class="bi bi-cash-coin me-1"></i>' + MocAn.formatVnd(t.tongTienTamTinh) + '</span>';
         }
       }
 
@@ -232,8 +226,8 @@
             '<span class="fw-bold" style="font-size:0.95rem;">' + esc(t.name) + '</span>' +
             '<span class="text-muted" style="font-size:0.75rem;">' + esc(t.area) + '</span>' +
           '</div>' +
-          '<div class="d-flex align-items-center justify-content-between mt-1" style="font-size:0.75rem;">' +
-            '<span class="table-badge">' + statusIcon + statusBadgeText + '</span>' +
+          '<div class="d-flex align-items-center justify-content-between mt-auto pt-1 gap-1" style="font-size:0.75rem;">' +
+            '<span class="table-badge text-truncate">' + statusIcon + statusBadgeText + '</span>' +
             amountHtml +
           '</div>' +
         '</button>' +
@@ -241,7 +235,6 @@
     }).join('');
   }
 
-  // Render Drink Menu Cards with soLyCoTheLam badges (Master Spec v2.0)
   function renderMenu() {
     var q = query.toLowerCase();
     var t = currentTable();
@@ -289,7 +282,6 @@
     }).join('') || '<div class="col-12 text-center py-4 text-muted">Không tìm thấy món phù hợp.</div>';
   }
 
-  // Check if cart has new items compared to current saved order
   function hasCartChanges() {
     if (!currentOrder || !currentOrder.danhSachChiTiet) return true;
     var c = cart();
@@ -306,7 +298,6 @@
     return false;
   }
 
-  // Render Right Sticky Order Ticket
   function renderTicket() {
     var t = currentTable();
     var c = cart();
@@ -328,7 +319,6 @@
     document.getElementById('ticket-subtitle').outerHTML = '<span id="ticket-subtitle">' + statusBadge + '</span>';
     document.getElementById('btn-clear-cart').classList.toggle('d-none', !c.length || t.status === 'CHO_THANH_TOAN');
 
-    // Cart items list
     document.getElementById('cart-items-container').innerHTML = c.length
       ? c.map(function (x) {
           var isReadOnly = (t.status === 'CHO_THANH_TOAN' && isPhucVu());
@@ -350,7 +340,6 @@
         }).join('')
       : '<div class="text-center py-5" style="color:var(--text-secondary)">Chưa có món trong phiếu.</div>';
 
-    // Discount input (Manager only)
     var lockIcon = document.getElementById('discount-lock-icon');
     if (lockIcon) lockIcon.classList.toggle('d-none', isPriv);
 
@@ -363,7 +352,6 @@
     document.getElementById('ticket-discount').textContent = '-' + MocAn.formatVnd(disc);
     document.getElementById('ticket-total').textContent = MocAn.formatVnd(sub - disc);
 
-    // Payment methods toggles
     document.querySelectorAll('[data-pay]').forEach(function (b) {
       b.classList.toggle('btn-forest', b.dataset.pay === payment);
       b.classList.toggle('bg-light', b.dataset.pay !== payment);
@@ -372,7 +360,6 @@
     renderDynamicTicketActions();
   }
 
-  // Render Dynamic Actions Container according to Table Status and RBAC
   function renderDynamicTicketActions() {
     var container = document.getElementById('ticket-actions-container');
     if (!container) return;
@@ -384,32 +371,26 @@
     var html = '';
 
     if (t.status === 'TRONG') {
-      // 1. Table is TRONG (Blue): "Xác nhận & In Bill Bar"
       html += '<button id="btn-create-bar-order" type="button" class="btn btn-moss w-100 py-3 fw-bold d-flex align-items-center justify-content-center gap-2" ' + (!hasItems ? 'disabled' : '') + ' style="font-size:0.92rem;">' +
         '<i class="bi bi-printer"></i><span>Xác nhận &amp; In Bill Bar</span>' +
       '</button>';
     } else if (t.status === 'DANG_DUNG_NUOC') {
-      // 2. Table is DANG_DUNG_NUOC (Green)
       if (cartChanged && hasItems) {
         html += '<button id="btn-update-bar-order" type="button" class="btn btn-forest w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2 mb-1">' +
           '<i class="bi bi-plus-circle"></i><span>Cập nhật &amp; In món mới (Bar)</span>' +
         '</button>';
       }
-      // Main action: Request payment
       html += '<button id="btn-request-payment" type="button" class="btn btn-warning w-100 py-3 fw-bold text-dark d-flex align-items-center justify-content-center gap-2" style="font-size:0.92rem;">' +
         '<i class="bi bi-bell-fill"></i><span>Yêu cầu thanh toán</span>' +
       '</button>';
 
-      // Cashier / Manager can cancel order
       if (isThuNgan() || isQuanLy()) {
         html += '<button id="btn-cancel-order" type="button" class="btn btn-outline-danger btn-sm w-100 mt-1">' +
           '<i class="bi bi-x-circle me-1"></i>Hủy đơn hàng' +
         '</button>';
       }
     } else if (t.status === 'CHO_THANH_TOAN') {
-      // 3. Table is CHO_THANH_TOAN (Yellow)
       if (isPhucVu()) {
-        // Staff view: Alert waiting for Cashier
         html += '<div class="alert alert-warning py-2 px-3 mb-2 font-mono text-center" style="font-size:0.78rem;">' +
           '<i class="bi bi-hourglass-split me-1"></i>Đang chờ Thu ngân in bill &amp; xác nhận thanh toán' +
         '</div>' +
@@ -417,7 +398,6 @@
           '<i class="bi bi-arrow-counterclockwise me-1"></i>Quay lại phục vụ (Gọi thêm món)' +
         '</button>';
       } else {
-        // Cashier / Manager view: Print Precheck Bill + Confirm Checkout & Close Table
         html += '<button id="btn-print-precheck" type="button" class="btn btn-outline-warning text-dark fw-bold border-warning w-100 py-2 d-flex align-items-center justify-content-center gap-2">' +
           '<i class="bi bi-receipt"></i><span>In Bill Tạm Tính (Pre-check)</span>' +
         '</button>' +
@@ -438,7 +418,6 @@
     container.innerHTML = html;
   }
 
-  // Render Recent Orders Table
   function renderOrders() {
     document.getElementById('orders-count-label').textContent = state.orders.length + ' đơn';
     document.getElementById('recent-orders-tbody').innerHTML = state.orders.slice(0, 10).map(function (o) {
@@ -469,7 +448,6 @@
     renderOrders();
   }
 
-  // Handle Table Selection
   async function selectTable(key) {
     selected = key;
     clearAlerts();
@@ -477,7 +455,6 @@
     render();
   }
 
-  // 1. Phục vụ mở bàn: "Xác nhận & In Bill Bar"
   async function createBarOrder() {
     clearAlerts();
     var t = currentTable();
@@ -525,7 +502,6 @@
     }
   }
 
-  // 2. Phục vụ gọi thêm món: "Cập nhật & In món mới (Bar)"
   async function updateBarOrder() {
     clearAlerts();
     if (!currentOrder) return err('Không tìm thấy thông tin đơn hàng hiện tại.');
@@ -551,7 +527,6 @@
         body: JSON.stringify(payload)
       });
 
-      // Calculate newly added items from server response if available
       var deltaItems = [];
       if (updated.phieuInBarBoSung && updated.phieuInBarBoSung.length > 0) {
         deltaItems = updated.phieuInBarBoSung.map(function (item) {
@@ -587,7 +562,6 @@
     }
   }
 
-  // 3. Phục vụ / Thu ngân bấm "Yêu cầu thanh toán" -> chuyển bàn sang viền vàng
   async function requestPayment() {
     clearAlerts();
     if (!currentOrder) return err('Không tìm thấy đơn hàng để yêu cầu thanh toán.');
@@ -611,7 +585,6 @@
     }
   }
 
-  // 4. Luồng phụ: "Quay lại phục vụ" -> chuyển bàn từ Vàng về Xanh lá
   async function backToServe() {
     clearAlerts();
     if (!currentOrder) return err('Không tìm thấy đơn hàng.');
@@ -623,14 +596,13 @@
         body: JSON.stringify({ phienBan: currentOrder.phienBan })
       });
 
-      info('Đã đưa bàn về trạng thái "Đang dùng nước" (viền Xanh lá).');
+      info('Đã chuyển bàn về trạng thái đang phục vụ.');
       await load();
     } catch (e) {
       err(e.message || 'Lỗi chuyển trạng thái bàn.');
     }
   }
 
-  // 5. Hủy đơn hàng (Thu ngân / Quản lý)
   async function cancelOrder() {
     clearAlerts();
     if (!currentOrder) return err('Không tìm thấy đơn hàng để hủy.');
@@ -645,14 +617,13 @@
 
       carts[selected] = [];
       MocAn.saveTableCarts(carts);
-      info('Đã hủy đơn hàng. Bàn đã trở về trạng thái "Trống" (viền Xanh dương).');
+      info('Đã hủy đơn hàng thành công.');
       await load();
     } catch (e) {
       err(e.message || 'Lỗi hủy đơn.');
     }
   }
 
-  // 6. Hiển thị Phiếu Pha Chế Quầy Bar (Bar Ticket - không hiện giá tiền)
   function showBarModal(order, barItems, ticketType) {
     var t = currentTable();
     document.getElementById('bar-ticket-type').textContent = ticketType || 'Món mới';
@@ -672,7 +643,6 @@
     barModal.show();
   }
 
-  // 7. Hiển thị Phiếu Tạm Tính (Pre-check Bill - Khách kiểm tra đồ uống)
   function showPrecheckModal(order) {
     var t = currentTable();
     var o = order || currentOrder;
@@ -703,14 +673,12 @@
     document.getElementById('precheck-discount').textContent = '-' + MocAn.formatVnd(disc);
     document.getElementById('precheck-total').textContent = MocAn.formatVnd(total);
 
-    // Dynamic VietQR for cashless payment preview
     var qrUrl = 'https://img.vietqr.io/image/MB-0987654321-compact2.png?amount=' + total + '&addInfo=' + encodeURIComponent('Sangrimar ' + t.name);
     document.getElementById('precheck-qr-img').src = qrUrl;
 
     precheckModal.show();
   }
 
-  // 8. Mở Modal Đối Soát & Thu Tiền (Cashier Checkout Dialog)
   var checkoutPayMethod = 'TIEN_MAT';
   function openCheckoutModal() {
     clearAlerts();
@@ -724,11 +692,9 @@
     document.getElementById('modal-tien-khach-dua').value = total;
     document.getElementById('modal-tien-thua').textContent = '0 ₫';
 
-    // Auto-generate transfer reference code
     document.getElementById('modal-ma-tham-chieu').value = 'POS-' + Date.now();
     document.getElementById('modal-transfer-qr-img').src = 'https://img.vietqr.io/image/MB-0987654321-compact2.png?amount=' + total + '&addInfo=' + encodeURIComponent('Sangrimar HD' + currentOrder.maHoaDon);
 
-    // Reset error
     var errEl = document.getElementById('modal-checkout-error');
     if (errEl) errEl.classList.add('d-none');
 
@@ -764,7 +730,6 @@
     }
   }
 
-  // 9. Thực hiện Thanh toán & Đóng bàn (Cashier / Manager)
   async function confirmCheckout() {
     if (!currentOrder) return;
     var errEl = document.getElementById('modal-checkout-error');
@@ -813,12 +778,10 @@
 
       checkoutModal.hide();
 
-      // Clear local cart for this table
       carts[selected] = [];
       MocAn.saveTableCarts(carts);
       discount = 0;
 
-      // Show Official Receipt Modal
       showReceiptModal(paidOrder);
       await load();
     } catch (e) {
@@ -829,7 +792,6 @@
     }
   }
 
-  // 10. Hiển thị Hóa Đơn Thanh Toán Chính Thức (Official Receipt)
   function showReceiptModal(o) {
     document.getElementById('receipt-meta').textContent = 'Hóa đơn HD-' + o.maHoaDon + ' đã thanh toán thành công.';
 
@@ -864,14 +826,12 @@
 
     document.getElementById('receipt-details').innerHTML = detailsHtml;
 
-    // Show "Kiểm tra kho" button for Manager
     var khoBtn = document.getElementById('receipt-btn-kho');
     if (khoBtn) khoBtn.classList.toggle('d-none', !isQuanLy());
 
     receiptModal.show();
   }
 
-  // Event Delegation for Clicks
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-area],[data-cat],[data-table],[data-add],[data-qty],[data-pay],#btn-create-bar-order,#btn-update-bar-order,#btn-request-payment,#btn-back-to-serve,#btn-cancel-order,#btn-print-precheck,#btn-open-checkout-modal,#btn-modal-do-checkout,#modal-pay-cash-btn,#modal-pay-transfer-btn,.quick-money-btn');
     if (!b) return;
@@ -938,7 +898,6 @@
       renderTicket();
     }
 
-    // Dynamic Action button handlers
     if (b.id === 'btn-create-bar-order') createBarOrder();
     if (b.id === 'btn-update-bar-order') updateBarOrder();
     if (b.id === 'btn-request-payment') requestPayment();
@@ -948,11 +907,9 @@
     if (b.id === 'btn-open-checkout-modal') openCheckoutModal();
     if (b.id === 'btn-modal-do-checkout') confirmCheckout();
 
-    // Modal Payment switchers
     if (b.id === 'modal-pay-cash-btn') setCheckoutMethod('TIEN_MAT');
     if (b.id === 'modal-pay-transfer-btn') setCheckoutMethod('CHUYEN_KHOAN');
 
-    // Quick money buttons
     if (b.classList.contains('quick-money-btn')) {
       var sub = Number(currentOrder.tongTienGoc) || cartTotal();
       var disc = isQuanLy() ? Math.min(discount, sub) : 0;
@@ -970,20 +927,17 @@
     }
   });
 
-  // Search input
   document.getElementById('menu-search').addEventListener('input', function (e) {
     query = e.target.value;
     renderMenu();
   });
 
-  // Clear cart button
   document.getElementById('btn-clear-cart').addEventListener('click', function () {
     var t = currentTable();
     if (t.status === 'CHO_THANH_TOAN' && isPhucVu()) return;
     saveCart([]);
   });
 
-  // Discount input
   document.addEventListener('input', function (e) {
     if (e.target.id === 'pos-discount') {
       if (isQuanLy()) {
@@ -996,7 +950,6 @@
     }
   });
 
-  // Initialize Bootstrap Modals
   barModal = new bootstrap.Modal(document.getElementById('barModal'));
   precheckModal = new bootstrap.Modal(document.getElementById('precheckModal'));
   checkoutModal = new bootstrap.Modal(document.getElementById('checkoutConfirmModal'));

@@ -1,3 +1,4 @@
+/** Tiện ích dùng chung hệ thống Sangrimar Cafe & Lounge */
 (function (window) {
   'use strict';
 
@@ -204,9 +205,6 @@
       nhansu: 'Nhân sự & Chấm công'
     };
 
-    // Phân quyền điều hướng theo Master Spec v2.0:
-    // • QUAN_LY: Bán hàng (POS) · Kho & KPI (có badge đỏ) · Nhân sự & Chấm công
-    // • THU_NGAN / PHUC_VU: Bán hàng (POS) · Chấm công & Lịch ca (Chế độ Cá nhân)
     var isQuanLy = isPrivileged(user);
     var navItems = [
       { route: 'banhang', href: 'banhang.html', label: 'Bán hàng (POS)', icon: 'bi-bag-check' }
@@ -222,7 +220,6 @@
       );
     }
 
-    // Hide sidebar completely to keep layout clean and standard for POS screens
     var sidebarContainer = document.getElementById('app-sidebar-root');
     if (sidebarContainer) {
       sidebarContainer.innerHTML = '';

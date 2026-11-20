@@ -1,3 +1,4 @@
+/** Module Quản lý Kho, BOM & Báo cáo KPI (Sangrimar Cafe & Lounge) */
 (function () {
   'use strict';
 
@@ -53,7 +54,6 @@
     try {
       user = await MocAn.loadSessionUser();
 
-      // RBAC Guard: Chỉ Quản lý (QUAN_LY) mới có quyền truy cập Kho & KPI
       if (!MocAn.isPrivileged(user)) {
         alert('Tài khoản của bạn không có quyền Quản lý Kho & KPI! Đang chuyển hướng về Bán hàng...');
         window.location.href = 'banhang.html';
@@ -119,17 +119,14 @@
     var d = dashboardData || {};
     var lows = ingredients.filter(isLow);
 
-    // 1. Doanh thu thuần
     document.getElementById('kpi-revenue').textContent = formatVnd(d.tongDoanhThu || 0);
     document.getElementById('kpi-orders-discount').textContent =
       (d.tongDonHang || 0) + ' đơn hàng · Chiết khấu: ' + formatVnd(d.tongChietKhau || 0);
 
-    // 2. Lợi nhuận gộp ước tính
     document.getElementById('kpi-profit').textContent = formatVnd(d.loiNhuanGop || 0);
     document.getElementById('kpi-cogs-loss').textContent =
       'Giá vốn: ' + formatVnd(d.giaVonBanHang || 0) + ' · Hao hụt: ' + formatVnd(d.giaTriHaoHut || 0);
 
-    // 3. Đối soát Tiền mặt vs Chuyển khoản
     var tm = d.doanhThuTienMat || 0;
     var ck = d.doanhThuChuyenKhoan || 0;
     var totalPayment = tm + ck;
@@ -144,14 +141,11 @@
     document.getElementById('kpi-cash-bar').style.width = tmPct + '%';
     document.getElementById('kpi-transfer-bar').style.width = ckPct + '%';
 
-    // 4. Tổng giá trị tồn kho
     document.getElementById('kpi-stock-val').textContent = formatVnd(d.tongGiaTriTonKho || 0);
     document.getElementById('kpi-stock-count').textContent = (ingredients.length || 13) + ' nguyên liệu pha chế';
 
-    // 5. Chi phí nhập kho trong kỳ
     document.getElementById('kpi-restock-cost').textContent = formatVnd(d.chiPhiNhapKho || 0);
 
-    // 6. Cảnh báo sắp hết hàng
     var lowValEl = document.getElementById('kpi-low-stock-val');
     var lowBadgeEl = document.getElementById('kpi-low-badge');
     var lowCardEl = document.getElementById('kpi-low-stock-card');
@@ -172,7 +166,6 @@
       lowDescEl.textContent = 'Tồn kho trên ngưỡng tối thiểu';
     }
 
-    // Low stock banner
     var banner = document.getElementById('low-stock-banner');
     if (banner) {
       if (lows.length > 0) {
@@ -186,7 +179,6 @@
       }
     }
 
-    // Update filter count button
     var filterCount = document.getElementById('low-filter-count');
     if (filterCount) filterCount.textContent = lows.length;
   }
@@ -398,7 +390,6 @@
       }).join('');
   }
 
-  // Bind Switch Tabs
   document.querySelectorAll('.nav-tab-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var tabId = this.dataset.tab;
@@ -412,7 +403,6 @@
     });
   });
 
-  // Bind Period Filter Pills
   document.querySelectorAll('.period-pill').forEach(function (pill) {
     pill.addEventListener('click', function () {
       document.querySelectorAll('.period-pill').forEach(function (p) { p.classList.remove('active'); });
@@ -422,7 +412,6 @@
     });
   });
 
-  // Bind Search & Filters
   var ingSearch = document.getElementById('ing-search');
   if (ingSearch) {
     ingSearch.addEventListener('input', function (e) {
@@ -470,7 +459,6 @@
     btnRefreshHistory.addEventListener('click', reloadHistory);
   }
 
-  // Handle Table Click Actions (Restock, Audit, Edit BOM)
   var ingTable = document.getElementById('ingredients-tbody');
   if (ingTable) {
     ingTable.addEventListener('click', function (e) {
@@ -502,7 +490,6 @@
     });
   }
 
-  // Restock Modal Logic
   function openRestockModal(nl) {
     document.getElementById('restock-modal-title').textContent = 'Nhập kho · ' + nl.tenNL;
     document.getElementById('restock-modal-info').innerHTML =
@@ -578,7 +565,6 @@
     }
   });
 
-  // Audit Modal Logic
   function openAuditModal(nl) {
     document.getElementById('audit-modal-title').textContent = 'Kiểm kê kho · ' + nl.tenNL;
     document.getElementById('audit-modal-info').innerHTML =
@@ -668,7 +654,6 @@
     }
   });
 
-  // Recipe Modal Logic
   function openRecipeModal(drink) {
     document.getElementById('recipe-modal-drink-name').textContent = 'Món nước: ' + drink.tenMon + ' (' + formatVnd(drink.donGia) + ')';
     var select = document.getElementById('recipe-select-nl');
@@ -727,11 +712,9 @@
     }
   });
 
-  // Init Modals
   restockModal = new bootstrap.Modal(document.getElementById('restockModal'));
   auditModal = new bootstrap.Modal(document.getElementById('auditModal'));
   recipeModal = new bootstrap.Modal(document.getElementById('recipeModal'));
 
-  // Initial Load
   loadAll();
 })();

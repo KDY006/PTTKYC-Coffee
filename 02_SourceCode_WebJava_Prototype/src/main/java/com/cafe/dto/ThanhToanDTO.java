@@ -3,7 +3,7 @@ package com.cafe.dto;
 public class ThanhToanDTO {
 
     private Double chietKhau = 0.0;
-    private String phuongThucTT = "TIEN_MAT"; // TIEN_MAT, CHUYEN_KHOAN
+    private String phuongThucTT = "TIEN_MAT";
     private Double tienKhachDua;
     private Boolean xacNhanChuyenKhoan = false;
     private String maThamChieu;

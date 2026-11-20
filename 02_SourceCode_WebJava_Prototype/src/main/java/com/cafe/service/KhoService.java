@@ -34,6 +34,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
+/** Dịch vụ quản lý kho, định mức công thức và báo cáo KPI */
 public class KhoService {
 
     @PersistenceContext
@@ -60,14 +61,6 @@ public class KhoService {
         this.lichSuKhoRepository = lichSuKhoRepository;
     }
 
-    /**
-     * NGHIỆP VỤ LÕI TRỌNG TÂM:
-     * Tự động trừ kho ngầm theo định mức công thức khi thanh toán hóa đơn.
-     * Bọc trong @Transactional(propagation = Propagation.MANDATORY, rollbackFor = Exception.class)
-     * Đảm bảo tính toàn vẹn ACID cùng giao dịch thanh toán hóa đơn.
-     * Sắp xếp mã nguyên liệu tăng dần trong TreeMap để triệt tiêu Deadlock 100%.
-     * Ghi nhật ký tự động XUAT_BAN_HANG vào bảng lich_su_kho gắn liền với hóa đơn.
-     */
     @Transactional(propagation = Propagation.MANDATORY, rollbackFor = Exception.class)
     public void truKhoTuDong(HoaDon hoaDon, NhanVien nhanVien) {
         if (hoaDon == null || hoaDon.getDanhSachChiTiet() == null || hoaDon.getDanhSachChiTiet().isEmpty()) {
@@ -79,7 +72,7 @@ public class KhoService {
             nv = nhanVienRepository.findAll().stream().findFirst().orElse(null);
         }
 
-        // Gộp nhu cầu của mọi dòng, khóa nguyên liệu theo mã tăng dần để tránh Deadlock và mất cập nhật
+        
         Map<Integer, BigDecimal> nhuCau = new TreeMap<>();
         for (ChiTietHoaDon item : hoaDon.getDanhSachChiTiet()) {
             if (item.getSoLuong() == null || item.getSoLuong() <= 0) {
@@ -99,12 +92,12 @@ public class KhoService {
             }
         }
 
-        // Lần lượt lấy khóa bi quan (SELECT ... FOR UPDATE) theo thứ tự maNL tăng dần
+        
         Map<Integer, NguyenLieu> locked = new LinkedHashMap<>();
         for (Map.Entry<Integer, BigDecimal> entry : nhuCau.entrySet()) {
             NguyenLieu nl = nguyenLieuRepository.khoaNguyenLieu(entry.getKey())
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nguyên liệu"));
-            // refresh: công thức có thể đã nạp entity vào persistence context trước lúc lấy khóa
+            
             entityManager.refresh(nl, LockModeType.PESSIMISTIC_WRITE);
             Double ton = nl.getSoLuongTon();
             if (ton == null || !Double.isFinite(ton) || BigDecimal.valueOf(ton).compareTo(entry.getValue()) < 0) {
@@ -113,7 +106,7 @@ public class KhoService {
             locked.put(entry.getKey(), nl);
         }
 
-        // Trừ tồn kho, lưu vào CSDL và sinh dòng XUAT_BAN_HANG trong lich_su_kho
+        
         for (Map.Entry<Integer, BigDecimal> entry : nhuCau.entrySet()) {
             NguyenLieu nl = locked.get(entry.getKey());
             double tonTruoc = nl.getSoLuongTon() != null ? nl.getSoLuongTon() : 0.0;
@@ -155,9 +148,6 @@ public class KhoService {
         return nguyenLieuRepository.findNguyenLieuSapHet();
     }
 
-    /**
-     * LUỒNG 1: Nhập kho & Cập nhật giá vốn Bình quân gia quyền (Weighted Average Cost)
-     */
     @Transactional(rollbackFor = Exception.class)
     public NguyenLieu nhapKho(NhapKhoDTO dto, Integer maNV) {
         if (dto == null || dto.getMaNL() == null) {
@@ -222,9 +212,6 @@ public class KhoService {
         return nhapKho(dto, null);
     }
 
-    /**
-     * LUỒNG 2: Kiểm kê Cuối ngày & Xuất hủy Hao hụt
-     */
     @Transactional(rollbackFor = Exception.class)
     public NguyenLieu kiemKeKho(KiemKeKhoDTO dto, Integer maNV) {
         if (dto == null || dto.getMaNL() == null) {
@@ -281,9 +268,6 @@ public class KhoService {
         return nl;
     }
 
-    /**
-     * Bảng Định mức Công thức (BOM) trực tiếp cho toàn bộ 12 món
-     */
     public List<BangCongThucMonDTO> layBangCongThuc() {
         List<MonNuoc> monNuocs = monNuocRepository.findAll();
         monNuocs.sort(Comparator.comparing(MonNuoc::getMaMon));
@@ -386,9 +370,6 @@ public class KhoService {
         return congThucRepository.findByMonNuoc(mn);
     }
 
-    /**
-     * Tra cứu Nhật ký Biến động Kho theo bộ lọc (Loại GD, Nguyên liệu, Phạm vi thời gian)
-     */
     public List<LichSuKho> layLichSuKho(String loaiGD, Integer maNL, String phamVi) {
         LocalDateTime tuNgay = xacDinhTuNgay(phamVi);
         return lichSuKhoRepository.traCuuLichSu(
@@ -398,9 +379,6 @@ public class KhoService {
         );
     }
 
-    /**
-     * LUỒNG 4: KPI Dashboard Đa kỳ & Top 5 Món Bán Chạy
-     */
     public DashboardKpiDTO getDashboardKPIDTO(String phamVi) {
         String phamViChuan = chuanHoaPhamVi(phamVi);
         LocalDateTime tuNgay = xacDinhTuNgay(phamViChuan);
@@ -409,7 +387,7 @@ public class KhoService {
         DashboardKpiDTO dto = new DashboardKpiDTO();
         dto.setPhamVi(phamViChuan);
 
-        // 1. Đối soát Hóa đơn đã thanh toán
+        
         List<HoaDon> allHoaDon = hoaDonRepository.findByTrangThai("DA_THANH_TOAN");
         List<HoaDon> hoaDons = new ArrayList<>();
         for (HoaDon hd : allHoaDon) {
@@ -473,7 +451,7 @@ public class KhoService {
         dto.setDoanhThuChuyenKhoan(BigDecimal.valueOf(doanhThuChuyenKhoan).setScale(2, RoundingMode.HALF_UP).doubleValue());
         dto.setSoDonChuyenKhoan(soDonChuyenKhoan);
 
-        // Top 5 món bán chạy
+        
         List<TopMonBanChayDTO> topList = new ArrayList<>(topMap.values());
         topList.sort((a, b) -> {
             int cmp = Integer.compare(b.getTongSoLuong(), a.getTongSoLuong());
@@ -485,7 +463,7 @@ public class KhoService {
         }
         dto.setTopMonBanChay(topList);
 
-        // 2. Đối soát Biến động kho trong kỳ (Chi phí nhập, Giá vốn bán hàng, Hao hụt)
+        
         List<LichSuKho> lskList;
         if (tuNgay != null) {
             lskList = lichSuKhoRepository.findByThoiGianGreaterThanEqual(tuNgay);
@@ -520,7 +498,7 @@ public class KhoService {
         double loiNhuanGop = tongDoanhThu - giaVonBanHang - giaTriHaoHut;
         dto.setLoiNhuanGop(BigDecimal.valueOf(loiNhuanGop).setScale(2, RoundingMode.HALF_UP).doubleValue());
 
-        // 3. Tồn kho nguyên vật liệu hiện hành (toàn bộ 13 nguyên liệu)
+        
         List<NguyenLieu> nguyenLieus = nguyenLieuRepository.findAllByOrderByMaNLAsc();
         dto.setTongNguyenLieu(nguyenLieus.size());
 

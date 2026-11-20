@@ -103,8 +103,7 @@
 
       <main class="p-3 p-sm-4 mx-auto w-100 d-flex flex-column gap-3" style="max-width:1440px;">
         
-        <!-- Header & Bộ lọc kỳ KPI -->
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 pt-1">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 pt-1">
           <div>
             <h1 class="font-display fw-bold mb-1" style="font-size:1.4rem;color:var(--text-primary,#111827);">
               Kho nguyên liệu, Định mức BOM &amp; Báo cáo KPI
@@ -114,8 +113,7 @@
             </p>
           </div>
 
-          <!-- Bộ lọc kỳ KPI: Hôm nay | 7 ngày | Tháng này | Tất cả -->
-          <div class="d-flex align-items-center gap-1 bg-white p-1 rounded-3 border" style="border-color:var(--border-subtle,#e5e7eb)!important;">
+                    <div class="d-flex align-items-center gap-1 bg-white p-1 rounded-3 border" style="border-color:var(--border-subtle,#e5e7eb)!important;">
             <button type="button" class="period-pill active" data-period="HOM_NAY">Hôm nay</button>
             <button type="button" class="period-pill" data-period="BAY_NGAY">7 ngày</button>
             <button type="button" class="period-pill" data-period="THANG_NAY">Tháng này</button>
@@ -123,11 +121,8 @@
           </div>
         </div>
 
-        <!-- 6 Thẻ KPI (2 Hàng x 3 Cột Nền trắng Viền nét mảnh) -->
-        <div class="row g-3">
-          <!-- HÀNG 1 -->
-          <!-- 1. Doanh thu thuần -->
-          <div class="col-12 col-md-4">
+                <div class="row g-3">
+                              <div class="col-12 col-md-4">
             <div class="kpi-card h-100 d-flex flex-column justify-content-between">
               <div class="d-flex align-items-center justify-content-between">
                 <span class="kpi-title text-uppercase">Doanh thu thuần</span>
@@ -140,8 +135,7 @@
             </div>
           </div>
 
-          <!-- 2. Lợi nhuận gộp ước tính -->
-          <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-4">
             <div class="kpi-card h-100 d-flex flex-column justify-content-between">
               <div class="d-flex align-items-center justify-content-between">
                 <span class="kpi-title text-uppercase">Lợi nhuận gộp ước tính</span>
@@ -154,8 +148,7 @@
             </div>
           </div>
 
-          <!-- 3. Đối soát Tiền mặt vs Chuyển khoản -->
-          <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-4">
             <div class="kpi-card h-100 d-flex flex-column justify-content-between">
               <div class="d-flex align-items-center justify-content-between">
                 <span class="kpi-title text-uppercase">Đối soát Tiền mặt vs Chuyển khoản</span>
@@ -178,9 +171,7 @@
             </div>
           </div>
 
-          <!-- HÀNG 2 -->
-          <!-- 4. Tổng giá trị tồn kho -->
-          <div class="col-12 col-md-4">
+                              <div class="col-12 col-md-4">
             <div class="kpi-card h-100 d-flex flex-column justify-content-between">
               <div class="d-flex align-items-center justify-content-between">
                 <span class="kpi-title text-uppercase">Tổng giá trị tồn kho</span>
@@ -193,8 +184,7 @@
             </div>
           </div>
 
-          <!-- 5. Chi phí nhập kho trong kỳ -->
-          <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-4">
             <div class="kpi-card h-100 d-flex flex-column justify-content-between">
               <div class="d-flex align-items-center justify-content-between">
                 <span class="kpi-title text-uppercase">Chi phí nhập kho trong kỳ</span>
@@ -207,8 +197,7 @@
             </div>
           </div>
 
-          <!-- 6. Cảnh báo nguyên liệu sắp hết -->
-          <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-4">
             <div id="kpi-low-stock-card" class="kpi-card h-100 d-flex flex-column justify-content-between">
               <div class="d-flex align-items-center justify-content-between">
                 <span class="kpi-title text-uppercase">Cảnh báo sắp hết hàng</span>
@@ -222,33 +211,27 @@
           </div>
         </div>
 
-        <!-- Banner cảnh báo sắp hết hàng (nếu có) -->
-        <div id="low-stock-banner" class="d-none"></div>
+                <div id="low-stock-banner" class="d-none"></div>
 
-        <!-- Feedback & Error Alerts -->
-        <div id="kho-feedback" class="alert alert-success py-2 px-3 mb-0 rounded-3 d-none d-flex align-items-center justify-content-between" style="font-size:0.82rem;"></div>
+                <div id="kho-feedback" class="alert alert-success py-2 px-3 mb-0 rounded-3 d-none d-flex align-items-center justify-content-between" style="font-size:0.82rem;"></div>
         <div id="kho-error" class="alert alert-danger py-2 px-3 mb-0 rounded-3 d-none d-flex align-items-center justify-content-between" style="font-size:0.82rem;"></div>
 
-        <!-- Main Workspace (Tabs Quản trị & Top 5 Món Bán Chạy) -->
-        <div class="row g-3">
-          <!-- Cột Trái: 3 Tabs Quản trị (Tồn kho, BOM, Nhật ký) -->
-          <div class="col-12 col-xl-8">
+                <div class="row g-3">
+                    <div class="col-12 col-xl-8">
             <div class="moss-card p-3 p-sm-4">
-              <!-- Tab Header Buttons -->
-              <div class="d-flex align-items-center border-bottom mb-3 pb-1 gap-2 flex-wrap" style="border-color:var(--border-subtle,#e5e7eb)!important;">
+                            <div class="d-flex align-items-center border-bottom mb-3 pb-1 gap-2 flex-wrap" style="border-color:var(--border-subtle,#e5e7eb)!important;">
                 <button type="button" class="nav-tab-btn active" data-tab="tab-inventory">
-                  <i class="bi bi-box-seam me-1"></i>1. Tồn kho Nguyên vật liệu
+                  <i class="bi bi-box-seam me-1"></i>Tồn kho nguyên liệu
                 </button>
                 <button type="button" class="nav-tab-btn" data-tab="tab-bom">
-                  <i class="bi bi-journal-check me-1"></i>2. Định mức Công thức (BOM)
+                  <i class="bi bi-journal-check me-1"></i>Định mức công thức (BOM)
                 </button>
                 <button type="button" class="nav-tab-btn" data-tab="tab-history">
-                  <i class="bi bi-clock-history me-1"></i>3. Nhật ký Biến động Kho
+                  <i class="bi bi-clock-history me-1"></i>Nhật ký biến động kho
                 </button>
               </div>
 
-              <!-- TAB 1: TỒN KHO NGUYÊN VẬT LIỆU -->
-              <div id="tab-inventory-pane" class="tab-pane-content">
+                            <div id="tab-inventory-pane" class="tab-pane-content">
                 <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-3">
                   <div class="position-relative flex-grow-1" style="max-width:320px;">
                     <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
@@ -280,8 +263,7 @@
                 </div>
               </div>
 
-              <!-- TAB 2: ĐỊNH MỨC CÔNG THỨC (BOM) 12 MÓN -->
-              <div id="tab-bom-pane" class="tab-pane-content d-none">
+                            <div id="tab-bom-pane" class="tab-pane-content d-none">
                 <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-3">
                   <div class="position-relative flex-grow-1" style="max-width:320px;">
                     <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
@@ -310,14 +292,13 @@
                 </div>
               </div>
 
-              <!-- TAB 3: NHẬT KÝ BIẾN ĐỘNG KHO (AUDIT TRAIL) -->
-              <div id="tab-history-pane" class="tab-pane-content d-none">
+                            <div id="tab-history-pane" class="tab-pane-content d-none">
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
                   <select id="filter-history-type" class="form-select form-select-sm moss-input" style="width:auto;height:38px;font-size:0.8rem;">
                     <option value="">Tất cả loại giao dịch</option>
-                    <option value="NHAP_KHO">Nhập kho (NHAP_KHO)</option>
-                    <option value="XUAT_BAN_HANG">Xuất bán hàng (XUAT_BAN_HANG)</option>
-                    <option value="KIEM_KE_HAO_HUT">Kiểm kê hao hụt (KIEM_KE_HAO_HUT)</option>
+                    <option value="NHAP_KHO">Nhập kho</option>
+                    <option value="XUAT_BAN_HANG">Xuất bán hàng</option>
+                    <option value="KIEM_KE_HAO_HUT">Kiểm kê hao hụt</option>
                   </select>
 
                   <select id="filter-history-nl" class="form-select form-select-sm moss-input" style="width:auto;height:38px;font-size:0.8rem;">
@@ -352,8 +333,7 @@
             </div>
           </div>
 
-          <!-- Cột Phải: Top 5 Món Bán Chạy Trong Kỳ -->
-          <div class="col-12 col-xl-4">
+                    <div class="col-12 col-xl-4">
             <div class="moss-card p-3 p-sm-4 h-100 d-flex flex-column">
               <div class="d-flex align-items-center justify-content-between mb-3">
                 <h2 class="font-display fw-semibold mb-0" style="font-size:1.05rem;">
@@ -370,8 +350,7 @@
     </div>
   </div>
 
-  <!-- 1. Modal Nhập Kho (#restockModal) -->
-  <div class="modal fade" id="restockModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="restockModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <form id="restock-form" class="modal-content">
         <div class="modal-body p-4 d-flex flex-column gap-3">
@@ -422,8 +401,7 @@
     </div>
   </div>
 
-  <!-- 2. Modal Kiểm Kê Hao Hụt (#auditModal) -->
-  <div class="modal fade" id="auditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="auditModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <form id="audit-form" class="modal-content">
         <div class="modal-body p-4 d-flex flex-column gap-3">
@@ -464,8 +442,7 @@
     </div>
   </div>
 
-  <!-- 3. Modal Thiết Lập Công Thức BOM (#recipeModal) -->
-  <div class="modal fade" id="recipeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="recipeModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <form id="recipe-form" class="modal-content">
         <div class="modal-body p-4 d-flex flex-column gap-3">

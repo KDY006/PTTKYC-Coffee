@@ -20,10 +20,8 @@
 
       <main class="p-3 p-sm-4 mx-auto w-100" style="max-width:1440px;">
         <div class="row g-4 align-items-start">
-          <!-- Left 8 Columns: Tables + Menu -->
-          <div class="col-xl-8 d-flex flex-column gap-4">
-            <!-- Tables & Takeaway -->
-            <section class="moss-card p-3 p-sm-4">
+                    <div class="col-xl-8 d-flex flex-column gap-4">
+                        <section class="moss-card p-3 p-sm-4">
               <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-2">
                 <div>
                   <h2 class="font-display fw-semibold mb-1" style="font-size:1.125rem;">Sơ đồ bàn &amp; Đơn mang đi</h2>
@@ -34,28 +32,26 @@
                 <div id="area-tabs" class="moss-tabs"></div>
               </div>
 
-              <!-- Visual Legend 3 Trạng Thái Bàn Chuẩn F&B POS -->
-              <div class="d-flex flex-wrap align-items-center gap-3 py-2 px-3 mb-3 rounded-3" style="background:var(--bg-surface-muted);font-size:0.78rem;">
+                            <div class="d-flex flex-wrap align-items-center gap-3 py-2 px-3 mb-3 rounded-3" style="background:var(--bg-surface-muted);font-size:0.78rem;">
                 <span class="fw-semibold text-secondary me-1"><i class="bi bi-info-circle me-1"></i>Trạng thái bàn:</span>
                 <span class="d-inline-flex align-items-center gap-1">
                   <span class="rounded-circle" style="width:10px;height:10px;background:#0d6efd;"></span>
-                  <strong>Trống</strong> (Xanh dương)
+                  <span>Trống</span>
                 </span>
                 <span class="d-inline-flex align-items-center gap-1">
                   <span class="rounded-circle" style="width:10px;height:10px;background:#198754;"></span>
-                  <strong>Đang dùng nước</strong> (Xanh lá)
+                  <span>Đang dùng nước</span>
                 </span>
                 <span class="d-inline-flex align-items-center gap-1">
                   <span class="rounded-circle" style="width:10px;height:10px;background:#d97706;"></span>
-                  <strong>Chờ thanh toán</strong> (Vàng)
+                  <span>Chờ thanh toán</span>
                 </span>
               </div>
 
               <div id="tables-grid" class="row g-2"></div>
             </section>
 
-            <!-- Menu Catalog -->
-            <section class="moss-card p-3 p-sm-4">
+                        <section class="moss-card p-3 p-sm-4">
               <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mb-4">
                 <div id="category-tabs" class="moss-tabs"></div>
                 <div class="position-relative" style="min-width:240px;">
@@ -67,8 +63,7 @@
             </section>
           </div>
 
-          <!-- Right 4 Columns: Sticky Thermal Order Ticket -->
-          <aside class="col-xl-4">
+                    <aside class="col-xl-4">
             <div class="pos-ticket">
               <div class="d-flex align-items-center justify-content-between pb-3 dashed-divider-bottom">
                 <div class="d-flex align-items-center gap-3">
@@ -88,12 +83,10 @@
                 </button>
               </div>
 
-              <!-- Cart items -->
-              <div id="cart-items-container" class="py-3" style="min-height:180px;max-height:320px;overflow-y:auto;"></div>
+                            <div id="cart-items-container" class="py-3" style="min-height:180px;max-height:320px;overflow-y:auto;"></div>
 
               <div class="pt-3 dashed-divider-top d-flex flex-column gap-3">
-                <!-- Payment methods -->
-                <div id="payment-methods-wrap">
+                                <div id="payment-methods-wrap">
                   <div class="fw-semibold mb-2" style="font-size:0.75rem;color:var(--text-secondary);">Phương thức thanh toán</div>
                   <div class="row g-2" id="payment-methods">
                     <div class="col-6">
@@ -109,8 +102,7 @@
                   </div>
                 </div>
 
-                <!-- Discount -->
-                <div class="d-flex align-items-center justify-content-between gap-2">
+                                <div class="d-flex align-items-center justify-content-between gap-2">
                   <label for="pos-discount" class="fw-medium mb-0 d-flex align-items-center gap-1" style="font-size:0.78rem;color:var(--text-secondary);">
                     <i id="discount-lock-icon" class="bi bi-lock-fill text-warning d-none"></i>
                     <span>Giảm giá (VNĐ)</span>
@@ -118,8 +110,7 @@
                   <div id="discount-control-wrap"></div>
                 </div>
 
-                <!-- Price summary -->
-                <div class="pt-2 border-top d-flex flex-column gap-1" style="border-color:var(--border-subtle) !important;">
+                                <div class="pt-2 border-top d-flex flex-column gap-1" style="border-color:var(--border-subtle) !important;">
                   <div class="d-flex justify-content-between" style="font-size:0.78rem;color:var(--text-secondary);">
                     <span>Tạm tính</span>
                     <span id="ticket-subtotal" class="font-mono tabular-nums">0 ₫</span>
@@ -134,21 +125,17 @@
                   </div>
                 </div>
 
-                <!-- Notification / Error alert -->
-                <div id="pos-error" class="alert alert-danger py-2 px-3 mb-0 rounded-3 d-none" style="font-size:0.78rem;"></div>
+                                <div id="pos-error" class="alert alert-danger py-2 px-3 mb-0 rounded-3 d-none" style="font-size:0.78rem;"></div>
                 <div id="pos-info" class="alert alert-info py-2 px-3 mb-0 rounded-3 d-none" style="font-size:0.78rem;"></div>
 
-                <!-- Dynamic Action Buttons by Table Status & Role -->
-                <div id="ticket-actions-container" class="d-flex flex-column gap-2">
-                  <!-- Will be rendered dynamically by banhang-page.js -->
-                </div>
+                                <div id="ticket-actions-container" class="d-flex flex-column gap-2">
+                                  </div>
               </div>
             </div>
           </aside>
         </div>
 
-        <!-- Recent Paid Orders -->
-        <section class="moss-card p-3 p-sm-4 mt-4">
+                <section class="moss-card p-3 p-sm-4 mt-4">
           <div class="d-flex align-items-center justify-content-between mb-3">
             <h2 class="font-display fw-semibold mb-0" style="font-size:1.125rem;">Lịch sử hóa đơn hôm nay</h2>
             <span id="orders-count-label" class="tabular-nums" style="font-size:0.78rem;color:var(--text-secondary);">0 đơn</span>
@@ -175,8 +162,7 @@
     </div>
   </div>
 
-  <!-- Modal 1: Phiếu Pha Chế Quầy Bar (Bar Ticket - Không hiện giá tiền) -->
-  <div class="modal fade" id="barModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="barModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:440px;">
       <div class="modal-content p-3 border-2">
         <div class="modal-body p-3">
@@ -221,8 +207,7 @@
     </div>
   </div>
 
-  <!-- Modal 2: Phiếu Tạm Tính (Provisional Bill / Pre-check Bill - Khách kiểm tra) -->
-  <div class="modal fade" id="precheckModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="precheckModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:460px;">
       <div class="modal-content p-3 border-2">
         <div class="modal-body p-3">
@@ -270,8 +255,7 @@
             </div>
           </div>
 
-          <!-- VietQR thanh toán nhanh -->
-          <div class="text-center my-3 p-2 border rounded-3 bg-light">
+                    <div class="text-center my-3 p-2 border rounded-3 bg-light">
             <div class="fw-semibold text-secondary mb-1" style="font-size:0.75rem;">Quét mã VietQR để thanh toán:</div>
             <img id="precheck-qr-img" src="" alt="VietQR" class="img-fluid rounded border" style="max-height:160px;" />
             <div class="text-muted mt-1 font-mono" style="font-size:0.7rem;">Ngân hàng MB Bank · STK: 0987654321</div>
@@ -292,8 +276,7 @@
     </div>
   </div>
 
-  <!-- Modal 3: Thu ngân / Quản lý xác nhận thanh toán & đối soát tiền (Confirm Checkout Modal) -->
-  <div class="modal fade" id="checkoutConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="checkoutConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
       <div class="modal-content p-2">
         <div class="modal-body p-4">
@@ -317,8 +300,7 @@
             </div>
           </div>
 
-          <!-- Section: Tiền mặt -->
-          <div id="modal-cash-section">
+                    <div id="modal-cash-section">
             <div class="mb-3">
               <label for="modal-tien-khach-dua" class="fw-semibold mb-1" style="font-size:0.8rem;">Tiền khách đưa (VNĐ):</label>
               <input type="number" id="modal-tien-khach-dua" class="form-control moss-input font-mono fs-5 fw-bold text-end" placeholder="0" />
@@ -337,8 +319,7 @@
             </div>
           </div>
 
-          <!-- Section: Chuyển khoản QR -->
-          <div id="modal-transfer-section" class="d-none">
+                    <div id="modal-transfer-section" class="d-none">
             <div class="text-center p-3 border rounded-3 bg-light mb-3">
               <div class="fw-semibold text-secondary mb-1" style="font-size:0.75rem;">Mã VietQR động:</div>
               <img id="modal-transfer-qr-img" src="" alt="VietQR" class="img-fluid rounded border" style="max-height:150px;" />
@@ -369,8 +350,7 @@
     </div>
   </div>
 
-  <!-- Modal 4: Hóa đơn thanh toán chính thức (Official Receipt - In sau khi chốt tiền) -->
-  <div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
       <div class="modal-content p-2">
         <div class="modal-body p-4">
@@ -386,8 +366,7 @@
           </div>
 
           <div id="receipt-details" class="border-top border-bottom py-3 my-3 d-flex flex-column gap-2" style="font-size:0.82rem;border-color:var(--border-strong) !important;">
-            <!-- Rendered by JS -->
-          </div>
+                      </div>
 
           <div class="text-center text-muted mb-3" style="font-size:0.75rem;">
             Cảm ơn Quý khách &amp; Hẹn gặp lại!

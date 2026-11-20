@@ -1,3 +1,4 @@
+/** Module Quản lý Nhân sự, Ca làm & Chấm công (Sangrimar Cafe & Lounge) */
 (function () {
   'use strict';
 
@@ -7,7 +8,6 @@
   var staff = [];
   var currentWeekStart = null;
 
-  // Hiển thị ngay Header Topbar từ dữ liệu phiên hiện hành để tránh hiện tượng trắng header
   MocAn.renderAppShell({
     activeRoute: 'nhansu',
     user: user,
@@ -15,7 +15,6 @@
     onRefresh: function () { refreshAll(); }
   });
 
-  // Modals
   var adjustModal = null;
   var swapShiftModal = null;
   var scheduleModal = null;
@@ -106,16 +105,12 @@
     }
   }
 
-  // =========================================================================
-  // KHỞI ĐỘNG TRANG & ĐIỀU HƯỚNG THEO VAI TRÒ (RBAC)
-  // =========================================================================
 
   async function init() {
     try {
       user = await MocAn.loadSessionUser();
       currentWeekStart = getMonday(new Date());
 
-      // Khởi tạo các Modal Bootstrap
       var adjEl = document.getElementById('adjustModal');
       if (adjEl) adjustModal = new bootstrap.Modal(adjEl);
 
@@ -131,13 +126,10 @@
       var editStEl = document.getElementById('editStaffModal');
       if (editStEl) editStaffModal = new bootstrap.Modal(editStEl);
 
-      // Đăng ký đồng hồ thời gian thực
       startLiveClocks();
 
-      // Nạp danh sách ca làm
       shifts = await MocAn.apiFetch('/api/nhan-su/ca-lam').catch(function () { return []; });
 
-      // Nạp cảnh báo kho cho header (chỉ Quản lý)
       var lowStockCount = 0;
       if (privileged()) {
         staff = await MocAn.apiFetch('/api/nhan-su/nhan-vien').catch(function () { return []; });
@@ -147,7 +139,6 @@
         }).length;
       }
 
-      // Render Topbar & Sidebar thống nhất
       MocAn.renderAppShell({
         activeRoute: 'nhansu',
         user: user,
@@ -155,7 +146,6 @@
         onRefresh: refreshAll
       });
 
-      // Phân tách 2 Chế độ hiển thị
       if (privileged()) {
         document.getElementById('manager-mode-container').classList.remove('d-none');
         document.getElementById('personal-mode-container').classList.add('d-none');
@@ -199,9 +189,6 @@
     }
   }
 
-  // =========================================================================
-  // 1. CHẾ ĐỘ CÁ NHÂN (PHỤC VỤ VÀ THU NGÂN)
-  // =========================================================================
 
   async function initPersonalMode() {
     document.getElementById('personal-user-info').innerHTML =
@@ -284,7 +271,6 @@
         '</div>';
       }).join('');
 
-      // Gắn sự kiện Check-in / Check-out cho cá nhân
       container.querySelectorAll('.btn-do-checkin').forEach(function (btn) {
         btn.addEventListener('click', async function () {
           var maPhanCa = Number(this.dataset.phanca);
@@ -412,15 +398,11 @@
     }
   }
 
-  // =========================================================================
-  // 2. CHẾ ĐỘ QUẢN TRỊ (DÀNH CHO QUẢN LÝ / ADMIN)
-  // =========================================================================
 
   function initManagerMode() {
     document.getElementById('manager-user-info').innerHTML =
       'Đang trực quản trị: <strong>' + esc(user.hoTen) + '</strong> (' + esc(user.tenDangNhap) + ') · Vai trò: ' + getRoleBadge(user.vaiTro);
 
-    // Chuyển đổi giữa 4 sub-tab
     var tabBtns = document.querySelectorAll('.tab-nav-btn');
     tabBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -434,7 +416,6 @@
         var targetPanel = document.getElementById(targetTabId);
         if (targetPanel) targetPanel.classList.remove('d-none');
 
-        // Nạp dữ liệu tương ứng khi đổi tab
         if (targetTabId === 'tab-supervision') loadManagerSupervisionTab();
         else if (targetTabId === 'tab-schedule') loadManagerScheduleTab();
         else if (targetTabId === 'tab-timesheet') loadManagerTimesheetTab();
@@ -442,7 +423,6 @@
       });
     });
 
-    // Nút chốt ca quá hạn (BR-CC-05)
     var btnChotCa = document.getElementById('btn-chot-ca-btn');
     if (btnChotCa) {
       btnChotCa.addEventListener('click', async function () {
@@ -459,7 +439,6 @@
       });
     }
 
-    // Bộ lọc giám sát chấm công
     var fDate = document.getElementById('filter-att-date');
     if (fDate) {
       fDate.value = toIsoDate(new Date());
@@ -470,7 +449,6 @@
     var fStatus = document.getElementById('filter-att-status');
     if (fStatus) fStatus.addEventListener('change', loadManagerAttendanceTable);
 
-    // Xử lý nộp form Modal Điều chỉnh Ngoại lệ (BR-CC-06)
     var adjustForm = document.getElementById('adjust-form');
     if (adjustForm) {
       adjustForm.addEventListener('submit', async function (e) {
@@ -505,7 +483,6 @@
       });
     }
 
-    // Xử lý nộp form Modal Đổi ca (BR-CC-07)
     var swapForm = document.getElementById('swap-shift-form');
     if (swapForm) {
       swapForm.addEventListener('submit', async function (e) {
@@ -538,7 +515,6 @@
       });
     }
 
-    // Điều hướng tuần trong Tab Phân ca
     var btnPrev = document.getElementById('btn-prev-week');
     if (btnPrev) {
       btnPrev.addEventListener('click', function () {
@@ -554,7 +530,6 @@
       });
     }
 
-    // Mở modal Phân ca mới
     var btnOpenSchedule = document.getElementById('btn-open-schedule-modal');
     if (btnOpenSchedule) {
       btnOpenSchedule.addEventListener('click', function () {
@@ -563,7 +538,6 @@
       });
     }
 
-    // Nộp form Phân ca mới
     var scheduleForm = document.getElementById('schedule-form');
     if (scheduleForm) {
       scheduleForm.addEventListener('submit', async function (e) {
@@ -594,7 +568,6 @@
       });
     }
 
-    // Bộ lọc Tab Bảng công theo kỳ
     var btnPeriodWeek = document.getElementById('btn-period-week');
     var btnPeriodMonth = document.getElementById('btn-period-month');
     var inputFrom = document.getElementById('timesheet-from');
@@ -629,7 +602,6 @@
       });
     }
 
-    // CRUD Nhân sự (Tab 4)
     var btnOpenAdd = document.getElementById('btn-open-add-staff');
     if (btnOpenAdd) {
       btnOpenAdd.addEventListener('click', function () {
@@ -698,13 +670,10 @@
       });
     }
 
-    // Tải tab mặc định: Tab 1 Giám sát
     loadManagerSupervisionTab();
   }
 
-  // --- TAB 1 QUẢN LÝ: CHẤM CÔNG & GIÁM SÁT ---
   async function loadManagerSupervisionTab() {
-    // 1. Suất ca của Quản lý hôm nay (nếu có)
     var myShifts = await MocAn.apiFetch('/api/cham-cong/ca-hom-nay').catch(function () { return []; });
     var myContainer = document.getElementById('manager-today-shifts-list');
     if (myContainer) {
@@ -756,7 +725,6 @@
       }
     }
 
-    // 2. Điền dropdown lọc nhân viên
     var fStaff = document.getElementById('filter-att-staff');
     if (fStaff && fStaff.options.length <= 1 && staff.length > 0) {
       staff.forEach(function (s) {
@@ -767,7 +735,6 @@
       });
     }
 
-    // 3. Tải danh sách Chấm công toàn quán
     await loadManagerAttendanceTable();
   }
 
@@ -785,7 +752,6 @@
     try {
       var records = await MocAn.apiFetch('/api/cham-cong/lich-su' + qs);
 
-      // KPI Strip
       if (kpiContainer) {
         var workingCount = (records || []).filter(function (r) { return r.gioCheckIn && !r.gioCheckOut && r.trangThai !== 'QUEN_CHECK_OUT' && r.trangThai !== 'VANG'; }).length;
         var exceptionCount = (records || []).filter(function (r) { return r.trangThai === 'QUEN_CHECK_OUT' || r.trangThai === 'VANG'; }).length;
@@ -845,7 +811,6 @@
         '</tr>';
       }).join('');
 
-      // Gắn sự kiện check-out hộ
       tbody.querySelectorAll('.btn-mgr-force-checkout').forEach(function (btn) {
         btn.addEventListener('click', async function () {
           var id = this.dataset.id;
@@ -860,7 +825,6 @@
         });
       });
 
-      // Gắn sự kiện mở modal Điều chỉnh ngoại lệ
       tbody.querySelectorAll('.btn-open-adjust').forEach(function (btn) {
         btn.addEventListener('click', function () {
           var r = JSON.parse(this.dataset.record);
@@ -869,7 +833,6 @@
           document.getElementById('adjust-shift-text').textContent = (r.caLam ? r.caLam.tenCa : 'Ca') + ' (' + r.ngayLam + ')';
           document.getElementById('adjust-old-status-badge').innerHTML = getStatusBadge(r.trangThai);
 
-          // Định dạng datetime-local
           document.getElementById('adjust-checkin').value = r.gioCheckIn ? r.gioCheckIn.slice(0, 16) : '';
           document.getElementById('adjust-checkout').value = r.gioCheckOut ? r.gioCheckOut.slice(0, 16) : '';
           document.getElementById('adjust-reason').value = r.lyDoDieuChinh || '';
@@ -883,7 +846,6 @@
     }
   }
 
-  // --- TAB 2 QUẢN LÝ: LỊCH PHÂN CA TUẦN & ĐỔI CA ---
   async function loadManagerScheduleTab() {
     var rangeLabel = document.getElementById('schedule-week-range-label');
     var endWeek = addDays(currentWeekStart, 6);
@@ -900,12 +862,10 @@
     try {
       var scheduleData = await MocAn.apiFetch('/api/phan-ca/tuan?ngayBatDau=' + currentWeekStart);
 
-      // Nhóm theo hàng Ca làm việc (3 ca)
       tbody.innerHTML = shifts.map(function (sh) {
         var rowCells = '';
         for (var col = 0; col < 7; col++) {
           var targetDate = addDays(currentWeekStart, col);
-          // Tìm các phân ca thuộc ca sh.maCa và ngày targetDate
           var cellShifts = (scheduleData || []).filter(function (x) {
             return x.ngayLam === targetDate && ((x.caLam && x.caLam.maCa === sh.maCa) || x.maCa === sh.maCa);
           });
@@ -957,7 +917,6 @@
         '</tr>';
       }).join('');
 
-      // Gắn sự kiện Đổi ca (BR-CC-07)
       tbody.querySelectorAll('.btn-open-swap-shift').forEach(function (btn) {
         btn.addEventListener('click', function () {
           var s = JSON.parse(this.dataset.shift);
@@ -967,7 +926,6 @@
           document.getElementById('swap-shift-info-text').textContent = (c.tenCa || s.tenCa) + ' ngày ' + s.ngayLam;
           document.getElementById('swap-current-staff-text').textContent = (nv.hoTen || s.hoTen) + ' (' + (nv.vaiTro || s.vaiTro) + ')';
 
-          // Nạp danh sách nhân sự thay thế (loại trừ chính người hiện tại)
           var select = document.getElementById('swap-new-staff-select');
           select.innerHTML = '<option value="">-- Chọn nhân viên thay thế --</option>';
           staff.filter(function (st) { return st.trangThai === 'DANG_LAM' && st.maNV !== (nv.maNV || s.maNV); }).forEach(function (st) {
@@ -983,7 +941,6 @@
         });
       });
 
-      // Gắn sự kiện Xóa suất phân ca
       tbody.querySelectorAll('.btn-delete-shift').forEach(function (btn) {
         btn.addEventListener('click', async function () {
           var id = this.dataset.id;
@@ -1034,7 +991,6 @@
     }
   }
 
-  // --- TAB 3 QUẢN LÝ: BẢNG TỔNG HỢP CÔNG THEO KỲ ---
   async function loadManagerTimesheetTab() {
     var from = document.getElementById('timesheet-from').value;
     var to = document.getElementById('timesheet-to').value;
@@ -1100,7 +1056,6 @@
     }
   }
 
-  // --- TAB 4 QUẢN LÝ: DANH BẠ NHÂN SỰ (CRUD) ---
   async function loadManagerDirectoryTab() {
     var tbody = document.getElementById('directory-tbody');
     try {
@@ -1132,7 +1087,6 @@
         '</tr>';
       }).join('');
 
-      // Sửa nhân viên
       tbody.querySelectorAll('.btn-open-edit-staff').forEach(function (btn) {
         btn.addEventListener('click', function () {
           var s = JSON.parse(this.dataset.staff);
@@ -1149,7 +1103,6 @@
         });
       });
 
-      // Ngừng làm việc (Xóa mềm DA_NGHI)
       tbody.querySelectorAll('.btn-stop-staff').forEach(function (btn) {
         btn.addEventListener('click', async function () {
           var id = this.dataset.id;
@@ -1168,7 +1121,6 @@
     }
   }
 
-  // Khởi chạy an toàn (hỗ trợ cả khi DOMContentLoaded đã kích hoạt)
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

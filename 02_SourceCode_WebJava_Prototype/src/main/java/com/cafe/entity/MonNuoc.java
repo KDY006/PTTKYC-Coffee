@@ -16,7 +16,7 @@ public class MonNuoc implements Serializable {
     private String tenMon;
 
     @Column(name = "danh_muc", nullable = false, length = 50)
-    private String danhMuc; // Cà phê, Trà, Đá xay, Nước ép
+    private String danhMuc;
 
     @Column(name = "don_gia", nullable = false)
     private Double donGia;
@@ -25,7 +25,7 @@ public class MonNuoc implements Serializable {
     private String hinhAnh;
 
     @Column(name = "trang_thai", nullable = false, length = 20)
-    private String trangThai = "DANG_BAN"; // DANG_BAN, HET_HANG
+    private String trangThai = "DANG_BAN";
 
     public MonNuoc() {
     }

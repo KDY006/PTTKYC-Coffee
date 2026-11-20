@@ -11,8 +11,8 @@ public class BangCongThucMonDTO {
     private String hinhAnh;
     private String trangThai;
     private Double giaVonLy = 0.0;
-    private Double bienLoiNhuan = 0.0; // Phần trăm biên lợi nhuận: (donGia - giaVonLy) / donGia * 100
-    private Double loiNhuanGopLy = 0.0; // donGia - giaVonLy
+    private Double bienLoiNhuan = 0.0;
+    private Double loiNhuanGopLy = 0.0;
     private Integer soLyCoTheLam = 0;
     private List<DinhMucNguyenLieuDTO> danhSachNguyenLieu = new ArrayList<>();
 

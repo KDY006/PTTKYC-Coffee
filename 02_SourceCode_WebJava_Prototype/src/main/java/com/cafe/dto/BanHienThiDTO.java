@@ -8,7 +8,7 @@ public class BanHienThiDTO {
     private String tenBan;
     private String viTri;
     private Integer soGhe = 4;
-    private String trangThai; // TRONG, DANG_DUNG_NUOC, CHO_THANH_TOAN
+    private String trangThai;
     private Integer maHoaDonHienTai;
     private Double tongTienTamTinh = 0.0;
     private LocalDateTime thoiGianMoBan;

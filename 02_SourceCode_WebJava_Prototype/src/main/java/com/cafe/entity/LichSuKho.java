@@ -30,7 +30,7 @@ public class LichSuKho implements Serializable {
     private HoaDon hoaDon;
 
     @Column(name = "loai_gd", nullable = false, length = 30)
-    private String loaiGD; // NHAP_KHO, XUAT_BAN_HANG, KIEM_KE_HAO_HUT
+    private String loaiGD; 
 
     @Column(name = "so_luong_thay_doi", nullable = false)
     private Double soLuongThayDoi;
@@ -182,7 +182,7 @@ public class LichSuKho implements Serializable {
         this.ghiChu = ghiChu;
     }
 
-    // Helper properties for JSON and frontend convenience
+    
     @JsonProperty("maHoaDon")
     public Integer getMaHoaDon() {
         return hoaDon != null ? hoaDon.getMaHoaDon() : null;

@@ -6,7 +6,7 @@ public class DonHangDTO {
 
     private Integer maBan;
     private Integer maNV;
-    private String loaiDon; // TAI_BAN, MANG_DI
+    private String loaiDon;
     private List<ChiTietDonHangDTO> danhSachMon;
     private String yeuCauTao;
     private Long phienBan;

@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+/** Dịch vụ quản lý nhân sự, ca làm và chấm công */
 public class NhanSuService {
 
     private final NhanVienRepository nhanVienRepository;
@@ -106,7 +107,7 @@ public class NhanSuService {
             throw bad("Thiếu dữ liệu nhân viên");
         }
 
-        // Chống tự khóa quản trị (BR-RBAC-LOCK)
+        
         if (callerId != null && callerId.equals(maNV)) {
             if ("DA_NGHI".equals(changes.getTrangThai())) {
                 throw bad("Không thể ngừng chính tài khoản đang đăng nhập");
@@ -116,7 +117,7 @@ public class NhanSuService {
             }
         }
 
-        // Đảm bảo hệ thống luôn còn ít nhất 1 Quản lý đang hoạt động
+        
         boolean willBeInactiveOrNotManager = "DA_NGHI".equals(changes.getTrangThai()) ||
                 (!"QUAN_LY".equals(changes.getVaiTro()) && !"MANAGER".equals(changes.getVaiTro()) && !"ADMIN".equals(changes.getVaiTro()));
         if (willBeInactiveOrNotManager && ("QUAN_LY".equals(current.getVaiTro()) || "MANAGER".equals(current.getVaiTro()) || "ADMIN".equals(current.getVaiTro()))) {
@@ -177,13 +178,10 @@ public class NhanSuService {
         return caLamRepository.findAllByOrderByGioBatDauAsc();
     }
 
-    // =========================================================================
-    // CÁC NGHIỆP VỤ CHẤM CÔNG & PHÂN CA THEO CHUẨN ĐẶC TẢ BR-CC-01 -> BR-CC-07
-    // =========================================================================
+    
+    
+    
 
-    /**
-     * Lấy danh sách các ca hôm nay của nhân viên hiện tại kèm thông tin cửa sổ check-in/out
-     */
     public List<CaHomNayDTO> layCaHomNay(Integer maNV) {
         LocalDate currentDay = today();
         LocalDateTime currentTime = now();
@@ -258,9 +256,6 @@ public class NhanSuService {
         return result;
     }
 
-    /**
-     * BR-CC-01, BR-CC-02, BR-CC-03: Check-in Vào Ca
-     */
     @Transactional
     public ChamCong checkIn(Integer maNhanVienDangNhap, ChamCongDTO dto) {
         if (dto == null) {
@@ -289,7 +284,7 @@ public class NhanSuService {
             throw bad("Tài khoản đã ngừng làm việc");
         }
 
-        // BR-CC-01: Chặn check-in đúp (HTTP 409)
+        
         if (chamCongRepository.findByPhanCa_MaPhanCa(pc.getMaPhanCa()).isPresent() ||
                 chamCongRepository.findByNhanVien_MaNVAndCaLam_MaCaAndNgayLam(nv.getMaNV(), pc.getCaLam().getMaCa(), pc.getNgayLam()).isPresent()) {
             throw conflict("Ca này đã được check-in");
@@ -299,7 +294,7 @@ public class NhanSuService {
         LocalDateTime startWindow = LocalDateTime.of(pc.getNgayLam(), pc.getCaLam().getGioBatDau()).minusMinutes(30);
         LocalDateTime endWindow = LocalDateTime.of(pc.getNgayLam(), pc.getCaLam().getGioKetThuc());
 
-        // BR-CC-02: Cửa sổ Check-in hợp lệ [gio_bat_dau - 30m, gio_ket_thuc)
+        
         if (currentTime.isBefore(startWindow)) {
             throw bad("Chưa mở cửa sổ check-in cho ca này (mở từ " + pc.getCaLam().getGioBatDau().minusMinutes(30).toString().substring(0, 5) + ")");
         }
@@ -307,7 +302,7 @@ public class NhanSuService {
             throw bad("Đã quá thời gian kết thúc ca, không thể check-in");
         }
 
-        // BR-CC-03: Phân loại Đúng giờ / Đi trễ
+        
         LocalDateTime shiftStart = LocalDateTime.of(pc.getNgayLam(), pc.getCaLam().getGioBatDau());
         int soPhutTre = 0;
         String trangThai = "DUNG_GIO";
@@ -341,9 +336,6 @@ public class NhanSuService {
         return chamCongRepository.save(cc);
     }
 
-    /**
-     * BR-CC-04: Check-out Ra Ca & Tính giờ làm
-     */
     @Transactional
     public ChamCong checkOut(Integer maNhanVienDangNhap, boolean quanLy, Integer maChamCong) {
         ChamCong cc = chamCongRepository.findById(maChamCong)
@@ -360,12 +352,12 @@ public class NhanSuService {
         }
 
         LocalDateTime currentTime = now();
-        // Chặn check-out nếu chưa đủ 1 phút sau check-in
+        
         if (Duration.between(cc.getGioCheckIn(), currentTime).toSeconds() < 60) {
             throw bad("Chưa đủ 1 phút sau khi check-in");
         }
 
-        // BR-CC-04: Tính giờ không cộng giờ ảo
+        
         LocalDateTime shiftStart = LocalDateTime.of(cc.getNgayLam(), cc.getCaLam().getGioBatDau());
         LocalDateTime shiftEnd = LocalDateTime.of(cc.getNgayLam(), cc.getCaLam().getGioKetThuc());
 
@@ -377,7 +369,7 @@ public class NhanSuService {
         double heSo = cc.getCaLam().getHeSoLuong() != null ? cc.getCaLam().getHeSoLuong() : 1.0;
         double gioCongQuyDoi = round2(soGioLam * heSo);
 
-        // Kiểm soát về sớm
+        
         int soPhutVeSom = 0;
         if (currentTime.isBefore(shiftEnd)) {
             long deltaOut = Duration.between(currentTime, shiftEnd).toMinutes();
@@ -399,12 +391,6 @@ public class NhanSuService {
         return chamCongRepository.save(cc);
     }
 
-    /**
-     * BR-CC-05: Chốt ca quá hạn (Temporal Event)
-     * Qua mốc kết thúc ca + 30 phút:
-     * - Chưa Check-in -> Chèn bản ghi VANG (gio_check_in = NULL)
-     * - Chưa Check-out -> Chuyển QUEN_CHECK_OUT
-     */
     @Transactional
     public ChotCaResponseDTO chotCaQuaHan() {
         LocalDateTime currentTime = now();
@@ -454,9 +440,6 @@ public class NhanSuService {
         return new ChotCaResponseDTO(soCaDanhDauVang, soCaQuenCheckOut);
     }
 
-    /**
-     * BR-CC-06: Điều chỉnh ngoại lệ có kiểm toán
-     */
     @Transactional
     public ChamCong dieuChinhChamCong(Integer maChamCong, Integer callerId, DieuChinhChamCongDTO dto) {
         if (dto == null || dto.getLyDoDieuChinh() == null || dto.getLyDoDieuChinh().strip().isEmpty()) {
@@ -527,9 +510,6 @@ public class NhanSuService {
         return chamCongRepository.save(cc);
     }
 
-    /**
-     * BR-CC-07: Đổi ca đột xuất cho suất phân ca chưa chấm công
-     */
     @Transactional
     public PhanCa doiCa(Integer maPhanCa, DoiCaDTO dto) {
         if (dto == null || dto.getMaNVMoi() == null) {
@@ -539,7 +519,7 @@ public class NhanSuService {
         PhanCa pc = phanCaRepository.findById(maPhanCa)
                 .orElseThrow(() -> bad("Không tìm thấy suất phân ca: " + maPhanCa));
 
-        // Chặn đổi ca nếu đã phát sinh chấm công (HTTP 409)
+        
         if (chamCongRepository.findByPhanCa_MaPhanCa(maPhanCa).isPresent() ||
                 chamCongRepository.findByNhanVien_MaNVAndCaLam_MaCaAndNgayLam(pc.getNhanVien().getMaNV(), pc.getCaLam().getMaCa(), pc.getNgayLam()).isPresent()) {
             throw conflict("Không thể đổi ca đã phát sinh chấm công");
@@ -551,7 +531,7 @@ public class NhanSuService {
             throw bad("Không thể phân ca cho nhân viên đã nghỉ");
         }
 
-        // Chặn nếu người thay thế trùng ca
+        
         Optional<PhanCa> duplicate = phanCaRepository.findByNhanVien_MaNVAndCaLam_MaCaAndNgayLam(nvMoi.getMaNV(), pc.getCaLam().getMaCa(), pc.getNgayLam());
         if (duplicate.isPresent() && !duplicate.get().getMaPhanCa().equals(maPhanCa)) {
             throw conflict("Nhân viên thay thế đã có lịch trong ca này");
@@ -564,9 +544,6 @@ public class NhanSuService {
         return phanCaRepository.save(pc);
     }
 
-    /**
-     * BR-CC-07: Lấy Lịch tuần kèm phát hiện thiếu Thu ngân (thieuThuNgan = true)
-     */
     public List<PhanCaTuanItemDTO> layLichTuan(Integer maNhanVienDangNhap, boolean quanLy, LocalDate ngayBatDau) {
         LocalDate base = ngayBatDau == null ? today() : ngayBatDau;
         LocalDate from = base.with(DayOfWeek.MONDAY);
@@ -574,7 +551,7 @@ public class NhanSuService {
 
         List<PhanCa> all = phanCaRepository.findByNgayLamBetweenOrderByNgayLamAsc(from, to);
 
-        // Phát hiện thiếu thu ngân theo từng ô (ngayLam, maCa)
+        
         Map<String, Boolean> missingCashierMap = new HashMap<>();
         Map<String, List<PhanCa>> grouped = all.stream()
                 .collect(Collectors.groupingBy(p -> p.getNgayLam().toString() + "_" + p.getCaLam().getMaCa()));
@@ -619,9 +596,6 @@ public class NhanSuService {
         return result;
     }
 
-    /**
-     * Bảng tổng hợp công theo kỳ quy đổi hệ số lương (Timesheet Summary)
-     */
     public List<BangCongNhanVienDTO> layBangCong(Integer maNhanVienDangNhap, boolean quanLy, LocalDate tuNgay, LocalDate denNgay) {
         LocalDate from = tuNgay != null ? tuNgay : today().with(DayOfWeek.MONDAY);
         LocalDate to = denNgay != null ? denNgay : today();
