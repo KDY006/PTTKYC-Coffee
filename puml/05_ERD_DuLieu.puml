@@ -1,0 +1,182 @@
+@startuml ERD_DuLieu
+!theme plain
+skinparam roundcorner 8
+skinparam linetype ortho
+
+title SO DO QUAN HE THUC THE CHUAN HOA 3NF (ENTITY RELATIONSHIP DIAGRAM)\nCO SO DU LIEU QUAN LY QUAN CAFE (11 BANG - DATABASE_MAU V2.0)
+
+entity "nhan_vien" as nhan_vien {
+    * ma_nv : INT <<PK, AUTO_INCREMENT>>
+    --
+    * ho_ten : VARCHAR(100)
+    so_dien_thoai : VARCHAR(20)
+    * ten_dang_nhap : VARCHAR(50) <<UK>>
+    * mat_khau : VARCHAR(255)
+    * vai_tro : VARCHAR(20) <<CHECK: QUAN_LY, THU_NGAN, PHUC_VU>>
+    * trang_thai : VARCHAR(20) <<CHECK: DANG_LAM, DA_NGHI>>
+}
+
+entity "ca_lam" as ca_lam {
+    * ma_ca : INT <<PK, AUTO_INCREMENT>>
+    --
+    * ten_ca : VARCHAR(50)
+    * gio_bat_dau : TIME
+    * gio_ket_thuc : TIME
+    * he_so_luong : DECIMAL(3,2) <<DEFAULT 1.00>>
+}
+
+entity "phan_ca" as phan_ca {
+    * ma_phan_ca : INT <<PK, AUTO_INCREMENT>>
+    --
+    * ma_nv : INT <<FK>>
+    * ma_ca : INT <<FK>>
+    * ngay_lam : DATE
+    ghi_chu : VARCHAR(255)
+    --
+    <<UK: ma_nv, ngay_lam, ma_ca>>
+}
+
+entity "cham_cong" as cham_cong {
+    * ma_cham_cong : INT <<PK, AUTO_INCREMENT>>
+    --
+    ma_phan_ca : INT <<FK, NULLABLE>>
+    * ma_nv : INT <<FK>>
+    * ma_ca : INT <<FK>>
+    * ngay_lam : DATE
+    gio_check_in : DATETIME
+    gio_check_out : DATETIME
+    so_phut_tre : INT <<DEFAULT 0>>
+    so_phut_ve_som : INT <<DEFAULT 0>>
+    so_gio_lam : DECIMAL(4,2) <<DEFAULT 0.00>>
+    gio_cong_quy_doi : DECIMAL(4,2) <<DEFAULT 0.00>>
+    * trang_thai : VARCHAR(30) <<CHECK: DUNG_GIO, DI_TRE, VE_SOM, DI_TRE_VE_SOM, VANG, QUEN_CHECK_OUT>>
+    ghi_chu : VARCHAR(255)
+    nguoi_dieu_chinh : INT <<FK, NULLABLE>>
+    ly_do_dieu_chinh : VARCHAR(255)
+    thoi_gian_dieu_chinh : DATETIME
+    --
+    <<UK: ma_nv, ma_ca, ngay_lam>>
+}
+
+entity "ban" as ban {
+    * ma_ban : INT <<PK, AUTO_INCREMENT>>
+    --
+    * ten_ban : VARCHAR(50) <<UK>>
+    vi_tri : VARCHAR(100)
+    so_ghe : INT <<DEFAULT 4>>
+    * trang_thai : VARCHAR(30) <<CHECK: TRONG, DANG_DUNG_NUOC, CHO_THANH_TOAN>>
+}
+
+entity "mon_nuoc" as mon_nuoc {
+    * ma_mon : INT <<PK, AUTO_INCREMENT>>
+    --
+    * ten_mon : VARCHAR(100) <<UK>>
+    danh_muc : VARCHAR(50)
+    * don_gia : DECIMAL(10,2)
+    hinh_anh : VARCHAR(255)
+    * trang_thai : VARCHAR(20) <<CHECK: DANG_BAN, NGUNG_BAN>>
+}
+
+entity "nguyen_lieu" as nguyen_lieu {
+    * ma_nl : INT <<PK, AUTO_INCREMENT>>
+    --
+    * ten_nl : VARCHAR(100) <<UK>>
+    * don_vi_tinh : VARCHAR(20)
+    * soLuongTon : DECIMAL(10,2) <<DEFAULT 0.00>>
+    * mucTonToiThieu : DECIMAL(10,2) <<DEFAULT 5.00>>
+    don_gia_nhap : DECIMAL(10,2) <<DEFAULT 0.00>>
+}
+
+entity "cong_thuc" as cong_thuc {
+    * ma_cong_thuc : INT <<PK, AUTO_INCREMENT>>
+    --
+    * ma_mon : INT <<FK>>
+    * ma_nl : INT <<FK>>
+    * dinh_muc : DECIMAL(10,2)
+    ghi_chu : VARCHAR(255)
+    --
+    <<UK: ma_mon, ma_nl>>
+}
+
+entity "hoa_don" as hoa_don {
+    * ma_hoa_don : INT <<PK, AUTO_INCREMENT>>
+    --
+    ma_ban : INT <<FK, NULLABLE>>
+    * ma_nv : INT <<FK>>
+    ma_nv_thu_ngan : INT <<FK, NULLABLE>>
+    * thoi_gian_tao : DATETIME
+    thoi_gian_yeu_cau_tt : DATETIME
+    thoi_gian_thanh_toan : DATETIME
+    * loai_don : VARCHAR(20) <<CHECK: TAI_BAN, MANG_DI>>
+    * tong_tien_goc : DECIMAL(12,2) <<DEFAULT 0.00>>
+    chiet_khau : DECIMAL(12,2) <<DEFAULT 0.00>>
+    * tong_tien_thanh_toan : DECIMAL(12,2) <<DEFAULT 0.00>>
+    tien_khach_dua : DECIMAL(12,2) <<DEFAULT 0.00>>
+    tien_thua : DECIMAL(12,2) <<DEFAULT 0.00>>
+    * phuong_thuc_tt : VARCHAR(20) <<CHECK: TIEN_MAT, CHUYEN_KHOAN>>
+    ma_tham_chieu : VARCHAR(100)
+    xac_nhan_chuyen_khoan : BOOLEAN <<DEFAULT FALSE>>
+    minh_chung_chuyen_khoan : VARCHAR(255)
+    * trang_thai : VARCHAR(30) <<CHECK: DANG_PHUC_VU, CHO_THANH_TOAN, DA_THANH_TOAN, DA_HUY>>
+    yeu_cau_tao : VARCHAR(255)
+    yeu_cau_thanh_toan : VARCHAR(255)
+    * phien_ban : INT <<DEFAULT 0>>
+}
+
+entity "chi_tiet_hoa_don" as chi_tiet_hoa_don {
+    * ma_cthd : INT <<PK, AUTO_INCREMENT>>
+    --
+    * ma_hoa_don : INT <<FK>>
+    * ma_mon : INT <<FK>>
+    * so_luong : INT
+    * so_luong_da_in_bar : INT <<DEFAULT 0>>
+    * don_gia_ban : DECIMAL(10,2)
+    * thanh_tien : DECIMAL(12,2)
+    ghi_chu : VARCHAR(255)
+    --
+    <<UK: ma_hoa_don, ma_mon>>
+}
+
+entity "lich_su_kho" as lich_su_kho {
+    * ma_gd : INT <<PK, AUTO_INCREMENT>>
+    --
+    * ma_nl : INT <<FK>>
+    ma_nv : INT <<FK, NULLABLE>>
+    ma_hoa_don : INT <<FK, NULLABLE>>
+    * loai_gd : VARCHAR(30) <<CHECK: NHAP_KHO, XUAT_BAN_HANG, KIEM_KE_HAO_HUT>>
+    * so_luong_thay_doi : DECIMAL(10,2)
+    * ton_truoc : DECIMAL(10,2)
+    * ton_sau : DECIMAL(10,2)
+    don_gia : DECIMAL(10,2) <<DEFAULT 0.00>>
+    thanh_tien : DECIMAL(12,2) <<DEFAULT 0.00>>
+    nha_cung_cap : VARCHAR(100)
+    * thoi_gian : DATETIME
+    ghi_chu : VARCHAR(255)
+}
+
+' ============================================================
+' QUAN HE GIUA CAC BANG (RELATIONSHIPS)
+' ============================================================
+nhan_vien ||--o{ phan_ca : "duoc phan cong"
+ca_lam ||--o{ phan_ca : "thuoc ca"
+
+nhan_vien ||--o{ cham_cong : "cham cong"
+ca_lam ||--o{ cham_cong : "theo ca"
+phan_ca ||--o| cham_cong : "ghi nhan tu"
+nhan_vien ||--o{ cham_cong : "quan ly dieu chinh"
+
+ban ||--o{ hoa_don : "phuc vu tai ban"
+nhan_vien ||--o{ hoa_don : "phuc vu tao don"
+nhan_vien ||--o{ hoa_don : "thu ngan xac nhan"
+
+hoa_don ||--|{ chi_tiet_hoa_don : "gom chi tiet mon"
+mon_nuoc ||--o{ chi_tiet_hoa_don : "duoc ban trong"
+
+mon_nuoc ||--o{ cong_thuc : "co dinh muc"
+nguyen_lieu ||--o{ cong_thuc : "dung lam thanh phan"
+
+nguyen_lieu ||--o{ lich_su_kho : "ghi nhan bien dong"
+nhan_vien ||--o{ lich_su_kho : "nhan vien thuc hien"
+hoa_don ||--o{ lich_su_kho : "xuat theo don hang"
+
+@enduml

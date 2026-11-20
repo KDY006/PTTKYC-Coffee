@@ -1,0 +1,112 @@
+@startuml KienTruc_TongThe
+!theme plain
+skinparam roundcorner 8
+skinparam componentStyle uml2
+
+title BIEU DO KIEN TRUC HE THONG TONG THE (OVERALL SYSTEM ARCHITECTURE)\nHE THONG QUAN LY QUAN CAFE - MO HINH 3 TANG (3-TIER ARCHITECTURE)
+
+' ============================================================
+' 1. TANG KHACH (CLIENT TIER / PRESENTATION TIER)
+' ============================================================
+package "Tang Giao Dien Nguoi Dung (Client / Presentation Tier)" as CLIENT_TIER {
+    actor "Phuc Vu\n(PHUC_VU)" as ACTOR_PV
+    actor "Thu Ngan\n(THU_NGAN)" as ACTOR_TN
+    actor "Quan Ly / Admin\n(QUAN_LY)" as ACTOR_QL
+
+    node "Trinh Duyet Web (Web Browser - Chrome / Edge / Firefox / Safari)" as BROWSER {
+        component "Trang Dang Nhap\n(index.html)" as UI_LOGIN
+        component "Trang Ban Hang & So Do Ban\n(banhang.html)" as UI_POS
+        component "Trang Quan Ly Kho & Cong Thuc\n(kho.html)" as UI_KHO
+        component "Trang Quan Ly Nhan Su & Cham Cong\n(nhansu.html)" as UI_NHANSU
+        component "Module Giao Dien Dung Chung\n(dung-chung.js / mossary.css)" as UI_COMMON
+    }
+
+    ACTOR_PV --> UI_POS : "Goi mon, In Bar, Yeu cau thanh toan"
+    ACTOR_PV --> UI_NHANSU : "Check-in, Check-out ca lam"
+    ACTOR_TN --> UI_POS : "In tam tinh, Xac nhan thanh toan, Dong ban"
+    ACTOR_QL --> UI_KHO : "Kiem ke kho, Nhap kho, Cong thuc, Lich su kho"
+    ACTOR_QL --> UI_NHANSU : "Phan ca tuan, Dieu chinh cham cong, KPI"
+    ACTOR_QL --> UI_POS : "Ap dung chiet khau, Huy don"
+}
+
+' ============================================================
+' 2. TANG UNG DUNG (APPLICATION TIER / SPRING BOOT BACKEND)
+' ============================================================
+package "Tang Ung Dung Backend (Spring Boot 3.2.5 - Port 8080)" as APP_TIER {
+    
+    package "com.cafe.controller (REST Controller & Session Filter)" as PKG_CTL {
+        component "XacThucController" as CTL_AUTH
+        component "BanController" as CTL_BAN
+        component "MonNuocController" as CTL_MON
+        component "DonHangController" as CTL_DONHANG
+        component "KhoController" as CTL_KHO
+        component "NhanSuController" as CTL_NHANSU
+        component "CaLamController" as CTL_CALAM
+        component "ChamCongController" as CTL_CHAMCONG
+        component "PhanCaController" as CTL_PHANCA
+        component "PhanQuyenSession\n(RBAC Filter / Aspect)" as CTL_RBAC
+        component "NgoaiLeControllerAdvice\n(Global Exception Handler)" as CTL_ADVICE
+    }
+
+    package "com.cafe.service (Business Logic Layer)" as PKG_SRV {
+        component "DonHangService\n(Quan ly ban hang, hoa don, tinh tien)" as SRV_DONHANG
+        component "KhoService\n(Tru kho tu dong, kiem ke, cong thuc BOM)" as SRV_KHO
+        component "NhanSuService\n(Phan ca, cham cong, xac thuc, KPI)" as SRV_NHANSU
+    }
+
+    package "com.cafe.scheduler (Scheduled Tasks)" as PKG_SCHEDULER {
+        component "ChotCaTuDongScheduler\n(@Scheduled cron chot ca, ghi vang/quen check-out)" as SCHED_CHOTCA
+    }
+
+    package "com.cafe.repository (Spring Data JPA Repositories)" as PKG_REPO {
+        component "NhanVienRepository" as REPO_NV
+        component "CaLamRepository" as REPO_CL
+        component "PhanCaRepository" as REPO_PC
+        component "ChamCongRepository" as REPO_CC
+        component "BanRepository" as REPO_BAN
+        component "MonNuocRepository" as REPO_MON
+        component "HoaDonRepository" as REPO_HD
+        component "ChiTietHoaDonRepository" as REPO_CTHD
+        component "NguyenLieuRepository" as REPO_NL
+        component "CongThucRepository" as REPO_CT
+        component "LichSuKhoRepository" as REPO_LSK
+    }
+}
+
+' ============================================================
+' 3. TANG DU LIEU (DATA TIER / DATABASE)
+' ============================================================
+package "Tang Co So Du Lieu (Data Tier - MySQL / MariaDB Port 3306)" as DATA_TIER {
+    database "quan_ly_cafe (InnoDB, UTF-8)" as DB_CAFE {
+        frame "Nhom Nhan Su & Phan Ca" {
+            [nhan_vien]
+            [ca_lam]
+            [phan_ca]
+            [cham_cong]
+        }
+        frame "Nhom Ban Hang & POS" {
+            [ban]
+            [mon_nuoc]
+            [hoa_don]
+            [chi_tiet_hoa_don]
+        }
+        frame "Nhom Kho & Dinh Muc Pha Che" {
+            [nguyen_lieu]
+            [cong_thuc]
+            [lich_su_kho]
+        }
+    }
+}
+
+' ============================================================
+' LIEN KET GIUA CAC TANG (INTER-LAYER CONNECTIONS)
+' ============================================================
+BROWSER --> PKG_CTL : "HTTP REST API / JSON (Fetch API)"
+PKG_CTL ..> CTL_RBAC : "Kiem tra phien session & vai tro"
+PKG_CTL --> PKG_SRV : "Dieu phoi xu ly nghiep vu"
+PKG_SRV --> PKG_REPO : "Goi truy van JPA / Hibernate ORM"
+SCHED_CHOTCA --> SRV_NHANSU : "Dinh ky kich hoat chot ca tu dong"
+SRV_DONHANG ..> SRV_KHO : "Goi truKhoTuDong() khi thanh toan"
+PKG_REPO --> DB_CAFE : "JDBC Connection Pool (HikariCP / Port 3306)"
+
+@enduml

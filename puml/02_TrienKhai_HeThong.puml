@@ -1,0 +1,68 @@
+@startuml TrienKhai_HeThong
+!theme plain
+skinparam roundcorner 8
+skinparam nodeStyle rectangle
+
+title BIEU DO TRIEN KHAI HE THONG (SYSTEM DEPLOYMENT DIAGRAM)\nMO HINH TRIEN KHAI TAI QUAN CAFE (ON-PREMISE / LOCAL NETWORK)
+
+node "Thiet Bi Dau Cuoi Nguoi Dung (Client Devices)\n<<device>>" as CLIENT_DEVICE {
+    node "Trinh Duyet Web Hien Dai\n<<execution environment>>\n(Google Chrome, Microsoft Edge, Safari)" as CLIENT_BROWSER {
+        artifact "Giao Dien Web SPA/MPA\n(HTML5, CSS3 Tailwind/Mossary, JavaScript ES6)\n[index.html, banhang.html, kho.html, nhansu.html]" as WEB_APP
+    }
+}
+
+node "Thiet Bi May In (Peripherals)\n<<device>>" as PRINTER_DEVICE {
+    artifact "May In Nhiet Hoa Don & Phieu Bar\n(Kho giay K80 / K58 - 80mm/58mm)" as PRINTER_RECEIPT
+}
+
+node "May Chu Ung Dung (Application Server)\n<<device>>\nOS: Windows Server / Windows 10/11 / Ubuntu Linux" as APP_SERVER {
+    node "Java Virtual Machine (JVM 17+)\n<<execution environment>>" as JVM_ENV {
+        node "Embedded Apache Tomcat 10.x\n(Web Server & Servlet Container - Port: 8080)" as TOMCAT_CONTAINER {
+            artifact "quan-ly-cafe-0.0.1-SNAPSHOT.jar\n<<artifact>>\nFramework: Spring Boot 3.2.5\nSpring Data JPA, Hibernate ORM, Spring Scheduling" as APP_ARTIFACT
+        }
+    }
+}
+
+node "May Chu Co So Du Lieu (Database Server)\n<<device>>\nLocalhost / Server Rieng (XAMPP / MariaDB)" as DB_SERVER {
+    node "MySQL Database Management System\n<<execution environment>>\nVersion: MySQL 8.0+ / MariaDB 10.4+\nPort: 3306" as MYSQL_ENGINE {
+        database "quan_ly_cafe\n<<database schema>>\nStorage Engine: InnoDB\nCharset: utf8mb4 / Collation: utf8mb4_unicode_ci" as DB_SCHEMA {
+            folder "11 Bang CSDL Quan He Chuan 3NF" {
+                [nhan_vien]
+                [ca_lam]
+                [phan_ca]
+                [cham_cong]
+                [ban]
+                [mon_nuoc]
+                [hoa_don]
+                [chi_tiet_hoa_don]
+                [nguyen_lieu]
+                [cong_thuc]
+                [lich_su_kho]
+            }
+        }
+    }
+}
+
+' Ket noi vat ly va giao thuc mang
+CLIENT_BROWSER -- APP_SERVER : "HTTP / HTTPS REST API (Port 8080)\nJSON Data Exchange / Session Cookie"
+APP_SERVER -- DB_SERVER : "JDBC Protocol (Port 3306)\nHikariCP Connection Pooling\nSSL/TLS Security"
+CLIENT_DEVICE .. PRINTER_DEVICE : "Browser Print Dialog / Web USB / LAN Socket\nIn phieu Bar & In hoa don tam tinh / thanh toan"
+
+note right of APP_ARTIFACT
+  **Cau Hinh Trien Khai Backend:**
+  - Runtime: OpenJDK 17 LTS
+  - Port dich vu: 8080
+  - Context path: /
+  - Quan ly tien trinh nen: ChotCaTuDongScheduler (@Scheduled)
+  - Xu ly giao dich: @Transactional (Isolation Read Committed)
+end note
+
+note right of DB_SCHEMA
+  **Dac Ta Co So Du Lieu:**
+  - 11 Bang quan he toan ven khoa ngoai (FK)
+  - Khoa chinh tu tang (Auto Increment)
+  - Rang buoc duy nhat (Unique Constraints)
+  - Toi uu chi muc (Index tren ma_ban, ma_nv, ngay_lam)
+end note
+
+@enduml

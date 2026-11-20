@@ -1,0 +1,124 @@
+@startuml UseCase_TongQuat
+!theme plain
+skinparam roundcorner 8
+skinparam packageStyle rectangle
+
+title BIEU DO CA SU DUNG TONG QUAT (OVERALL USE CASE DIAGRAM)\nHE THONG QUAN LY QUAN CAFE (SANGRIMAR CAFE & LOUNGE)
+
+left to right direction
+
+' ============================================================
+' DINH NGHIA CAC TAC NHAN (ACTORS) VA PHAN CAP VAI TRO
+' ============================================================
+actor "Nhan Vien Phuc Vu\n(PHUC_VU)" as PV
+actor "Nhan Vien Thu Ngan\n(THU_NGAN)" as TN
+actor "Quan Ly / Admin\n(QUAN_LY)" as QL
+actor "Tien Trinh He Thong\n(ChotCaTuDongScheduler)" as SYS
+
+' Phan cap vai tro (RBAC Hierarchy)
+PV <|-- TN
+TN <|-- QL
+
+' ============================================================
+' HE THONG CHINH VA CAC PHAN HE CA SU DUNG
+' ============================================================
+rectangle "He Thong Quan Ly Quan Cafe" {
+
+    ' --- 1. Phan He Xac Thuc & Phien Lam Viec ---
+    package "Phan He Xac Thuc & Phien Lam Viec" {
+        usecase "UC01: Dang nhap he thong" as UC_Login
+        usecase "UC02: Dang xuat he thong" as UC_Logout
+        usecase "UC03: Xem thong tin phien lam viec" as UC_SessionInfo
+    }
+
+    ' --- 2. Phan He Ban Hang & So Do Ban (POS) ---
+    package "Phan He Ban Hang & So Do Ban (POS)" {
+        usecase "UC04: Xem so do ban, trang thai & tien tam tinh" as UC_XemBan
+        usecase "UC05: Xem thuc don & so ly co the lam (soLyCoTheLam)" as UC_XemThucDon
+        usecase "UC06: Mo ban & Tao don hang moi" as UC_TaoDon
+        usecase "UC07: In phieu che bien cho Quay Bar (In Bar)" as UC_InBar
+        usecase "UC08: Yeu cau thanh toan (Ban sang CHO_THANH_TOAN)" as UC_YeuCauTT
+        usecase "UC09: Quay lai phuc vu (Ban tro ve DANG_DUNG_NUOC)" as UC_QuayLaiPV
+        usecase "UC10: In bill tam tinh (Pre-check Bill)" as UC_InTamTinh
+        usecase "UC11: Xac nhan thanh toan (Tien mat / VietQR) & Dong ban" as UC_XacNhanTT
+        usecase "UC12: Ap dung chiet khau giam gia" as UC_ChietKhau
+        usecase "UC13: Huy don hang" as UC_HuyDon
+        usecase "UC14: Tu dong tru kho & Ghi lich su kho" as UC_TruKhoTuDong
+    }
+
+    ' --- 3. Phan He Quan Ly Kho & Dinh Muc Cong Thuc ---
+    package "Phan He Quan Ly Kho & Dinh Muc (BOM)" {
+        usecase "UC15: Xem danh muc nguyen lieu & Canh bao ton toi thieu" as UC_XemKho
+        usecase "UC16: Nhap kho nguyen lieu bo sung" as UC_NhapKho
+        usecase "UC17: Kiem ke kho & Can can ton kho (ghi nhan hao hut)" as UC_KiemKe
+        usecase "UC18: Tra cuu lich su giao dich kho (lich_su_kho)" as UC_LichSuKho
+        usecase "UC19: Quan ly dinh muc cong thuc mon uong (BOM)" as UC_CongThuc
+        usecase "UC20: Quan ly danh muc mon nuoc (Them, sua, ngung ban)" as UC_MonNuoc
+    }
+
+    ' --- 4. Phan He Quan Ly Nhan Su & Cham Cong ---
+    package "Phan He Quan Ly Nhan Su & Cham Cong" {
+        usecase "UC21: Check-in ca lam viec thoi gian thuc" as UC_CheckIn
+        usecase "UC22: Check-out ca lam viec & Tinh gio cong quy doi" as UC_CheckOut
+        usecase "UC23: Xem lich phan ca & Bang cong ca nhan" as UC_XemCongCaNhan
+        usecase "UC24: Quan ly ho so nhan vien (Them, sua, ngung lam)" as UC_QLNhanVien
+        usecase "UC25: Quan ly ca lam (Gio bat dau, ket thuc, he so)" as UC_QLCaLam
+        usecase "UC26: Phan ca tuan cho nhan vien" as UC_PhanCaTuan
+        usecase "UC27: Dieu phoi & Doi ca lam viec" as UC_DoiCa
+        usecase "UC28: Dieu chinh ban ghi cham cong & Ghi ly do" as UC_DieuChinhCong
+        usecase "UC29: Chot ca tu dong & Ghi nhan vang / quen check-out" as UC_ChotCa
+        usecase "UC30: Xem bao cao KPI doanh thu & Bang cong thang" as UC_BaoCaoKPI
+    }
+}
+
+' ============================================================
+' LIEN KET GIUA TAC NHAN VA CAC CA SU DUNG
+' ============================================================
+' Nhan vien phuc vu
+PV --> UC_Login
+PV --> UC_Logout
+PV --> UC_SessionInfo
+PV --> UC_XemBan
+PV --> UC_XemThucDon
+PV --> UC_TaoDon
+PV --> UC_InBar
+PV --> UC_YeuCauTT
+PV --> UC_QuayLaiPV
+PV --> UC_CheckIn
+PV --> UC_CheckOut
+PV --> UC_XemCongCaNhan
+
+' Nhan vien thu ngan (ke thua Phuc Vu va co them quyen)
+TN --> UC_InTamTinh
+TN --> UC_XacNhanTT
+TN --> UC_HuyDon
+
+' Quan ly / Admin (ke thua Thu Ngan va toan quyen he thong)
+QL --> UC_ChietKhau
+QL --> UC_XemKho
+QL --> UC_NhapKho
+QL --> UC_KiemKe
+QL --> UC_LichSuKho
+QL --> UC_CongThuc
+QL --> UC_MonNuoc
+QL --> UC_QLNhanVien
+QL --> UC_QLCaLam
+QL --> UC_PhanCaTuan
+QL --> UC_DoiCa
+QL --> UC_DieuChinhCong
+QL --> UC_BaoCaoKPI
+
+' Tien trinh he thong tu dong
+SYS --> UC_ChotCa
+
+' ============================================================
+' MOI QUAN HE INCLUDE & EXTEND GIUA CAC USE CASE
+' ============================================================
+UC_TaoDon ..> UC_XemBan : <<include>>
+UC_TaoDon ..> UC_XemThucDon : <<include>>
+UC_XacNhanTT ..> UC_TruKhoTuDong : <<include>>
+UC_InTamTinh ..> UC_YeuCauTT : <<extend>>
+UC_ChietKhau ..> UC_XacNhanTT : <<extend>>
+UC_CheckOut ..> UC_CheckIn : <<include>>
+
+@enduml

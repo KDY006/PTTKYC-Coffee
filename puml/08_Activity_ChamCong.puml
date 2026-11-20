@@ -1,0 +1,134 @@
+@startuml Activity_ChamCong
+!theme plain
+skinparam roundcorner 8
+skinparam ConditionEndStyle hdl
+skinparam defaultTextAlignment center
+
+title BIEU DO HOAT DONG QUAN LY CHAM CONG & CHOT CA TU DONG (ACTIVITY DIAGRAM)\nLUONG CHECK-IN, CHECK-OUT, CHOT CA DINH KY VA DIEU CHINH CHAM CONG
+
+|Nhan Vien|
+|He Thong (NhanSuService & Controller)|
+|Tien Trinh Scheduler (ChotCaTuDongScheduler)|
+|Quan Ly / Admin|
+
+' ============================================================
+' LUONG 1: CHECK-IN CA LAM VIEC THOI GIAN THUC
+' ============================================================
+|Nhan Vien|
+start
+:Dang nhap vao he thong, chon tab "Cham cong";
+:Chon ca lam hom nay tu danh sach phan ca;
+:Bam nut "Check-in Ca Lam";
+
+|He Thong (NhanSuService & Controller)|
+:ChamCongController tiep nhan POST /api/cham-cong/check-in;
+:Kiem tra nhan vien trang_thai == 'DANG_LAM';
+:Kiem tra da co phan ca hop le trong ngay chua;
+if (Nhan vien da check-in ca nay trong ngay?) then (Da check-in)
+    :Nem ResponseStatusException (400 Bad Request);\nThong bao: "Nhan vien da check-in ca nay roi";
+    stop
+else (Chua check-in)
+    :Lay gio hien tai (now = LocalDateTime.now());
+    :Kiem tra khung thoi gian check-in hop le:\n[gioBatDau - 30 phut, gioKetThuc);
+    if (now nam trong khung check-in hop le?) then (Hop le)
+        :Tinh do lech so phut: diff = Duration.between(gioBatDau, now).toMinutes();
+        if (diff <= 15) then (Den dung gio hoac den som)
+            :trangThai = 'DUNG_GIO';\nsoPhutTre = 0;
+        else (Den tre qua 15 phut)
+            :trangThai = 'DI_TRE';\nsoPhutTre = diff;
+        endif
+        :Tao ban ghi cham_cong moi:\n- ma_nv, ma_ca, ngay_lam = CURRENT_DATE\n- gio_check_in = now\n- trang_thai = trangThai\n- so_phut_tre = soPhutTre;
+        :ChamCongRepository.save(chamCong);
+        :Tra ve HTTP 200 OK kem thong tin check-in;
+        |Nhan Vien|
+        :Nhan thong bao check-in thanh cong;
+    else (Ngoai khung gio ca)
+        :Nem ResponseStatusException (400 Bad Request);\nThong bao: "Chua den gio hoac ca lam da ket thuc";
+        stop
+    endif
+endif
+
+' ============================================================
+' LUONG 2: CHECK-OUT CA LAM VIEC
+' ============================================================
+|Nhan Vien|
+:Sau khi hoan thanh ca lam viec;\nBam nut "Check-out Ca Lam";
+
+|He Thong (NhanSuService & Controller)|
+:ChamCongController tiep nhan POST /api/cham-cong/check-out;
+:Truy van ban ghi cham_cong cua nhan vien trong ca hom nay;
+if (Da check-in va gio_check_out == null?) then (Hop le)
+    :Lay gio hien tai (now = LocalDateTime.now());
+    :Tinh so gio lam viec thuc te:\nsoGioLam = Duration.between(gioCheckIn, now).toMinutes() / 60.0;
+    
+    if (now < caLam.gioKetThuc) then (Ve som)
+        :soPhutVeSom = Duration.between(now, caLam.gioKetThuc).toMinutes();
+        if (soPhutVeSom > 15) then (Ve som > 15 phut)
+            if (chamCong.trangThai == 'DI_TRE') then
+                :chamCong.trangThai = 'DI_TRE_VE_SOM';
+            else
+                :chamCong.trangThai = 'VE_SOM';
+            endif
+        else (Ve som <= 15 phut)
+            :soPhutVeSom = 0;
+        endif
+    else (Dung gio hoac lam them)
+        :soPhutVeSom = 0;
+    endif
+
+    :Tinh gio cong quy doi:\ngioCongQuyDoi = soGioLam * caLam.heSoLuong;
+    :Cap nhat ban ghi cham_cong:\n- gio_check_out = now\n- so_gio_lam = soGioLam\n- so_phut_ve_som = soPhutVeSom\n- gio_cong_quy_doi = gioCongQuyDoi;
+    :ChamCongRepository.save(chamCong);
+    :Tra ve HTTP 200 OK kem thong tin check-out;
+    |Nhan Vien|
+    :Nhan thong bao check-out thanh cong va so gio cong dat duoc;
+else (Khong hop le)
+    :Nem ResponseStatusException (400 Bad Request);\nThong bao: "Chua check-in hoac da check-out ca nay roi";
+    stop
+endif
+
+' ============================================================
+' LUONG 3: CHOT CA TU DONG (TIEN TRINH NEN)
+' ============================================================
+|Tien Trinh Scheduler (ChotCaTuDongScheduler)|
+:Dinh ky kich hoat job chot ca (@Scheduled cron);\nChotCaTuDongScheduler.tuDongChotCaVaGhiNhanVang();
+|He Thong (NhanSuService & Controller)|
+:NhanSuService.chotCaTuDong();
+:Quet toan bo phan_ca cua cac ca lam da ket thuc trong ngay;
+
+while (Con phan_ca can kiem tra?) is (Co)
+    if (Phan ca chua he co ban ghi cham_cong?) then (Vang mat)
+        :Tao ban ghi cham_cong moi:\n- trang_thai = 'VANG'\n- so_gio_lam = 0\n- gio_cong_quy_doi = 0\n- ghi_chu = 'He thong tu dong ghi nhan vang';
+        :ChamCongRepository.save(chamCong);
+    else (Da co cham_cong)
+        if (gio_check_in != null va gio_check_out == null?) then (Quen check-out)
+            :Cap nhat cham_cong:\n- trang_thai = 'QUEN_CHECK_OUT'\n- so_gio_lam = 0\n- gio_cong_quy_doi = 0\n- ghi_chu = 'He thong chot ca do quen check-out';
+            :ChamCongRepository.save(chamCong);
+        else (Da check-out day du)
+            :Giu nguyen ban ghi hop le;
+        endif
+    endif
+endwhile (Het danh sach phan ca)
+:Hoan tat tien trinh chot ca tu dong;
+
+' ============================================================
+' LUONG 4: QUAN LY DIEU CHINH CHAM CONG
+' ============================================================
+|Quan Ly / Admin|
+:Xem danh sach cham cong thang va kpi nhan vien;
+if (Phat hien nhan vien quen check-out hoac co giai trinh hop ly?) then (Dieu chinh)
+    :Chon ban ghi cham cong can sua;\nNhap gioCheckIn, gioCheckOut moi, trang thai va ly do dieu chinh;
+    :Goi PUT /api/cham-cong/{id}/dieu-chinh;
+    |He Thong (NhanSuService & Controller)|
+    :Kiem tra quyen QUAN_LY qua PhanQuyenSession;
+    :Tinh lai soGioLam, soPhutTre, soPhutVeSom, gioCongQuyDoi;
+    :Cap nhat cham_cong:\n- nguoi_dieu_chinh = maNVQuanLy\n- ly_do_dieu_chinh = dto.lyDo\n- thoi_gian_dieu_chinh = LocalDateTime.now();
+    :ChamCongRepository.save(chamCong);
+    |Quan Ly / Admin|
+    :Nhan thong bao ban ghi da duoc dieu chinh thanh cong;
+else (Khong dieu chinh)
+endif
+
+stop
+
+@enduml

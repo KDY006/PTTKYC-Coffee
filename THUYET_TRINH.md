@@ -138,7 +138,7 @@ Kịch bản được thiết kế theo cấu trúc đan xen nhịp nhàng giữ
 ### Slide 03: Mục Tiêu To-Be & Ma Trận Ranh Giới (In-Scope vs Out-of-Scope)
 * **Người trình bày:** Nguyễn Văn Duy
 * **Thời lượng:** 45 giây (Mốc 01:30 – 02:15)
-* **Minh chứng trực quan:** Sơ đồ triển khai hệ thống [diagram/TrienKhai.svg](file:///d:/3.1.%20PTTKYC/CK/diagram/TrienKhai.svg).
+* **Minh chứng trực quan:** Sơ đồ triển khai hệ thống [diagram/TrienKhaiHeThong.svg](file:///d:/3.1.%20PTTKYC/CK/diagram/TrienKhaiHeThong.svg).
 * **Mục tiêu nghiệp vụ:** Làm rõ mục tiêu hệ thống To-Be và xác định dứt khoát ranh giới phạm vi đề tài, chứng minh tính khả thi kỹ thuật.
 
 > 🗣️ **LỜI THOẠI CHI TIẾT (VERBATIM SPEECH - DUY):** 
@@ -237,7 +237,7 @@ Kịch bản được thiết kế theo cấu trúc đan xen nhịp nhàng giữ
 ### Slide 08: Chu Trình SOP 9 Bước, Cơ Chế In Bar Delta & Bộ 3 Phiếu In
 * **Người trình bày:** Trần Văn Quý
 * **Thời lượng:** 1 phút (Mốc 06:00 – 07:00)
-* **Minh chứng trực quan:** Sơ đồ tuần tự POS [diagram/Sequence_POS.svg](file:///d:/3.1.%20PTTKYC/CK/diagram/Sequence_POS.svg).
+* **Minh chứng trực quan:** Sơ đồ tuần tự POS [diagram/Sequence_BanHang.svg](file:///d:/3.1.%20PTTKYC/CK/diagram/Sequence_BanHang.svg).
 * **Mục tiêu nghiệp vụ:** Trình bày chu trình phục vụ chuẩn mực 9 bước (SOP), giải pháp kỹ thuật In Bar Delta chống lãng phí nguyên liệu và chuẩn hóa bộ 3 phiếu in nhiệt.
 
 > 🗣️ **LỜI THOẠI CHI TIẾT (VERBATIM SPEECH - QUÝ):** 
@@ -262,7 +262,7 @@ Kịch bản được thiết kế theo cấu trúc đan xen nhịp nhàng giữ
 * **Người thực hiện Demo:** Trần Văn Quý
 * **Thời lượng:** 2 phút (Mốc 07:00 – 09:00)
 * **Trang web thao tác:** `http://localhost:8080/index.html` $\rightarrow$ `banhang.html`.
-* **Minh chứng trực quan:** Sơ đồ hoạt động POS [diagram/Activity_POS.svg](file:///d:/3.1.%20PTTKYC/CK/diagram/Activity_POS.svg).
+* **Minh chứng trực quan:** Sơ đồ hoạt động POS [diagram/Activity_BanHang.svg](file:///d:/3.1.%20PTTKYC/CK/diagram/Activity_BanHang.svg).
 * **Mục tiêu nghiệp vụ:** Thao tác thực chiến 5 bước: Mở Bàn 03, gọi món theo Soft Reservation, in Bar Delta, khóa bàn `CHO_THANH_TOAN`, in Phiếu Tạm Tính VietQR và đóng bàn giải phóng về màu Xanh dương.
 
 > 🗣️ **LỜI THOẠI THAO TÁC THỰC CHIẾN (QUÝ):** 
@@ -364,7 +364,7 @@ Kịch bản được thiết kế theo cấu trúc đan xen nhịp nhàng giữ
 ### Slide 13: Nghiệp Vụ Kho: Định Mức BOM 12 Món & Công Thức Giá Vốn WAC
 * **Người trình bày:** Nguyễn Văn Duy
 * **Thời lượng:** 1 phút (Mốc 12:30 – 13:30)
-* **Minh chứng trực quan:** Sơ đồ lớp miền [diagram/ClassDiagram.svg](file:///d:/3.1.%20PTTKYC/CK/diagram/ClassDiagram.svg).
+* **Minh chứng trực quan:** Sơ đồ lớp miền [diagram/LopThietKe.svg](file:///d:/3.1.%20PTTKYC/CK/diagram/LopThietKe.svg).
 * **Mục tiêu nghiệp vụ:** Phân tích cấu trúc định mức kỹ thuật 34 dòng BOM cấu thành 12 món từ 13 nguyên liệu thực tế, giải thích công thức tính giá vốn bình quân gia quyền liên hoàn WAC.
 
 > 🗣️ **LỜI THOẠI CHI TIẾT (VERBATIM SPEECH - DUY):** 

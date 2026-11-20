@@ -1,0 +1,132 @@
+@startuml StateMachine_TrangThai
+!theme plain
+skinparam roundcorner 8
+
+title BIEU DO MAY TRANG THAI (STATE MACHINE DIAGRAMS)\nVONG DOI CUA CAC THUC THE COT LOI TRONG HE THONG QUAN LY QUAN CAFE
+
+' ============================================================
+' 1. VONG DOI TRANG THAI BAN (BAN)
+' ============================================================
+state "Vong Doi Trang Thai Ban (Ban)" as VongDoiBan {
+    [*] --> TRONG : Khoi tao ban moi trong CSDL
+    
+    TRONG : Ban san sang don khach ngoi
+    TRONG : Mau hien thi giao dien POS: VIEN XANH DUONG (#2563eb) - San sang don khach
+    
+    DANG_DUNG_NUOC : Khach dang ngoi tai ban va su dung do uong
+    DANG_DUNG_NUOC : Mau hien thi giao dien POS: VIEN XANH LA (#16a34a) - Hien thi tien tam tinh
+    
+    CHO_THANH_TOAN : Khach da yeu cau tinh tien, cho in bill va xac nhan
+    CHO_THANH_TOAN : Mau hien thi giao dien POS: VIEN VANG HO PHACH (#d97706) - Khoa sua mon
+    
+    TRONG --> DANG_DUNG_NUOC : Phuc vu chon ban & Bam "Mo ban / Tao don" [taoDonHang()]
+    DANG_DUNG_NUOC --> CHO_THANH_TOAN : Phuc vu bam "Yeu cau thanh toan" [yeuCauThanhToan()]
+    CHO_THANH_TOAN --> DANG_DUNG_NUOC : Phuc vu bam "Quay lai phuc vu" [quayLaiPhucVu()]\n(Khi khach muon ngoi tiep hoac goi them do uong)
+    CHO_THANH_TOAN --> TRONG : Thu ngan xac nhan thanh toan [thanhToanDonHang()]\n[Tru kho thanh cong & Dong ban]
+    DANG_DUNG_NUOC --> TRONG : Thu ngan thanh toan truc tiep hoac huy don hang [huyDonHang()]
+}
+
+' ------------------------------------------------------------
+
+' ============================================================
+' 2. VONG DOI TRANG THAI HOA DON (HOA_DON)
+' ============================================================
+state "Vong Doi Trang Thai Hoa Don (HoaDon)" as VongDoiHoaDon {
+    [*] --> DANG_PHUC_VU : Phuc vu mo ban & tao don hang moi [taoDonHang()]
+    
+    DANG_PHUC_VU : Dang phuc vu tai ban / Cho che bien Quay Bar
+    DANG_PHUC_VU : Cho phep them mon, sua so luong, in phieu Bar
+    
+    CHO_THANH_TOAN : Da yeu cau thanh toan, cho doi chieu va thu tien
+    CHO_THANH_TOAN : Cho phep in bill tam tinh, khoa them mon thong thuong
+    
+    DA_THANH_TOAN : Da xac nhan thanh toan tien mat hoac VietQR
+    DA_THANH_TOAN : Da tu dong tru kho nguyen lieu thanh cong theo @Transactional
+    DA_THANH_TOAN : Hoa don bat bien (khong duoc phep chinh sua hay huy)
+    
+    DA_HUY : Don hang bi huy bo boi Thu Ngan hoac Quan Ly
+    DA_HUY : Khong phat sinh doanh thu, khong tru kho nguyen lieu
+    
+    DANG_PHUC_VU --> CHO_THANH_TOAN : Phuc vu bam "Yeu cau thanh toan" [yeuCauThanhToan()]
+    CHO_THANH_TOAN --> DANG_PHUC_VU : Phuc vu bam "Quay lai phuc vu" [quayLaiPhucVu()]
+    CHO_THANH_TOAN --> DA_THANH_TOAN : Thu ngan bam "Xac nhan thanh toan" [thanhToanDonHang()]\n[Kho du nguyen lieu & Kiem tra phienBan hop le]
+    DANG_PHUC_VU --> DA_THANH_TOAN : Thu ngan thanh toan truc tiep [thanhToanDonHang()]
+    DANG_PHUC_VU --> DA_HUY : Thu ngan / Quan ly bam "Huy don hang" [huyDonHang()]
+    CHO_THANH_TOAN --> DA_HUY : Thu ngan / Quan ly bam "Huy don hang" [huyDonHang()]
+    
+    DA_THANH_TOAN --> [*] : Luu tru lich su doanh thu vinh vien
+    DA_HUY --> [*]
+}
+
+' ------------------------------------------------------------
+
+' ============================================================
+' 3. VONG DOI TRANG THAI CHAM CONG (CHAM_CONG)
+' ============================================================
+state "Vong Doi Trang Thai Cham Cong (ChamCong)" as VongDoiChamCong {
+    [*] --> DUNG_GIO : Nhan vien check-in som hoac tre <= 15 phut [checkIn()]
+    [*] --> DI_TRE : Nhan vien check-in tre > 15 phut [checkIn()]
+    [*] --> VANG : ChotCaTuDongScheduler tu dong ghi nhan vang khi het ca [chotCaTuDong()]
+    
+    DUNG_GIO : Check-in dung gio quy dinh
+    DI_TRE : Check-in tre so voi gio bat dau ca lam
+    VE_SOM : Check-in dung gio nhung check-out som > 15 phut
+    DI_TRE_VE_SOM : Check-in di tre va check-out som > 15 phut
+    QUEN_CHECK_OUT : Co check-in nhung quen khong check-out khi ca ket thuc
+    VANG : Khong den lam va khong check-in ca lam viec
+    
+    DUNG_GIO --> VE_SOM : Nhan vien check-out som > 15 phut [checkOut()]
+    DI_TRE --> DI_TRE_VE_SOM : Nhan vien check-out som > 15 phut [checkOut()]
+    
+    DUNG_GIO --> QUEN_CHECK_OUT : ChotCaTuDongScheduler quet ban ghi quen check-out khi ca ket thuc
+    DI_TRE --> QUEN_CHECK_OUT : ChotCaTuDongScheduler quet ban ghi quen check-out khi ca ket thuc
+    
+    QUEN_CHECK_OUT --> DUNG_GIO : Quan ly dieu chinh gio ra hop le [dieuChinhChamCong()]
+    QUEN_CHECK_OUT --> DI_TRE : Quan ly dieu chinh gio ra hop le [dieuChinhChamCong()]
+    VANG --> DUNG_GIO : Quan ly dieu chinh bo sung check-in/out [dieuChinhChamCong()]
+}
+
+' ------------------------------------------------------------
+
+' ============================================================
+' 4. VONG DOI TON KHO NGUYEN LIEU (NGUYEN_LIEU)
+' ============================================================
+state "Vong Doi Trang Thai Ton Kho Nguyen Lieu (NguyenLieu)" as VongDoiNguyenLieu {
+    [*] --> TON_KHO_AN_TOAN : Khoi tao va nhap kho ban dau
+    
+    TON_KHO_AN_TOAN : soLuongTon > mucTonToiThieu
+    TON_KHO_AN_TOAN : Hien thi nhan xanh: "Du hang"
+    
+    CANH_BAO_SAP_HET : 0 < soLuongTon <= mucTonToiThieu
+    CANH_BAO_SAP_HET : Bat nhan canh bao vang/do "SAP HET HANG" tren trang Kho & Topbar
+    
+    HET_HANG : soLuongTon == 0
+    HET_HANG : Khoa mon uong tuong ung tren POS (soLyCoTheLam = 0)
+    
+    TON_KHO_AN_TOAN --> CANH_BAO_SAP_HET : Tu dong tru kho khi thanh toan hoa don [soLuongTon <= mucTonToiThieu]
+    CANH_BAO_SAP_HET --> HET_HANG : Tru kho den khi so ton ve 0 [soLuongTon == 0]
+    
+    CANH_BAO_SAP_HET --> TON_KHO_AN_TOAN : Quan ly nhap kho bo sung [nhapKho()] hoac kiem ke [kiemKeKho()]
+    HET_HANG --> TON_KHO_AN_TOAN : Quan ly nhap hang so luong lon [soLuongTon > mucTonToiThieu]
+    HET_HANG --> CANH_BAO_SAP_HET : Quan ly nhap hang so luong nho [soLuongTon <= mucTonToiThieu]
+}
+
+' ------------------------------------------------------------
+
+' ============================================================
+' 5. VONG DOI HO SO NHAN VIEN (NHAN_VIEN)
+' ============================================================
+state "Vong Doi Trang Thai Nhan Vien (NhanVien)" as VongDoiNhanVien {
+    [*] --> DANG_LAM : Quan ly tao ho so nhan vien moi
+    
+    DANG_LAM : Nhan vien dang lam viec tai quan cafe
+    DANG_LAM : Duoc phep dang nhap, phan ca va cham cong
+    
+    DA_NGHI : Nhan vien da thoi viec
+    DA_NGHI : Bi khoa dang nhap va khong xuat hien trong lich phan ca moi
+    
+    DANG_LAM --> DA_NGHI : Quan ly cap nhat "Ngung lam viec"
+    DA_NGHI --> DANG_LAM : Quan ly cap nhat kich hoat lai trang thai lam viec
+}
+
+@enduml

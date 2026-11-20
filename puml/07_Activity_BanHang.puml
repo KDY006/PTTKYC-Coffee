@@ -1,0 +1,133 @@
+@startuml Activity_BanHang
+!theme plain
+skinparam roundcorner 8
+skinparam ConditionEndStyle hdl
+skinparam defaultTextAlignment center
+
+title BIEU DO HOAT DONG QUY TRINH BAN HANG & PHUC VU TAI BAN (ACTIVITY DIAGRAM)\nCHU TRINH TU KHI KHACH VAO BAN DEN KHI IN BAR, THANH TOAN VA DONG BAN
+
+|Khach Hang|
+|Nhan Vien Phuc Vu|
+|Quay Bar|
+|Nhan Vien Thu Ngan|
+|He Thong (Spring Boot + DB)|
+
+|Khach Hang|
+start
+:Khach vao quan cafe va chon ban ngoi;
+
+|Nhan Vien Phuc Vu|
+:Kiem tra so do ban tren giao dien POS;\n(Ban dang o trang thai TRONG);
+:Mo ban va xem thuc don mon nuoc;\n(Xem thong tin soLyCoTheLam tinh theo ton kho);
+:Ghi nhan mon uong khach chon va them vao don;
+:Bam "Mo ban & Tao don hang";
+
+|He Thong (Spring Boot + DB)|
+:DonHangController -> DonHangService.taoDonHang();
+:Kiem tra ban hop le va chua co don dang phuc vu;
+:Kiem tra ton kho tam tinh cho cac mon dat;
+:Tao ban ghi hoa_don (trang_thai = 'DANG_PHUC_VU');
+:Cap nhat trang_thai ban = 'DANG_DUNG_NUOC';
+:Commit CSDL va tra ve don hang moi;
+
+|Nhan Vien Phuc Vu|
+:Bam nut "In Bar" tren man hinh chi tiet don;
+
+|He Thong (Spring Boot + DB)|
+:DonHangService.inBar(maHoaDon);\nCap nhat so_luong_da_in_bar trong chi_tiet_hoa_don;
+:Xuat du lieu phieu in che bien cho Quay Bar;
+
+|Quay Bar|
+:Nhan phieu in che bien tai quay;\nPha che nuoc uong theo dinh muc;
+:Giao mon nuoc ra ban cho khach;
+
+|Khach Hang|
+:Nhan do uong va su dung dich vu tai ban;
+
+repeat
+    if (Khach muon goi them mon uong?) then (Co goi them)
+        |Nhan Vien Phuc Vu|
+        :Chon ban dang dung nuoc;\nThem mon moi vao don hang hien tai;
+        :Bam "In Bar" cho phan mon goi them;
+        |Quay Bar|
+        :Pha che mon bo sung va mang ra ban;
+        |Khach Hang|
+        :Tiep tuc dung nuoc tai quan;
+    else (Khong goi them)
+    endif
+repeat while (Khach chua yeu cau tinh tien?) is (Dung nuoc tiep)
+
+|Khach Hang|
+:Goi nhan vien phuc vu yeu cau thanh toan;
+
+|Nhan Vien Phuc Vu|
+:Bam "Yeu cau thanh toan" tren he thong;
+
+|He Thong (Spring Boot + DB)|
+:DonHangService.yeuCauThanhToan();\nCap nhat trang_thai ban = 'CHO_THANH_TOAN';\nCap nhat trang_thai hoa_don = 'CHO_THANH_TOAN';
+
+|Nhan Vien Phuc Vu|
+if (Khach bat ngo muon ngoi tiep va goi them mon?) then (Doi y)
+    :Bam "Quay lai phuc vu";
+    |He Thong (Spring Boot + DB)|
+    :Cap nhat ban va hoa_don tro ve 'DANG_DUNG_NUOC';
+    |Nhan Vien Phuc Vu|
+    :Tiep tuc phuc vu khach tai ban;
+else (Tiep tuc thanh toan)
+endif
+
+|Nhan Vien Thu Ngan|
+:Nhan thong bao ban cho thanh toan tren so do ban;\nBam "In tam tinh" (Pre-check bill);
+
+|He Thong (Spring Boot + DB)|
+:Xuat phieu tam tinh gom danh sach mon va tong tien;
+
+|Nhan Vien Phuc Vu|
+:Mang phieu tam tinh den cho khach doi chieu;
+
+|Khach Hang|
+:Kiem tra bill tam tinh va chon phuong thuc thanh toan;
+
+if (Hinh thuc thanh toan?) then (Tien mat)
+    |Khach Hang|
+    :Dua tien mat cho phuc vu / thu ngan;
+    |Nhan Vien Thu Ngan|
+    :Nhan tien, nhap tienKhachDua vao he thong;
+else (Chuyen khoan QR)
+    |Khach Hang|
+    :Quet ma VietQR dong tren man hinh hoac bill;
+    |Nhan Vien Thu Ngan|
+    :Kiem tra bien dong so du tai khoan ngan hang;
+    :Tick chon "Xac nhan da nhan chuyen khoan";
+endif
+
+|Nhan Vien Thu Ngan|
+:Bam "Xac nhan thanh toan" tren he thong;
+
+|He Thong (Spring Boot + DB)|
+partition "Giao Dich Thanh Toan & Tru Kho" {
+    :Kiem tra khoa phienBan (Optimistic Locking);
+    :Goi KhoService.truKhoTuDong() theo cong thuc BOM;
+    :Ghi nhan bien dong vao lich_su_kho (loaiGD = 'XUAT_BAN_HANG');
+    :Cap nhat hoa_don trang_thai = 'DA_THANH_TOAN';
+    :Tinh tien_thua = tien_khach_dua - tong_tien_thanh_toan;
+    :Cap nhat ban trang_thai = 'TRONG';
+    :Commit CSDL thanh cong;
+}
+
+|Nhan Vien Thu Ngan|
+:In hoa don thanh toan chinh thuc;
+if (Thanh toan tien mat va co tien thua?) then (Co)
+    :Thoi tien thua cho khach hang;
+else (Khong co tien thua)
+endif
+
+|Khach Hang|
+:Nhan hoa don (va tien thua), roi quan;
+
+|He Thong (Spring Boot + DB)|
+:So do ban hien thi ban mau xanh (TRONG);\nSan sang phuc vu luot khach tiep theo;
+
+stop
+
+@enduml

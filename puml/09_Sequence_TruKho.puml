@@ -1,0 +1,140 @@
+@startuml Sequence_TruKho
+!theme plain
+autonumber
+skinparam roundcorner 8
+<style>
+participant {
+  Padding 10
+}
+</style>
+
+title BIEU DO TUAN TU DA TANG (MULTI-TIER SEQUENCE DIAGRAM)\nLUONG GIAO DICH TU DONG TRU KHO KHI THU NGAN XAC NHAN THANH TOAN HOA DON
+
+actor "Thu Ngan" as TN
+boundary "banhang.html\n(Giao dien POS)" as UI
+control "DonHangController" as DHC
+control "PhanQuyenSession" as PQS
+entity "DonHangService" as DHS
+entity "KhoService" as KS
+control "CongThucRepository" as CTR
+control "NguyenLieuRepository" as NLR
+control "LichSuKhoRepository" as LSKR
+control "HoaDonRepository" as HDR
+control "BanRepository" as BR
+database "MySQL Server\n(InnoDB Engine)" as DB
+
+TN -> UI : Chon hoa don, nhap tien khach dua & Bam "Xac nhan thanh toan"
+activate UI
+
+UI -> DHC : POST /api/don-hang/45/thanh-toan\nPayload: ThanhToanDTO(phuongThucTT="TIEN_MAT", tienKhachDua=100000, ...)
+activate DHC
+
+DHC -> PQS : kiemTraQuyen(session, "THU_NGAN", "QUAN_LY")
+activate PQS
+PQS --> DHC : Quyen hop le (maNV = 2, vaiTro = "THU_NGAN")
+deactivate PQS
+
+DHC -> DHS : thanhToanDonHang(45, 2, thanhToanDTO)
+activate DHS
+
+note over DHS : Bat dau giao dich CSDL @Transactional\n(Isolation: READ_COMMITTED)
+
+DHS -> HDR : timTheoMaHoaDonDayDu(45)
+activate HDR
+HDR -> DB : SELECT hd.*, cthd.*, b.* FROM hoa_don hd ... WHERE hd.ma_hoa_don = 45
+DB --> HDR : HoaDon Entity (trang_thai='CHO_THANH_TOAN', phien_ban=1, 2 items)
+HDR --> DHS : HoaDon
+deactivate HDR
+
+DHS -> DHS : Kiem tra trang thai hoa don hop le\n(trangThai == CHO_THANH_TOAN || DANG_PHUC_VU)
+
+DHS -> KS : truKhoTuDong(hoaDon, 2)
+activate KS
+
+note over KS : 1. Tong hop nhu cau nguyen lieu theo cong thuc BOM
+loop Tung chi tiet mon uong (ChiTietHoaDon trong HoaDon)
+    KS -> CTR : findByMonNuoc_MaMon(maMon)
+    activate CTR
+    CTR -> DB : SELECT * FROM cong_thuc WHERE ma_mon = ?
+    DB --> CTR : List<CongThuc>
+    CTR --> KS : List<CongThuc>
+    deactivate CTR
+    KS -> KS : tongCanDungMap[maNL] += dinhMuc * soLuongDat
+end
+
+note over KS : 2. Kiem tra so luong ton kho thuc te
+loop Tung nguyen lieu trong tongCanDungMap
+    KS -> NLR : findById(maNL)
+    activate NLR
+    NLR -> DB : SELECT * FROM nguyen_lieu WHERE ma_nl = ? FOR UPDATE
+    DB --> NLR : NguyenLieu Entity (soLuongTon)
+    NLR --> KS : NguyenLieu
+    deactivate NLR
+    
+    alt [soLuongTon < tongCanDung]
+        KS --> DHS : Nem ResponseStatusException(400, "Khong du nguyen lieu...")
+        note over DHS : Giao dich @Transactional bi Rollback hoan toan!
+        DHS --> DHC : ResponseStatusException
+        DHC --> UI : HTTP 400 Bad Request (JSON thong bao loi thieu hang)
+        UI --> TN : Hien thi Toast do: Canh bao thieu nguyen lieu khong the thanh toan!
+    end
+end
+
+note over KS : 3. Thuc hien tru kho & ghi nhat ky lich su kho
+loop Tung nguyen lieu trong tongCanDungMap
+    KS -> KS : tonTruoc = nguyenLieu.getSoLuongTon()\ntonSau = tonTruoc - tongCanDung
+    KS -> KS : nguyenLieu.setSoLuongTon(tonSau)
+    
+    KS -> NLR : save(nguyenLieu)
+    activate NLR
+    NLR -> DB : UPDATE nguyen_lieu SET so_luong_ton = tonSau WHERE ma_nl = ?
+    NLR --> KS : Saved NguyenLieu
+    deactivate NLR
+    
+    KS -> LSKR : save(lichSuKho)
+    activate LSKR
+    LSKR -> DB : INSERT INTO lich_su_kho (ma_nl, ma_nv, ma_hoa_don, loai_gd, so_luong_thay_doi, ton_truoc, ton_sau, thoi_gian, ghi_chu)\nVALUES (?, 2, 45, 'XUAT_BAN_HANG', tongCanDung, tonTruoc, tonSau, NOW(), ...)
+    LSKR --> KS : Saved LichSuKho
+    deactivate LSKR
+end
+
+KS --> DHS : Hoan tat tru kho tu dong
+deactivate KS
+
+note over DHS : 4. Cap nhat hoa don & mo trang thai ban
+DHS -> DHS : hoaDon.setTrangThai("DA_THANH_TOAN")\nhoaDon.setThoiGianThanhToan(LocalDateTime.now())\nhoaDon.setTienThua(tienKhachDua - tongTienThanhToan)\nhoaDon.setPhienBan(phienBan + 1)
+
+DHS -> HDR : save(hoaDon)
+activate HDR
+HDR -> DB : UPDATE hoa_don SET trang_thai='DA_THANH_TOAN', tien_thua=?, phien_ban=2 WHERE ma_hoa_don=45
+HDR --> DHS : Saved HoaDon
+deactivate HDR
+
+opt Neu don hang tai ban (hoaDon.ban != null)
+    DHS -> BR : findById(maBan)
+    activate BR
+    BR -> DB : SELECT * FROM ban WHERE ma_ban = ?
+    DB --> BR : Ban Entity
+    BR --> DHS : Ban
+    deactivate BR
+    
+    DHS -> DHS : ban.setTrangThai("TRONG")
+    DHS -> BR : save(ban)
+    activate BR
+    BR -> DB : UPDATE ban SET trang_thai = 'TRONG' WHERE ma_ban = ?
+    BR --> DHS : Saved Ban
+    deactivate BR
+end
+
+note over DHS : Commit giao dich CSDL @Transactional thanh cong
+
+DHS --> DHC : Tra ve doi tuong HoaDon da thanh toan
+deactivate DHS
+
+DHC --> UI : HTTP 200 OK (Chi tiet HoaDon JSON)
+deactivate DHC
+
+UI --> TN : Hien thi hop thoai thanh toan thanh cong & In hoa don chinh thuc\nCap nhat ban ve mau xanh (TRONG)
+deactivate UI
+
+@enduml

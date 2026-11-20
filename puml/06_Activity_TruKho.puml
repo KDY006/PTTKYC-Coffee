@@ -1,0 +1,81 @@
+@startuml Activity_TruKho
+!theme plain
+skinparam roundcorner 8
+skinparam ConditionEndStyle hdl
+skinparam defaultTextAlignment center
+
+title BIEU DO HOAT DONG TU DONG TRU KHO KHI THANH TOAN (ACTIVITY DIAGRAM)\nLUONG XU LY GIAO DICH NGHIEP VU TRONG DONG HANG SERVICE & KHO SERVICE
+
+start
+
+:Thu ngan bam "Xac nhan thanh toan" tren giao dien POS;
+:He thong gui yeu cau POST /api/don-hang/{id}/thanh-toan;
+:DonHangController tiep nhan DTO va goi DonHangService.thanhToanDonHang();
+
+partition "Giao Dich @Transactional (DonHangService)" {
+
+    :Kiem tra ton tai va trang thai hoa don trong CSDL;
+    if (Hoa don ton tai va trangThai == 'CHO_THANH_TOAN' hoac 'DANG_PHUC_VU'?) then (Hop le)
+        :Kiem tra khoa lac quan (Optimistic Lock) qua truong phienBan;
+    else (Khong hop le)
+        :Nem ResponseStatusException (400 Bad Request);\nThong bao: "Hoa don da duoc thanh toan hoac da huy";
+        stop
+    endif
+
+    partition "Xu Ly Tru Kho Tu Dong (KhoService.truKhoTuDong)" {
+        :Khoi tao danh sach tong hop nguyen lieu can tru (tongCanDungMap);
+        
+        :Duyet qua tung ChiTietHoaDon trong don hang;
+        while (Con mon nuoc trong chi tiet hoa don?) is (Co)
+            :Lay maMon va soLuong dat cua mon;
+            :Truy van danh sach CongThuc theo maMon tu CSDL;
+            
+            while (Con dinh muc nguyen lieu trong cong thuc?) is (Co)
+                :Tinh so luong nguyen lieu tieu hao:\nsoLuongCan = dinhMuc * soLuongDat;
+                :Cong don vao tongCanDungMap cho tung maNL;
+            endwhile (Het cong thuc mon)
+        endwhile (Het chi tiet hoa don)
+
+        :Kiem tra so luong ton kho thuc te cua tung nguyen lieu;
+        while (Con nguyen lieu can kiem tra ton kho?) is (Co)
+            :Truy van NguyenLieu tu CSDL theo maNL;
+            if (nguyenLieu.soLuongTon >= tongCanDung?) then (Du hang)
+                :Nguyen lieu du so luong phuc vu;
+            else (Thieu hang)
+                :Nem ResponseStatusException (400 Bad Request);\nThong bao: "Khong du nguyen lieu... Can: X, Con: Y";
+                :Rollback toan bo giao dich @Transactional;
+                stop
+            endif
+        endwhile (Tat ca nguyen lieu deu du)
+
+        :Thuc hien tru kho va ghi nhat ky lich su kho;
+        while (Con nguyen lieu can tru?) is (Co)
+            :tonTruoc = nguyenLieu.getSoLuongTon();
+            :tonSau = tonTruoc - tongCanDung;
+            :nguyenLieu.setSoLuongTon(tonSau);
+            :NguyenLieuRepository.save(nguyenLieu);
+            
+            :Tao ban ghi LichSuKho moi:\n- loaiGD = 'XUAT_BAN_HANG'\n- soLuongThayDoi = tongCanDung\n- tonTruoc = tonTruoc\n- tonSau = tonSau\n- maHoaDon = hoaDon.getMaHoaDon()\n- maNV = maNVThuNgan\n- thoiGian = LocalDateTime.now()\n- ghiChu = 'Tru kho tu dong theo hoa don #' + maHoaDon;
+            :LichSuKhoRepository.save(lichSuKho);
+        endwhile (Hoan tat tru kho tat ca nguyen lieu)
+    }
+
+    :Cap nhat thong tin thanh toan cho HoaDon:\n- phuongThucTT = dto.phuongThucTT\n- tienKhachDua = dto.tienKhachDua\n- chietKhau = dto.chietKhau\n- tienThua = tienKhachDua - tongTienThanhToan\n- thoiGianThanhToan = LocalDateTime.now()\n- trangThai = 'DA_THANH_TOAN'\n- phienBan = phienBan + 1;
+    :HoaDonRepository.save(hoaDon);
+
+    if (Hoa don co gan maBan?) then (Co)
+        :Truy van Ban theo maBan;
+        :ban.setTrangThai('TRONG');
+        :BanRepository.save(ban);
+    else (Khong / Mang di)
+    endif
+
+    :Commit giao dich CSDL thanh cong;
+}
+
+:Controller tra ve HTTP 200 OK kem du lieu HoaDon da thanh toan;
+:Giao dien cap nhat ban sang mau xanh (TRONG);\nHien thi thong bao thanh toan va in bien lai;
+
+stop
+
+@enduml

@@ -1,0 +1,119 @@
+@startuml Package_SpringBoot
+!theme plain
+allowmixing
+skinparam packageStyle folder
+skinparam linetype ortho
+skinparam roundcorner 8
+
+title BIEU DO DONG GOI MA NGUON (PACKAGE DIAGRAM)\nCAU TRUC DU AN JAVA SPRING BOOT (COM.CAFE) - CLEAN ARCHITECTURE
+
+package "com.cafe" as ROOT {
+    class QuanLyCafeApplication
+
+    package "com.cafe.controller" as PKG_CTL {
+        class XacThucController
+        class BanController
+        class MonNuocController
+        class DonHangController
+        class KhoController
+        class NhanSuController
+        class CaLamController
+        class ChamCongController
+        class PhanCaController
+        class PhanQuyenSession
+        class NgoaiLeControllerAdvice
+    }
+
+    package "com.cafe.dto" as PKG_DTO {
+        class DangNhapDTO
+        class DonHangDTO
+        class ChiTietDonHangDTO
+        class ThanhToanDTO
+        class MonNuocPosDTO
+        class BanHienThiDTO
+        class NhapKhoDTO
+        class KiemKeKhoDTO
+        class CongThucDTO
+        class BangCongThucMonDTO
+        class DinhMucNguyenLieuDTO
+        class ChamCongDTO
+        class DieuChinhChamCongDTO
+        class PhanCaDTO
+        class PhanCaTuanItemDTO
+        class DoiCaDTO
+        class BangCongNhanVienDTO
+        class DashboardKpiDTO
+        class TopMonBanChayDTO
+        class CaHomNayDTO
+        class ChotCaResponseDTO
+    }
+
+    package "com.cafe.service" as PKG_SERVICE {
+        class DonHangService
+        class KhoService
+        class NhanSuService
+    }
+
+    package "com.cafe.scheduler" as PKG_SCHED {
+        class ChotCaTuDongScheduler
+    }
+
+    package "com.cafe.repository" as PKG_REPO {
+        interface NhanVienRepository
+        interface CaLamRepository
+        interface PhanCaRepository
+        interface ChamCongRepository
+        interface BanRepository
+        interface MonNuocRepository
+        interface HoaDonRepository
+        interface ChiTietHoaDonRepository
+        interface NguyenLieuRepository
+        interface CongThucRepository
+        interface LichSuKhoRepository
+    }
+
+    package "com.cafe.entity" as PKG_ENTITY {
+        class NhanVien
+        class CaLam
+        class PhanCa
+        class ChamCong
+        class Ban
+        class MonNuoc
+        class HoaDon
+        class ChiTietHoaDon
+        class NguyenLieu
+        class CongThuc
+        class LichSuKho
+    }
+}
+
+package "src/main/resources/static" as STATIC_WEB {
+    file "index.html"
+    file "banhang.html"
+    file "kho.html"
+    file "nhansu.html"
+    file "favicon.ico"
+    folder "css" {
+        file "mossary.css"
+    }
+    folder "js" {
+        file "dung-chung.js"
+        file "banhang-page.js"
+        file "kho-page.js"
+        file "nhansu-page.js"
+    }
+}
+
+' ============================================================
+' MOI QUAN HE PHU THUOC GIUA CAC PACKAGE (DEPENDENCIES)
+' ============================================================
+STATIC_WEB ..> PKG_CTL : HTTP REST JSON (Fetch API)
+PKG_CTL ..> PKG_DTO : Nhan & Tra ve du lieu DTO
+PKG_CTL --> PKG_SERVICE : Dieu phoi xu ly nghiep vu
+PKG_SERVICE ..> PKG_DTO : Xu ly du lieu DTO
+PKG_SERVICE --> PKG_REPO : Goi truy van Spring Data JPA
+PKG_SERVICE ..> PKG_ENTITY : Thao tac tren cac doi tuong Entity
+PKG_SCHED --> PKG_SERVICE : Kich hoat chot ca tu dong dinh ky
+PKG_REPO ..> PKG_ENTITY : Quan ly thuc the ORM Hibernate / JPA
+
+@enduml

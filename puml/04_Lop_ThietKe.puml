@@ -1,0 +1,396 @@
+@startuml Lop_ThietKe
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam roundcorner 8
+skinparam linetype ortho
+
+title BIEU DO LOP CHI TIET THIET KE HE THONG (DESIGN CLASS DIAGRAM)\nCAU TRUC MA NGUON SPRING BOOT - REPOSITORY, SERVICE, CONTROLLER, ENTITY, DTO
+
+' ============================================================
+' 1. PACKAGE COM.CAFE.ENTITY (11 THUC THE JPA 3NF)
+' ============================================================
+package "com.cafe.entity" as PKG_ENTITY {
+
+    class Ban {
+        - maBan : Integer
+        - tenBan : String
+        - viTri : String
+        - soGhe : Integer
+        - trangThai : String
+        + getMaBan() : Integer
+        + getTenBan() : String
+        + getViTri() : String
+        + getSoGhe() : Integer
+        + getTrangThai() : String
+        + setTrangThai(trangThai: String) : void
+    }
+
+    class MonNuoc {
+        - maMon : Integer
+        - tenMon : String
+        - danhMuc : String
+        - donGia : BigDecimal
+        - hinhAnh : String
+        - trangThai : String
+        + getMaMon() : Integer
+        + getTenMon() : String
+        + getDonGia() : BigDecimal
+        + getTrangThai() : String
+    }
+
+    class NguyenLieu {
+        - maNL : Integer
+        - tenNL : String
+        - donViTinh : String
+        - soLuongTon : BigDecimal
+        - mucTonToiThieu : BigDecimal
+        - donGiaNhap : BigDecimal
+        + getMaNL() : Integer
+        + getTenNL() : String
+        + getSoLuongTon() : BigDecimal
+        + setSoLuongTon(soLuongTon: BigDecimal) : void
+        + getMucTonToiThieu() : BigDecimal
+        + getDonGiaNhap() : BigDecimal
+    }
+
+    class CongThuc {
+        - maCongThuc : Integer
+        - monNuoc : MonNuoc
+        - nguyenLieu : NguyenLieu
+        - dinhMuc : BigDecimal
+        - ghiChu : String
+        + getMaCongThuc() : Integer
+        + getMonNuoc() : MonNuoc
+        + getNguyenLieu() : NguyenLieu
+        + getDinhMuc() : BigDecimal
+    }
+
+    class HoaDon {
+        - maHoaDon : Integer
+        - ban : Ban
+        - nhanVien : NhanVien
+        - nhanVienThuNgan : NhanVien
+        - thoiGianTao : LocalDateTime
+        - thoiGianYeuCauTT : LocalDateTime
+        - thoiGianThanhToan : LocalDateTime
+        - loaiDon : String
+        - tongTienGoc : BigDecimal
+        - chietKhau : BigDecimal
+        - tongTienThanhToan : BigDecimal
+        - tienKhachDua : BigDecimal
+        - tienThua : BigDecimal
+        - phuongThucTT : String
+        - maThamChieu : String
+        - xacNhanChuyenKhoan : Boolean
+        - minhChungChuyenKhoan : String
+        - trangThai : String
+        - yeuCauTao : String
+        - yeuCauThanhToan : String
+        - phienBan : Integer
+        - chiTietHoaDons : List<ChiTietHoaDon>
+        + getMaHoaDon() : Integer
+        + getTrangThai() : String
+        + setTrangThai(trangThai: String) : void
+        + getPhienBan() : Integer
+        + getTongTienThanhToan() : BigDecimal
+    }
+
+    class ChiTietHoaDon {
+        - maCTHD : Integer
+        - hoaDon : HoaDon
+        - monNuoc : MonNuoc
+        - soLuong : Integer
+        - soLuongDaInBar : Integer
+        - donGiaBan : BigDecimal
+        - thanhTien : BigDecimal
+        - ghiChu : String
+        + getMaCTHD() : Integer
+        + getMonNuoc() : MonNuoc
+        + getSoLuong() : Integer
+        + getSoLuongDaInBar() : Integer
+        + setSoLuongDaInBar(soLuong: Integer) : void
+        + getThanhTien() : BigDecimal
+    }
+
+    class LichSuKho {
+        - maGD : Integer
+        - nguyenLieu : NguyenLieu
+        - nhanVien : NhanVien
+        - hoaDon : HoaDon
+        - loaiGD : String
+        - soLuongThayDoi : BigDecimal
+        - tonTruoc : BigDecimal
+        - tonSau : BigDecimal
+        - donGia : BigDecimal
+        - thanhTien : BigDecimal
+        - nhaCungCap : String
+        - thoiGian : LocalDateTime
+        - ghiChu : String
+        + getMaGD() : Integer
+        + getLoaiGD() : String
+        + getSoLuongThayDoi() : BigDecimal
+    }
+
+    class NhanVien {
+        - maNV : Integer
+        - hoTen : String
+        - soDienThoai : String
+        - tenDangNhap : String
+        - matKhau : String
+        - vaiTro : String
+        - trangThai : String
+        + getMaNV() : Integer
+        + getHoTen() : String
+        + getVaiTro() : String
+        + getTrangThai() : String
+    }
+
+    class CaLam {
+        - maCa : Integer
+        - tenCa : String
+        - gioBatDau : LocalTime
+        - gioKetThuc : LocalTime
+        - heSoLuong : BigDecimal
+        + getMaCa() : Integer
+        + getTenCa() : String
+        + getGioBatDau() : LocalTime
+        + getGioKetThuc() : LocalTime
+        + getHeSoLuong() : BigDecimal
+    }
+
+    class PhanCa {
+        - maPhanCa : Integer
+        - nhanVien : NhanVien
+        - caLam : CaLam
+        - ngayLam : LocalDate
+        - ghiChu : String
+        + getMaPhanCa() : Integer
+        + getNhanVien() : NhanVien
+        + getCaLam() : CaLam
+        + getNgayLam() : LocalDate
+    }
+
+    class ChamCong {
+        - maChamCong : Integer
+        - phanCa : PhanCa
+        - nhanVien : NhanVien
+        - caLam : CaLam
+        - ngayLam : LocalDate
+        - gioCheckIn : LocalDateTime
+        - gioCheckOut : LocalDateTime
+        - soPhutTre : Integer
+        - soPhutVeSom : Integer
+        - soGioLam : BigDecimal
+        - gioCongQuyDoi : BigDecimal
+        - trangThai : String
+        - ghiChu : String
+        - nguoiDieuChinh : NhanVien
+        - lyDoDieuChinh : String
+        - thoiGianDieuChinh : LocalDateTime
+        + getMaChamCong() : Integer
+        + getTrangThai() : String
+        + getGioCongQuyDoi() : BigDecimal
+    }
+}
+
+' ============================================================
+' 2. PACKAGE COM.CAFE.DTO
+' ============================================================
+package "com.cafe.dto" as PKG_DTO {
+    class DonHangDTO {
+        + maBan : Integer
+        + loaiDon : String
+        + ghiChu : String
+        + yeuCauTao : String
+        + chiTiets : List<ChiTietDonHangDTO>
+    }
+    class ChiTietDonHangDTO {
+        + maMon : Integer
+        + soLuong : Integer
+        + ghiChu : String
+    }
+    class ThanhToanDTO {
+        + phuongThucTT : String
+        + tienKhachDua : BigDecimal
+        + chietKhau : BigDecimal
+        + maThamChieu : String
+        + xacNhanChuyenKhoan : Boolean
+        + minhChungChuyenKhoan : String
+        + yeuCauThanhToan : String
+    }
+    class MonNuocPosDTO {
+        + maMon : Integer
+        + tenMon : String
+        + danhMuc : String
+        + donGia : BigDecimal
+        + hinhAnh : String
+        + trangThai : String
+        + soLyCoTheLam : Integer
+    }
+    class BanHienThiDTO {
+        + maBan : Integer
+        + tenBan : String
+        + viTri : String
+        + soGhe : Integer
+        + trangThai : String
+        + maHoaDonHienTai : Integer
+        + tongTienTamTinh : BigDecimal
+        + soLuongMon : Integer
+        + thoiGianTaoDon : LocalDateTime
+        + yeuCauThanhToan : Boolean
+    }
+    class NhapKhoDTO {
+        + maNL : Integer
+        + soLuong : BigDecimal
+        + donGiaNhap : BigDecimal
+        + nhaCungCap : String
+        + ghiChu : String
+    }
+    class KiemKeKhoDTO {
+        + maNL : Integer
+        + soLuongThucTe : BigDecimal
+        + lyDo : String
+    }
+    class ChamCongDTO {
+        + maCa : Integer
+        + ghiChu : String
+    }
+    class DieuChinhChamCongDTO {
+        + gioCheckIn : LocalDateTime
+        + gioCheckOut : LocalDateTime
+        + trangThai : String
+        + lyDoDieuChinh : String
+    }
+    class DoiCaDTO {
+        + maPhanCa : Integer
+        + maNVNhan : Integer
+        + lyDo : String
+    }
+    class DangNhapDTO {
+        + tenDangNhap : String
+        + matKhau : String
+    }
+}
+
+' ============================================================
+' 3. PACKAGE COM.CAFE.SERVICE & SCHEDULER
+' ============================================================
+package "com.cafe.service" as PKG_SERVICE {
+    class DonHangService {
+        + taoDonHang(maNV: Integer, dto: DonHangDTO) : HoaDon
+        + layChiTietHoaDon(maHoaDon: Integer) : HoaDon
+        + yeuCauThanhToan(maHoaDon: Integer, maNV: Integer) : HoaDon
+        + quayLaiPhucVu(maHoaDon: Integer, maNV: Integer) : HoaDon
+        + inBar(maHoaDon: Integer) : Map<String, Object>
+        + inTamTinh(maHoaDon: Integer) : Map<String, Object>
+        + thanhToanDonHang(maHoaDon: Integer, maNV: Integer, dto: ThanhToanDTO) : HoaDon
+        + huyDonHang(maHoaDon: Integer, maNV: Integer, lyDo: String) : HoaDon
+        + layDanhSachBanKemHoaDon() : List<BanHienThiDTO>
+        + layTopMonBanChay(gioiHan: int) : List<TopMonBanChayDTO>
+        + layKpiDoanhThuHomNay() : DashboardKpiDTO
+    }
+
+    class KhoService {
+        + layDanhSachNguyenLieu() : List<NguyenLieu>
+        + nhapKho(maNV: Integer, dto: NhapKhoDTO) : LichSuKho
+        + kiemKeKho(maNV: Integer, dto: KiemKeKhoDTO) : LichSuKho
+        + truKhoTuDong(hoaDon: HoaDon, maNVThuNgan: Integer) : void
+        + hoanKhoTuDong(hoaDon: HoaDon, maNV: Integer) : void
+        + layLichSuKho(tuNgay: LocalDate, denNgay: LocalDate) : List<LichSuKho>
+        + layBangCongThucMon(maMon: Integer) : BangCongThucMonDTO
+        + luuBangCongThucMon(maMon: Integer, danhSach: List<DinhMucNguyenLieuDTO>) : void
+        + xoaCongThucMon(maMon: Integer) : void
+        + tinhSoLyCoTheLam(maMon: Integer) : Integer
+        + layDanhSachMonKemKhaNangPhaChe() : List<MonNuocPosDTO>
+    }
+
+    class NhanSuService {
+        + dangNhap(dto: DangNhapDTO) : NhanVien
+        + checkIn(maNV: Integer, dto: ChamCongDTO) : ChamCong
+        + checkOut(maNV: Integer, dto: ChamCongDTO) : ChamCong
+        + chotCaTuDong() : ChotCaResponseDTO
+        + layLichCaNhan(maNV: Integer) : List<PhanCa>
+        + phanCaTuan(tuNgay: LocalDate, danhSach: List<PhanCaDTO>) : void
+        + doiCa(maNVYeuCau: Integer, dto: DoiCaDTO) : PhanCa
+        + layBangCongThang(thang: int, nam: int) : List<BangCongNhanVienDTO>
+        + dieuChinhChamCong(maChamCong: Integer, maNVQuanLy: Integer, dto: DieuChinhChamCongDTO) : ChamCong
+        + layKpiHomNay() : Map<String, Object>
+    }
+}
+
+package "com.cafe.scheduler" as PKG_SCHED {
+    class ChotCaTuDongScheduler {
+        + tuDongChotCaVaGhiNhanVang() : void
+    }
+}
+
+' ============================================================
+' 4. PACKAGE COM.CAFE.REPOSITORY
+' ============================================================
+package "com.cafe.repository" as PKG_REPO {
+    interface BanRepository
+    interface MonNuocRepository
+    interface NguyenLieuRepository
+    interface CongThucRepository
+    interface HoaDonRepository
+    interface ChiTietHoaDonRepository
+    interface LichSuKhoRepository
+    interface NhanVienRepository
+    interface CaLamRepository
+    interface PhanCaRepository
+    interface ChamCongRepository
+}
+
+' ============================================================
+' 5. PACKAGE COM.CAFE.CONTROLLER
+' ============================================================
+package "com.cafe.controller" as PKG_CTL {
+    class DonHangController
+    class KhoController
+    class NhanSuController
+    class BanController
+    class MonNuocController
+    class CaLamController
+    class ChamCongController
+    class PhanCaController
+    class XacThucController
+    class PhanQuyenSession
+    class NgoaiLeControllerAdvice
+}
+
+' ============================================================
+' MOI QUAN HE GIUA CAC LOP
+' ============================================================
+HoaDon "1" *-- "0..*" ChiTietHoaDon : gom cac mon >
+Ban "1" -- "0..*" HoaDon : phuc vu tai >
+MonNuoc "1" -- "0..*" ChiTietHoaDon : duoc dat >
+MonNuoc "1" *-- "0..*" CongThuc : gom thanh phan >
+NguyenLieu "1" -- "0..*" CongThuc : dinh muc >
+NguyenLieu "1" -- "0..*" LichSuKho : ghi nhan GD >
+NhanVien "1" -- "0..*" HoaDon : tao & thu ngan >
+NhanVien "1" -- "0..*" PhanCa : duoc phan cong >
+CaLam "1" -- "0..*" PhanCa : ca lam viec >
+PhanCa "1" -- "0..1" ChamCong : ban ghi cham cong >
+
+DonHangController --> DonHangService
+KhoController --> KhoService
+NhanSuController --> NhanSuService
+ChamCongController --> NhanSuService
+PhanCaController --> NhanSuService
+ChotCaTuDongScheduler --> NhanSuService
+
+DonHangService --> HoaDonRepository
+DonHangService --> ChiTietHoaDonRepository
+DonHangService --> BanRepository
+DonHangService --> KhoService
+
+KhoService --> NguyenLieuRepository
+KhoService --> CongThucRepository
+KhoService --> LichSuKhoRepository
+
+NhanSuService --> NhanVienRepository
+NhanSuService --> CaLamRepository
+NhanSuService --> PhanCaRepository
+NhanSuService --> ChamCongRepository
+
+@enduml

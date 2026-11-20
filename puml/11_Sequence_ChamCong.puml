@@ -1,0 +1,195 @@
+@startuml Sequence_ChamCong
+!theme plain
+autonumber
+skinparam roundcorner 8
+<style>
+participant {
+  Padding 10
+}
+</style>
+
+title BIEU DO TUAN TU DA TANG (MULTI-TIER SEQUENCE DIAGRAM)\nLUONG CHAM CONG THOI GIAN THUC & CHOT CA TU DONG
+
+actor "Nhan Vien" as NV
+actor "Quan Ly" as QL
+boundary "nhansu.html\n(UI Cham Cong)" as UI
+control "ChamCongController" as CCC
+control "PhanQuyenSession" as PQS
+entity "NhanSuService" as NSS
+control "ChotCaTuDongScheduler" as SCD
+control "NhanVienRepository" as NVR
+control "CaLamRepository" as CLR
+control "PhanCaRepository" as PCR
+control "ChamCongRepository" as CCR
+database "MySQL Server\n(InnoDB Engine)" as DB
+
+' ============================================================
+' LUONG 1: CHECK-IN CA LAM VIEC
+' ============================================================
+== Luong 1: Check-in Ca Lam Viec Thoi Gian Thuc ==
+
+NV -> UI : Chon ca lam hom nay & Bam "Check-in Ca Lam"
+activate UI
+
+UI -> CCC : POST /api/cham-cong/check-in\nPayload: ChamCongDTO(maCa=1, ghiChu="Check-in ca sang")
+activate CCC
+
+CCC -> PQS : userId(session)
+activate PQS
+PQS --> CCC : maNV = 3 (Hop le)
+deactivate PQS
+
+CCC -> NSS : checkIn(3, chamCongDTO)
+activate NSS
+
+NSS -> NVR : findById(3)
+activate NVR
+NVR -> DB : SELECT * FROM nhan_vien WHERE ma_nv = 3
+DB --> NVR : NhanVien Entity (trang_thai = 'DANG_LAM')
+NVR --> NSS : NhanVien
+deactivate NVR
+
+NSS -> CLR : findById(1)
+activate CLR
+CLR -> DB : SELECT * FROM ca_lam WHERE ma_ca = 1
+DB --> CLR : CaLam Entity (gioBatDau = 07:00:00, gioKetThuc = 12:00:00)
+CLR --> NSS : CaLam
+deactivate CLR
+
+NSS -> CCR : findByNhanVien_MaNVAndCaLam_MaCaAndNgayLam(3, 1, CURRENT_DATE)
+activate CCR
+CCR -> DB : SELECT * FROM cham_cong WHERE ma_nv=3 AND ma_ca=1 AND ngay_lam=CURRENT_DATE
+DB --> CCR : Optional.empty() (Chua check-in)
+CCR --> NSS : Optional.empty()
+deactivate CCR
+
+NSS -> NSS : now = LocalDateTime.now() (Vi du: 07:10:00)\nKiem tra khung gio check-in: [06:30, 12:00)\ndiffMinutes = Duration.between(07:00, 07:10).toMinutes()
+
+alt [diffMinutes <= 15] (Check-in som hoac tre <= 15 phut)
+    NSS -> NSS : trangThai = "DUNG_GIO"\nsoPhutTre = 0
+else [diffMinutes > 15] (Den tre qua 15 phut quy dinh)
+    NSS -> NSS : trangThai = "DI_TRE"\nsoPhutTre = diffMinutes
+end
+
+NSS -> PCR : findByNhanVien_MaNVAndNgayLam(3, CURRENT_DATE)
+activate PCR
+PCR -> DB : SELECT * FROM phan_ca WHERE ma_nv=3 AND ngay_lam=CURRENT_DATE AND ma_ca=1
+DB --> PCR : PhanCa Entity
+PCR --> NSS : PhanCa
+deactivate PCR
+
+NSS -> CCR : save(chamCong)
+activate CCR
+CCR -> DB : INSERT INTO cham_cong (ma_phan_ca, ma_nv, ma_ca, ngay_lam, gio_check_in, trang_thai, so_phut_tre)\nVALUES (12, 3, 1, CURRENT_DATE, now, trangThai, soPhutTre)
+DB --> CCR : Generated ma_cham_cong = 45
+CCR --> NSS : ChamCong Entity
+deactivate CCR
+
+NSS --> CCC : ChamCong
+deactivate NSS
+
+CCC --> UI : HTTP 200 OK (Chi tiet ban ghi cham cong JSON)
+deactivate CCC
+
+UI --> NV : Hien thi Toast: "Check-in thanh cong: " + trangThai\nCap nhat trang thai ca sang mau xanh
+deactivate UI
+
+' ============================================================
+' LUONG 2: CHECK-OUT CA LAM VIEC
+' ============================================================
+== Luong 2: Check-out Ca Lam Viec Thoi Gian Thuc ==
+
+NV -> UI : Bam nut "Check-out Ca Lam"
+activate UI
+
+UI -> CCC : POST /api/cham-cong/check-out\nPayload: ChamCongDTO(maCa=1)
+activate CCC
+
+CCC -> PQS : userId(session)
+activate PQS
+PQS --> CCC : maNV = 3
+deactivate PQS
+
+CCC -> NSS : checkOut(3, chamCongDTO)
+activate NSS
+
+NSS -> CCR : findByNhanVien_MaNVAndCaLam_MaCaAndNgayLam(3, 1, CURRENT_DATE)
+activate CCR
+CCR -> DB : SELECT * FROM cham_cong WHERE ma_nv=3 AND ma_ca=1 AND ngay_lam=CURRENT_DATE
+DB --> CCR : ChamCong Entity (gioCheckIn = 07:10:00, gioCheckOut = null)
+CCR --> NSS : ChamCong
+deactivate CCR
+
+NSS -> NSS : now = LocalDateTime.now() (Vi du: 12:05:00)\nsoGioLam = Duration.between(07:10, 12:05).toMinutes() / 60.0 (Vi du: 4.92 gio)\nsoPhutVeSom = 0 (vi now >= 12:00:00)\ngioCongQuyDoi = soGioLam * caLam.getHeSoLuong()
+
+NSS -> NSS : chamCong.setGioCheckOut(now)\nchamCong.setSoGioLam(soGioLam)\nchamCong.setGioCongQuyDoi(gioCongQuyDoi)
+
+NSS -> CCR : save(chamCong)
+activate CCR
+CCR -> DB : UPDATE cham_cong SET gio_check_out=now, so_gio_lam=?, gio_cong_quy_doi=? WHERE ma_cham_cong=45
+CCR --> NSS : Saved ChamCong
+deactivate CCR
+
+NSS --> CCC : ChamCong
+deactivate NSS
+
+CCC --> UI : HTTP 200 OK
+deactivate CCC
+
+UI --> NV : Hien thi thong bao check-out thanh cong kem tong so gio cong
+deactivate UI
+
+' ============================================================
+' LUONG 3: TIEN TRINH CHOT CA TU DONG
+' ============================================================
+== Luong 3: Chot Ca Tu Dong Dinh Ky (@Scheduled Cron) ==
+
+SCD -> NSS : chotCaTuDong()
+activate SCD
+activate NSS
+
+NSS -> CLR : findAll()
+activate CLR
+CLR -> DB : SELECT * FROM ca_lam
+DB --> CLR : Danh sach cac ca lam
+CLR --> NSS : List<CaLam>
+deactivate CLR
+
+loop Tung ca lam da ket thuc trong ngay (now > caLam.gioKetThuc)
+    NSS -> PCR : timPhanCaChuaChamCongTheoNgay(maCa, CURRENT_DATE)
+    activate PCR
+    PCR -> DB : SELECT pc.* FROM phan_ca pc WHERE pc.ma_ca=? AND pc.ngay_lam=? AND pc.ma_phan_ca NOT IN (SELECT cc.ma_phan_ca FROM cham_cong cc)
+    DB --> PCR : Danh sach nhan vien vang mat
+    PCR --> NSS : List<PhanCa>
+    deactivate PCR
+    
+    loop Tung phan ca vang mat
+        NSS -> CCR : save(chamCongVang)
+        activate CCR
+        CCR -> DB : INSERT INTO cham_cong (ma_phan_ca, ma_nv, ma_ca, ngay_lam, trang_thai, so_gio_lam, gio_cong_quy_doi, ghi_chu)\nVALUES (?, ?, ?, CURRENT_DATE, 'VANG', 0, 0, 'He thong tu dong ghi nhan vang')
+        CCR --> NSS : Saved ChamCong
+        deactivate CCR
+    end
+
+    NSS -> CCR : timChamCongQuenCheckOut(maCa, CURRENT_DATE)
+    activate CCR
+    CCR -> DB : SELECT * FROM cham_cong WHERE ma_ca=? AND ngay_lam=? AND gio_check_in IS NOT NULL AND gio_check_out IS NULL
+    DB --> CCR : Danh sach quen check-out
+    CCR --> NSS : List<ChamCong>
+    deactivate CCR
+    
+    loop Tung ban ghi quen check-out
+        NSS -> NSS : chamCong.setTrangThai("QUEN_CHECK_OUT")\nchamCong.setSoGioLam(0)\nchamCong.setGioCongQuyDoi(0)
+        NSS -> CCR : save(chamCong)
+        activate CCR
+        CCR -> DB : UPDATE cham_cong SET trang_thai='QUEN_CHECK_OUT', so_gio_lam=0, gio_cong_quy_doi=0 WHERE ma_cham_cong=?
+        CCR --> NSS : Saved ChamCong
+        deactivate CCR
+    end
+end
+
+NSS --> SCD : ChotCaResponseDTO(soCaChot, soVang, soQuenCheckOut)
+deactivate NSS
+deactivate SCD
+
+@enduml

@@ -1,0 +1,221 @@
+@startuml Sequence_BanHang
+!theme plain
+autonumber
+skinparam roundcorner 8
+<style>
+participant {
+  Padding 10
+}
+</style>
+
+title BIEU DO TUAN TU DA TANG (MULTI-TIER SEQUENCE DIAGRAM)\nCHU TRINH BAN HANG & PHUC VU TAI BAN - TU MO BAN, IN BAR DEN THANH TOAN
+
+actor "Phuc Vu" as PV
+actor "Thu Ngan" as TN
+boundary "banhang.html\n(Giao dien POS)" as UI
+control "DonHangController" as DHC
+entity "DonHangService" as DHS
+entity "KhoService" as KS
+control "BanRepository" as BR
+control "HoaDonRepository" as HDR
+control "ChiTietHoaDonRepository" as CTHDR
+database "MySQL Server\n(InnoDB Engine)" as DB
+
+' ============================================================
+' GIAI DOAN 1: MO BAN VA TAO DON HANG
+' ============================================================
+== Giai Doan 1: Mo Ban & Tao Don Hang Moi ==
+
+PV -> UI : Chon ban TRONG, chon mon & Bam "Mo ban / Tao don"
+activate UI
+
+UI -> DHC : POST /api/don-hang\nPayload: DonHangDTO(maBan=5, loaiDon="TAI_BAN", chiTiets=[...])
+activate DHC
+
+DHC -> DHS : taoDonHang(maNV=3, donHangDTO)
+activate DHS
+
+DHS -> BR : findById(5)
+activate BR
+BR -> DB : SELECT * FROM ban WHERE ma_ban = 5
+DB --> BR : Ban Entity (trang_thai = 'TRONG')
+BR --> DHS : Ban
+deactivate BR
+
+DHS -> HDR : timDonDangPhucVuCuaBan(5)
+activate HDR
+HDR -> DB : SELECT * FROM hoa_don WHERE ma_ban = 5 AND trang_thai IN ('DANG_PHUC_VU', 'CHO_THANH_TOAN')
+DB --> HDR : Optional.empty() (Ban dang trong hop le)
+HDR --> DHS : Optional.empty()
+deactivate HDR
+
+DHS -> DHS : Khoi tao HoaDon moi (trang_thai = 'DANG_PHUC_VU')\nKhoi tao danh sach ChiTietHoaDon (so_luong_da_in_bar = 0)
+DHS -> DHS : ban.setTrangThai("DANG_DUNG_NUOC")
+
+DHS -> BR : save(ban)
+activate BR
+BR -> DB : UPDATE ban SET trang_thai = 'DANG_DUNG_NUOC' WHERE ma_ban = 5
+BR --> DHS : Saved Ban
+deactivate BR
+
+DHS -> HDR : save(hoaDon)
+activate HDR
+HDR -> DB : INSERT INTO hoa_don (ma_ban, ma_nv, loai_don, trang_thai, thoi_gian_tao, phien_ban)\nVALUES (5, 3, 'TAI_BAN', 'DANG_PHUC_VU', NOW(), 0)
+DB --> HDR : Generated ma_hoa_don = 45
+HDR --> DHS : Saved HoaDon
+deactivate HDR
+
+DHS --> DHC : Tra ve HoaDon moi
+deactivate DHS
+
+DHC --> UI : HTTP 200 OK (Chi tiet HoaDon JSON)
+deactivate DHC
+
+UI --> PV : Cap nhat giao dien: Ban 5 chuyen sang mau DO (DANG_DUNG_NUOC)
+deactivate UI
+
+' ============================================================
+' GIAI DOAN 2: IN PHIEU QUAY BAR (IN BAR)
+' ============================================================
+== Giai Doan 2: In Phieu Che Bien Cho Quay Bar ==
+
+PV -> UI : Bam nut "In Bar"
+activate UI
+
+UI -> DHC : POST /api/don-hang/45/in-bar
+activate DHC
+
+DHC -> DHS : inBar(45)
+activate DHS
+
+DHS -> HDR : timTheoMaHoaDonDayDu(45)
+activate HDR
+HDR -> DB : SELECT hd.*, cthd.* FROM hoa_don hd ... WHERE hd.ma_hoa_don = 45
+DB --> HDR : HoaDon Entity (danh sach chi tiet mon)
+HDR --> DHS : HoaDon
+deactivate HDR
+
+loop Tung ChiTietHoaDon co soLuong > soLuongDaInBar
+    DHS -> DHS : int soLuongCanIn = soLuong - soLuongDaInBar\nchiTiet.setSoLuongDaInBar(soLuong)
+    DHS -> CTHDR : save(chiTiet)
+    activate CTHDR
+    CTHDR -> DB : UPDATE chi_tiet_hoa_don SET so_luong_da_in_bar = soLuong WHERE ma_cthd = ?
+    CTHDR --> DHS : Saved ChiTiet
+    deactivate CTHDR
+end
+
+DHS --> DHC : Tra ve du lieu phieu in Bar (mon uong, so luong moi, ghi chu)
+deactivate DHS
+
+DHC --> UI : HTTP 200 OK (Phieu in Bar)
+deactivate DHC
+
+UI --> PV : Gui lenh in phieu ra may in Quay Bar (Web Print)
+deactivate UI
+
+' ============================================================
+' GIAI DOAN 3: YEU CAU THANH TOAN & IN TAM TINH
+' ============================================================
+== Giai Doan 3: Yeu Cau Thanh Toan & In Bill Tam Tinh ==
+
+PV -> UI : Bam nut "Yeu cau thanh toan"
+activate UI
+
+UI -> DHC : POST /api/don-hang/45/yeu-cau-thanh-toan
+activate DHC
+
+DHC -> DHS : yeuCauThanhToan(45, maNV=3)
+activate DHS
+
+DHS -> HDR : timTheoMaHoaDonDayDu(45)
+activate HDR
+HDR --> DHS : HoaDon
+deactivate HDR
+
+DHS -> DHS : hoaDon.setTrangThai("CHO_THANH_TOAN")\nhoaDon.setThoiGianYeuCauTT(LocalDateTime.now())\nban.setTrangThai("CHO_THANH_TOAN")
+
+DHS -> HDR : save(hoaDon)
+activate HDR
+HDR -> DB : UPDATE hoa_don SET trang_thai='CHO_THANH_TOAN', thoi_gian_yeu_cau_tt=NOW() WHERE ma_hoa_don=45
+HDR --> DHS : Saved HoaDon
+deactivate HDR
+
+DHS -> BR : save(ban)
+activate BR
+BR -> DB : UPDATE ban SET trang_thai='CHO_THANH_TOAN' WHERE ma_ban=5
+BR --> DHS : Saved Ban
+deactivate BR
+
+DHS --> DHC : HoaDon
+deactivate DHS
+
+DHC --> UI : HTTP 200 OK
+deactivate DHC
+
+UI --> PV : Cap nhat giao dien: Ban 5 chuyen sang mau CAM (CHO_THANH_TOAN)
+deactivate UI
+
+TN -> UI : Bam "In tam tinh" (Pre-check bill)
+activate UI
+
+UI -> DHC : GET /api/don-hang/45/in-tam-tinh
+activate DHC
+
+DHC -> DHS : inTamTinh(45)
+activate DHS
+DHS --> DHC : Du lieu bill tam tinh (tong_tien_goc, chiet_khau, tong_thanh_toan)
+deactivate DHS
+
+DHC --> UI : HTTP 200 OK (Du lieu in)
+deactivate DHC
+
+UI --> TN : In phieu tam tinh dua phuc vu mang ra ban cho khach kiem tra
+deactivate UI
+
+' ============================================================
+' GIAI DOAN 4: THU NGAN XAC NHAN THANH TOAN & DONG BAN
+' ============================================================
+== Giai Doan 4: Thu Ngan Xac Nhan Thanh Toan, Tru Kho & Dong Ban ==
+
+TN -> UI : Chon phuong thuc thanh toan, nhap tien & Bam "Xac nhan thanh toan"
+activate UI
+
+UI -> DHC : POST /api/don-hang/45/thanh-toan\nPayload: ThanhToanDTO(phuongThucTT="TIEN_MAT", tienKhachDua=150000)
+activate DHC
+
+DHC -> DHS : thanhToanDonHang(45, maNV=2, thanhToanDTO)
+activate DHS
+
+note over DHS : Giao dich @Transactional bat dau
+DHS -> KS : truKhoTuDong(hoaDon, 2)
+activate KS
+KS -> DB : Giam ton kho nguyen_lieu va them lich_su_kho (loaiGD='XUAT_BAN_HANG')
+KS --> DHS : Tru kho thanh cong
+deactivate KS
+
+DHS -> DHS : hoaDon.setTrangThai("DA_THANH_TOAN")\nhoaDon.setThoiGianThanhToan(NOW())\nban.setTrangThai("TRONG")
+
+DHS -> HDR : save(hoaDon)
+activate HDR
+HDR -> DB : UPDATE hoa_don SET trang_thai='DA_THANH_TOAN' WHERE ma_hoa_don=45
+HDR --> DHS : Saved HoaDon
+deactivate HDR
+
+DHS -> BR : save(ban)
+activate BR
+BR -> DB : UPDATE ban SET trang_thai='TRONG' WHERE ma_ban=5
+BR --> DHS : Saved Ban
+deactivate BR
+
+note over DHS : Commit giao dich CSDL thanh cong
+
+DHS --> DHC : HoaDon
+deactivate DHS
+
+DHC --> UI : HTTP 200 OK
+deactivate DHC
+
+UI --> TN : Xuat hoa don thanh toan chinh thuc\nBan 5 tro ve mau XANH (TRONG)
+deactivate UI
+
+@enduml
